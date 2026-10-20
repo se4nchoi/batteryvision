@@ -104,11 +104,12 @@ export default function App() {
     api.status().then(setStatus).catch(() => {});
   };
 
-  const onUpload = async (file: File | undefined) => {
-    if (!file) return;
+  const onUpload = async (list: FileList | null) => {
+    const files = Array.from(list ?? []).slice(0, 8);
+    if (!files.length) return;
     try {
-      await api.upload(file, true);
-      setNotice(`${file.name} added to the front of the queue.`);
+      await api.upload(files, true);
+      setNotice(files.length > 1 ? `${files.length} images added as the sides of one cell, next in the queue.` : `${files[0].name} added to the front of the queue.`);
     } catch (e) {
       setNotice((e as Error).message);
     } finally {
@@ -170,7 +171,8 @@ export default function App() {
               </div>
               <div className="actions">
                 {mode === "live" && (
-                  <button className="btn" onClick={() => fileInput.current?.click()}><IconUpload />Add image</button>
+                  <button className="btn" onClick={() => fileInput.current?.click()}
+                    title="One image, or up to 8 photos of the same cell from different sides"><IconUpload />Add image</button>
                 )}
                 <button className="btn" onClick={() => act(api.reset)} title="R"><IconReset />Reset</button>
                 <button className="btn" onClick={() => act(api.step)} disabled={sim?.running} title="→"><IconStep />Step</button>
@@ -179,8 +181,8 @@ export default function App() {
                 ) : (
                   <button className="btn btn-primary" onClick={() => act(api.start)} title="Space"><IconPlay />Start</button>
                 )}
-                <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/bmp" hidden
-                  onChange={(e) => onUpload(e.target.files?.[0])} />
+                <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/bmp" multiple hidden
+                  onChange={(e) => onUpload(e.target.files)} />
               </div>
             </header>
 
@@ -201,7 +203,8 @@ export default function App() {
                 <div className={`card-body conveyor-body ${lineView === "3d" ? "flush" : ""}`}>
                   {lineView === "3d" ? (
                     <Suspense fallback={<div className="placeholder">Loading 3D view…</div>}>
-                      <Line3D cells={sim?.cells ?? []} running={!!sim?.running} metrics={metrics} sessionId={sim?.session_id ?? null} />
+                      <Line3D cells={sim?.cells ?? []} running={!!sim?.running} metrics={metrics} sessionId={sim?.session_id ?? null}
+                        tickSeconds={sim?.tick_seconds ?? 1.8} />
                     </Suspense>
                   ) : (
                     <Conveyor cells={sim?.cells ?? []} running={!!sim?.running} metrics={metrics} message={sim?.message ?? null} />

@@ -96,5 +96,14 @@ def test_live_mode_through_api(tmp_path: Path):
         assert queued[0]["cell_id"] == q["cell_id"] and queued[0]["source"] == "upload"
 
         assert c.post("/api/inspect", files={"file": ("x.txt", b"not an image", "text/plain")}).status_code == 415
+
+        # several images = several views of one cell (e.g. rotated 90 degrees each)
+        four = [("file", (f"v{i}.jpg", buf.getvalue(), "image/jpeg")) for i in range(4)]
+        r4 = c.post("/api/inspect", files=four).json()
+        assert len(r4["views"]) == 4 and [v["angle"] for v in r4["views"]] == [0, 90, 180, 270]
+        assert {d["view"] for d in r4["detections"]} == {0, 1, 2, 3}
+        assert r4["inference_ms"] > 0
+        too_many = [("file", (f"v{i}.jpg", buf.getvalue(), "image/jpeg")) for i in range(9)]
+        assert c.post("/api/inspect", files=too_many).status_code == 422
         # switching back to demo keeps working
         assert c.post("/api/mode", json={"mode": "demo"}).json()["mode"] == "demo"

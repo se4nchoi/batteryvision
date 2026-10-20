@@ -68,7 +68,7 @@ export function Conveyor({ cells, running, metrics, message }: Props) {
         {[
           { x: 135, t: "Queue" },
           { x: 360, t: "Transfer" },
-          { x: 500, t: "Camera" },
+          { x: 500, t: cells.some((c) => (c.n_views ?? 1) > 1) ? "Camera · 360°" : "Camera" },
           { x: 640, t: "Diverter" },
         ].map((s) => (
           <text key={s.t} x={s.x} y={24} textAnchor="middle" className="stage-label">

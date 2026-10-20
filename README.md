@@ -15,13 +15,20 @@ Battery enters line → inspection station → model inference → decision poli
 
 | | DEMO (default, no model needed) | LIVE (Geti-exported model) |
 |---|---|---|
-| Images | 12 synthetic rendered cells (`sample_data/demo`) | your held-out test images (`sample_data/live`) or uploads |
+| Images | 12 synthetic cells × 4 sides (0/90/180/270°) in `sample_data/demo` | your held-out test images (`sample_data/live`, 1 view each) or uploads (1–8 views) |
 | Detections | **scripted, illustrative**, labelled DEMO everywhere | real OpenVINO inference via Intel ModelAPI |
 | Latency | not shown (nothing measured) | measured wall-clock per image |
 
-The demo sequence is deterministic: the same 12 cells give the same 6 PASS / 4 REJECT /
-2 REVIEW every run, including one *missed* defect (cell 11) that shows a PASS is not
+The demo sequence is deterministic: the same 12 cells give the same 5 PASS / 5 REJECT /
+2 REVIEW every run. Cell 3 has a scratch only on its back (180°): a one-side scan would pass it,
+and the 360° inspection rejects it. Cell 11 has a *missed* defect, which shows a PASS is not
 proof a cell is defect-free.
+
+**360° inspection.** Each cell can have several views (sides). The model runs on every view and
+the cell's result is the strongest finding across them. The Camera card flips through the sides,
+then rests on the side with the finding; in 3D the cell turns once on rollers under the camera.
+Live-mode dataset photos are single images, so they stay one view per cell. For real 360° input,
+use **Add image** with several photos of one cell, or **Live camera → Capture 4 sides**.
 
 ## Quick start (Windows, PowerShell 7)
 
@@ -56,7 +63,7 @@ cd frontend; npm run dev        # http://localhost:5173 (proxies /api to :8000)
    ```
 4. Copy a few **held-out test** images into `sample_data\live\`.
 5. Restart with `.\start.ps1` and pick the model under **Data source** in the sidebar (Demo is always available).
-6. With a model selected, **Add image** (Overview header) sends any image down the line as the next cell.
+6. With a model selected, **Add image** (Overview header) sends an image down the line as the next cell. Select several photos of the same cell to inspect them as its sides.
 
 Every inspection record stores the model name, a SHA-256 of its files, and the thresholds used. The
 Camera card shows the model and hash, and the Inspections page lists them per record. If the export includes a saliency (XAI) output,

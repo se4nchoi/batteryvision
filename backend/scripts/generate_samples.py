@@ -21,30 +21,31 @@ OUT = Path(__file__).resolve().parents[2] / "sample_data" / "demo"
 W, H = 640, 400
 BODY = (70, 110, 570, 290)  # x1, y1, x2, y2 of the cell body
 
-# (ground_truth, [(defect_kind, scripted_confidence, severity)])
+VIEWS = 4  # the cell is rotated under the camera: 0, 90, 180, 270 degrees
+
+# (ground_truth, [(defect_kind, scripted_confidence or None if missed, severity, view)])
 SEQUENCE = [
     ("clean", []),
-    ("scratch", [("scratch", 0.91, 1.0)]),
+    ("scratch", [("scratch", 0.91, 1.0, 0)]),
+    ("scratch", [("scratch", 0.88, 1.0, 2)]),            # back side only: a one-side scan would pass it
+    ("crack", [("crack", 0.87, 1.0, 1)]),
+    ("scratch", [("scratch", 0.44, 0.35, 0)]),           # faint: lands in review band
     ("clean", []),
-    ("crack", [("crack", 0.87, 1.0)]),
-    ("scratch", [("scratch", 0.44, 0.35)]),      # faint: lands in review band
+    ("crack", [("crack", 0.78, 0.9, 0), ("scratch", 0.66, 0.8, 3)]),
+    ("crack", [("crack", 0.38, 0.3, 2)]),                # faint: lands in review band
     ("clean", []),
-    ("crack", [("crack", 0.78, 0.9), ("scratch", 0.66, 0.8)]),
-    ("crack", [("crack", 0.38, 0.3)]),           # faint: lands in review band
-    ("clean", []),
-    ("scratch", [("scratch", 0.72, 0.7)]),
-    ("scratch", []),                             # missed defect: shows a PASS is not proof of clean
+    ("scratch", [("scratch", 0.72, 0.7, 1)]),
+    ("scratch", [("scratch", None, 0.25, 3)]),           # missed defect: a PASS is not proof of clean
     ("clean", []),
 ]
 
 
-def render_body(rng: random.Random) -> Image.Image:
+def render_body(rng: random.Random, hue: tuple, view: int) -> Image.Image:
     x1, y1, x2, y2 = BODY
     bg = np.full((H, W, 3), (38, 42, 48), np.float32)
     bg += np.random.default_rng(rng.randint(0, 9999)).normal(0, 3, bg.shape)
     img = Image.fromarray(bg.clip(0, 255).astype(np.uint8))
     # Cylindrical shading: vertical brightness profile across the body height.
-    hue = rng.choice([(40, 95, 160), (35, 120, 110), (150, 60, 55)])
     body = np.zeros((y2 - y1, x2 - x1, 3), np.float32)
     for row in range(y2 - y1):
         t = row / (y2 - y1 - 1)
@@ -56,10 +57,17 @@ def render_body(rng: random.Random) -> Image.Image:
     # Positive terminal cap and negative end.
     d.rounded_rectangle((x2 - 2, y1 + 55, x2 + 22, y2 - 55), radius=6, fill=(175, 178, 182))
     d.rectangle((x1 - 6, y1 + 6, x1 + 2, y2 - 6), fill=(150, 152, 156))
-    # Wrap seam and printed band.
-    d.line((x1 + 70, y1, x1 + 70, y2), fill=tuple(int(c * 0.6) for c in hue), width=2)
-    d.text((x1 + 150, (y1 + y2) // 2 - 6), "Li-ion 3.6V  18650-SIM", fill=(225, 228, 232))
+    # Printing differs per side so the four views are distinguishable.
+    mid = (y1 + y2) // 2
+    if view == 0:
+        d.text((x1 + 150, mid - 6), "Li-ion 3.6V  18650-SIM", fill=(225, 228, 232))
+    elif view == 1:
+        d.line((x1, mid + 30, x2, mid + 30), fill=tuple(int(c * 0.6) for c in hue), width=2)  # wrap seam
+    elif view == 2:
+        for k in range(14):  # lot code / 2D code area
+            d.rectangle((x2 - 150 + k * 8, y2 - 34, x2 - 146 + k * 8 + (k % 3) * 2, y2 - 14), fill=(220, 223, 228))
     d.text((W - 92, H - 22), "SYNTHETIC", fill=(110, 116, 124))
+    d.text((14, H - 22), f"view {view * 90} deg", fill=(140, 146, 154))
     return img
 
 
@@ -102,27 +110,34 @@ def bbox_of(pts, pad=8) -> list[float]:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
+    for old in OUT.glob("cell_*.png"):
+        old.unlink()
     sequence = []
     for i, (gt, defects) in enumerate(SEQUENCE, start=1):
         rng = random.Random(1000 + i)
-        img = render_body(rng)
-        d = ImageDraw.Draw(img)
-        detections = []
-        if gt != "clean" and not defects:  # undetected defect: drawn but not scripted
-            draw_scratch(d, rng, 0.25)
-        for kind, conf, sev in defects:
-            pts = (draw_scratch if kind == "scratch" else draw_crack)(d, rng, sev)
-            detections.append({"label": kind, "confidence": conf, "bbox": bbox_of(pts)})
-        img = img.filter(ImageFilter.GaussianBlur(0.5))
-        name = f"cell_{i:02d}.png"
-        img.save(OUT / name, optimize=True)
-        sequence.append({"file": name, "ground_truth": gt, "detections": detections})
+        hue = rng.choice([(40, 95, 160), (35, 120, 110), (150, 60, 55)])
+        views = []
+        for v in range(VIEWS):
+            img = render_body(random.Random(1000 + i * 10 + v), hue, v)
+            d = ImageDraw.Draw(img)
+            detections = []
+            for kind, conf, sev, view in defects:
+                if view != v:
+                    continue
+                pts = (draw_scratch if kind == "scratch" else draw_crack)(d, random.Random(i * 100 + v), sev)
+                if conf is not None:  # None = drawn but deliberately not detected
+                    detections.append({"label": kind, "confidence": conf, "bbox": bbox_of(pts)})
+            img = img.filter(ImageFilter.GaussianBlur(0.5))
+            name = f"cell_{i:02d}_v{v}.png"
+            img.save(OUT / name, optimize=True)
+            views.append({"file": name, "angle": v * 90, "detections": detections})
+        sequence.append({"id": f"cell_{i:02d}", "ground_truth": gt, "views": views})
     manifest = {
         "note": "Synthetic images with scripted, illustrative detections. NOT model output.",
         "sequence": sequence,
     }
     (OUT / "scenarios.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    print(f"Wrote {len(sequence)} images to {OUT}")
+    print(f"Wrote {len(sequence)} cells x {VIEWS} views to {OUT}")
 
 
 if __name__ == "__main__":

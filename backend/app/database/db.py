@@ -106,11 +106,11 @@ class InspectionStore:
             history = [r[0] for r in self._conn.execute(
                 "SELECT status FROM inspections WHERE session_id = ? ORDER BY id DESC LIMIT 40", (session_id,)
             ).fetchall()][::-1]
+        # Cells with each defect type (a defect seen in several views of one cell counts once).
         distribution: dict[str, int] = {}
         for (dets,) in det_rows:
-            for d in json.loads(dets):
-                if d.get("actionable", True):
-                    distribution[d["label"]] = distribution.get(d["label"], 0) + 1
+            for label in {d["label"] for d in json.loads(dets) if d.get("actionable", True)}:
+                distribution[label] = distribution.get(label, 0) + 1
         total = sum(counts.values())
         rejected = counts.get("REJECT", 0)
         return {

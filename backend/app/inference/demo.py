@@ -18,8 +18,9 @@ class DemoInferenceProvider(InferenceProvider):
         self.demo_dir = demo_dir
         self.ignore_labels = set(ignore_labels or [])
         manifest = json.loads((demo_dir / "scenarios.json").read_text(encoding="utf-8"))
+        # Each cell has several views (rotation angles); each view has its own scripted detections.
         self.sequence: list[dict] = manifest["sequence"]
-        self.by_file = {s["file"]: s for s in self.sequence}
+        self.by_file = {v["file"]: v for cell in self.sequence for v in cell["views"]}
 
     def predict(self, image_path: Path) -> Prediction:
         scenario = self.by_file.get(image_path.name)
@@ -34,10 +35,6 @@ class DemoInferenceProvider(InferenceProvider):
         # inference_ms stays None: nothing was measured.
         return Prediction(mode="demo", detections=detections, inference_ms=None,
                           image_width=width, image_height=height, model_name="demo-script")
-
-    def ground_truth(self, image_path: Path) -> str | None:
-        s = self.by_file.get(image_path.name)
-        return s.get("ground_truth") if s else None
 
     def info(self) -> dict:
         return {

@@ -44,7 +44,8 @@ validate the 'pass' decisions.
    "Here's an unseen image. Watch the line react to the model's prediction." Use the **3D** view here.
    Wait for it to reach the camera and the bin.
    *(Demo-mode variant: "These are scripted examples, clearly labelled DEMO, to show each path:
-   pass, reject, review, and cell 11, a missed defect, which is why a pass isn't proof of a clean cell.")*
+   pass, reject, review. Cell 3's scratch is only on the back: watch the camera turn it and catch it at 180°.
+   Cell 11 is a missed defect, which is why a pass isn't proof of a clean cell.")*
 
 ### 3:40–4:10: Limitations and close (slide 4)
 "Limitations: public images aren't my target line's camera, so this would need re-validation on

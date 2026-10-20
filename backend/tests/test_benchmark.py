@@ -24,7 +24,9 @@ def make_test_set(root: Path) -> tuple[Path, Path]:
     images_dir = root / "test"
     images_dir.mkdir(parents=True)
     coco = {"images": [], "annotations": [], "categories": [{"id": 1, "name": "scratch"}, {"id": 2, "name": "crack"}]}
-    for i, s in enumerate(scen[:6], start=1):
+    views = {v["file"]: v for c in scen for v in c["views"]}
+    picked = ["cell_02_v0.png", "cell_04_v1.png", "cell_03_v2.png", "cell_01_v0.png", "cell_06_v0.png", "cell_09_v0.png"]
+    for i, s in enumerate((views[f] for f in picked), start=1):
         shutil.copy(demo / s["file"], images_dir / s["file"])
         coco["images"].append({"id": i, "file_name": s["file"], "width": 640, "height": 400})
         for d in s["detections"]:
@@ -47,7 +49,7 @@ def test_benchmark_script(tmp_path: Path):
     (models / "broken" / "model.xml").write_text("<not a model/>")
     train = tmp_path / "train"
     train.mkdir()
-    shutil.copy(images / "cell_01.png", train / "leaked_copy.png")  # deliberate leak
+    shutil.copy(images / "cell_01_v0.png", train / "leaked_copy.png")  # deliberate leak
     out = tmp_path / "results"
 
     proc = subprocess.run([sys.executable, "scripts/benchmark.py", "--coco", str(ann), "--images", str(images),
@@ -65,7 +67,7 @@ def test_benchmark_script(tmp_path: Path):
     assert len(good["threshold_sweep"]) == 19 and good["latency"]["n"] == 5
     assert report["test_set"]["n_images"] == 6 and report["test_set"]["images_without_annotations"] == 3
     assert report["leakage"]["count"] >= 1
-    assert report["leakage"]["near_duplicates"][0]["test"] == "cell_01.png"
+    assert "cell_01_v0.png" in [d["test"] for d in report["leakage"]["near_duplicates"]]
 
 
 def test_near_duplicate_detection():

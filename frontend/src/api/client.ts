@@ -14,6 +14,15 @@ export interface Detection {
   confidence: number;
   bbox: [number, number, number, number]; // normalized x1, y1, x2, y2
   actionable: boolean;
+  view: number; // index into InspectionResult.views
+}
+
+export interface ViewResult {
+  image_url: string;
+  image_width: number;
+  image_height: number;
+  angle: number | null;
+  inference_ms: number | null;
 }
 
 export interface InspectionResult {
@@ -33,6 +42,8 @@ export interface InspectionResult {
   reject_threshold: number | null;
   review_threshold: number | null;
   explain_url: string | null;
+  views: ViewResult[];
+  primary_view: number;
 }
 
 export interface Cell {
@@ -41,6 +52,7 @@ export interface Cell {
   image_url: string;
   source: string;
   status: Status | null;
+  n_views: number;
 }
 
 export interface SimState {
@@ -119,9 +131,10 @@ export const api = {
   step: () => post<SimState>("/api/simulation/step"),
   reset: () => post<SimState>("/api/simulation/reset"),
   setMode: (mode: Mode, model?: string) => post<SimState>("/api/mode", { mode, model }),
-  upload: (file: File, enqueue: boolean) => {
+  /** One file = one-view cell; several files = several views (e.g. rotations) of one cell. */
+  upload: (files: File | File[], enqueue: boolean) => {
     const form = new FormData();
-    form.append("file", file);
+    (Array.isArray(files) ? files : [files]).forEach((f) => form.append("file", f));
     return request<unknown>(`/api/inspect?enqueue=${enqueue}`, { method: "POST", body: form });
   },
 };

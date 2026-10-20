@@ -19,12 +19,13 @@ from .config import REPO_ROOT, Settings, settings as default_settings
 from .database.db import InspectionStore
 from .inference import DemoInferenceProvider, load_registry
 from .policy import DecisionPolicy
-from .simulation.engine import LineSimulation, inspect_image
+from .simulation.engine import LineSimulation, View, inspect_cell
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("batteryvision")
 
 MAX_PIXELS = 40_000_000
+MAX_VIEWS = 8
 
 
 class ModeRequest(BaseModel):
@@ -160,10 +161,7 @@ def create_app(settings: Settings = default_settings) -> FastAPI:
         return sim.snapshot()
 
     # ---- upload inference -----------------------------------------------
-    @app.post("/api/inspect")
-    async def inspect(file: UploadFile, enqueue: bool = Query(False, description="Send the image down the virtual line instead of inspecting immediately")):
-        if sim.provider.mode != "live":
-            raise HTTPException(409, "Upload inference needs a real model. Switch to LIVE mode (requires models/model.xml).")
+    async def save_upload(file: UploadFile) -> str:
         data = await file.read(settings.max_upload_bytes + 1)
         if len(data) > settings.max_upload_bytes:
             raise HTTPException(413, f"Image larger than {settings.max_upload_bytes // (1024 * 1024)} MB")
@@ -177,14 +175,24 @@ def create_app(settings: Settings = default_settings) -> FastAPI:
                 im.convert("RGB").save(settings.upload_dir / name)
         except (UnidentifiedImageError, OSError, SyntaxError):
             raise HTTPException(415, "File is not a readable image (PNG/JPEG/BMP)")
-        path, url = settings.upload_dir / name, f"/uploads/{name}"
+        return name
+
+    @app.post("/api/inspect")
+    async def inspect(file: list[UploadFile],
+                      enqueue: bool = Query(False, description="Send the cell down the virtual line instead of inspecting immediately")):
+        """Inspect one cell. Send one image, or several (repeated `file` fields) as views of the same cell,
+        e.g. 4 photos taken while rotating it 90 degrees each time."""
+        if sim.provider.mode != "live":
+            raise HTTPException(409, "Upload inference needs a real model. Select one under Data source.")
+        if not 1 <= len(file) <= MAX_VIEWS:
+            raise HTTPException(422, f"Send between 1 and {MAX_VIEWS} images per cell")
+        names = [await save_upload(f) for f in file]
+        step = 360 // len(names) if len(names) > 1 else None
+        views = [View(settings.upload_dir / n, f"/uploads/{n}", i * step if step else None) for i, n in enumerate(names)]
         if enqueue:
-            cell = sim.enqueue_upload(path, url)
-            return {"queued": True, "cell_id": cell.cell_id, "image_url": url}
-        with sim._lock:
-            sim.seq += 1
-            cell_id = f"CELL-{sim.seq:04d}"
-        result = await asyncio.to_thread(inspect_image, sim.provider, policy, cell_id, path, url, None, "upload")
+            cell = sim.enqueue_upload(views)
+            return {"queued": True, "cell_id": cell.cell_id, "views": len(views)}
+        result = await asyncio.to_thread(inspect_cell, sim.provider, policy, sim.next_cell_id(), views, None, "upload")
         store.add(sim.session_id, result)
         return result
 

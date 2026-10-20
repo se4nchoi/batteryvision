@@ -16,6 +16,8 @@ class Detection(BaseModel):
     bbox: list[float] = Field(min_length=4, max_length=4)
     # False for labels excluded from decisions via BV_IGNORE_LABELS.
     actionable: bool = True
+    # Which view of the cell (index into InspectionResult.views) the box belongs to.
+    view: int = 0
 
 
 class Prediction(BaseModel):
@@ -32,6 +34,16 @@ class Prediction(BaseModel):
     model_sha: str | None = None
     # Saliency overlay PNG written by the provider, if the model exports an XAI output.
     explain_file: str | None = None
+
+
+class ViewResult(BaseModel):
+    """One camera image of the cell (e.g. one rotation angle)."""
+
+    image_url: str
+    image_width: int
+    image_height: int
+    angle: int | None = None  # degrees of rotation, if known
+    inference_ms: float | None = None
 
 
 class InspectionResult(BaseModel):
@@ -53,3 +65,7 @@ class InspectionResult(BaseModel):
     reject_threshold: float | None = None
     review_threshold: float | None = None
     explain_url: str | None = None
+    # All views inspected for this cell. image_url / image_width / image_height above
+    # describe views[primary_view]: the view with the strongest finding.
+    views: list[ViewResult] = []
+    primary_view: int = 0

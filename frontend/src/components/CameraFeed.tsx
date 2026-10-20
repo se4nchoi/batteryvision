@@ -16,6 +16,7 @@ export function CameraFeed({ canInspect, onNotice }: Props) {
   const [deviceId, setDeviceId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [guide, setGuide] = useState<{ side: number; count: number } | null>(null);
 
   const stop = () => {
     stream?.getTracks().forEach((t) => t.stop());
@@ -54,24 +55,52 @@ export function CameraFeed({ canInspect, onNotice }: Props) {
   }, [stream]);
   useEffect(() => () => stream?.getTracks().forEach((t) => t.stop()), [stream]);
 
-  const capture = async () => {
+  const grabFrame = async (name: string): Promise<File | null> => {
     const v = video.current;
-    if (!v || !v.videoWidth) return;
+    if (!v || !v.videoWidth) return null;
     const canvas = document.createElement("canvas");
     canvas.width = v.videoWidth;
     canvas.height = v.videoHeight;
     canvas.getContext("2d")!.drawImage(v, 0, 0);
     const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", 0.92));
-    if (!blob) return;
-    setBusy(true);
+    return blob ? new File([blob], name, { type: "image/jpeg" }) : null;
+  };
+
+  const send = async (files: File[]) => {
     try {
-      await api.upload(new File([blob], `camera_${Date.now()}.jpg`, { type: "image/jpeg" }), true);
-      onNotice("Frame captured. It is next into the inspection station.");
+      await api.upload(files, true);
+      onNotice(files.length > 1
+        ? `${files.length} sides captured as one cell. It is next into the inspection station.`
+        : "Frame captured. It is next into the inspection station.");
     } catch (e) {
       onNotice((e as Error).message);
-    } finally {
-      setBusy(false);
     }
+  };
+
+  const capture = async () => {
+    setBusy(true);
+    const f = await grabFrame(`camera_${Date.now()}.jpg`);
+    if (f) await send([f]);
+    setBusy(false);
+  };
+
+  // Guided 360-degree capture: the operator turns the cell 90 degrees between shots.
+  const capture4 = async () => {
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    setBusy(true);
+    const files: File[] = [];
+    for (let side = 1; side <= 4; side++) {
+      for (let count = 3; count >= 1; count--) {
+        setGuide({ side, count });
+        await sleep(side === 1 && count === 3 ? 900 : 700);
+      }
+      const f = await grabFrame(`camera_${Date.now()}_side${side}.jpg`);
+      if (f) files.push(f);
+    }
+    setGuide(null);
+    if (files.length === 4) await send(files);
+    else onNotice("Capture stopped: the camera stopped delivering frames.");
+    setBusy(false);
   };
 
   return (
@@ -80,6 +109,12 @@ export function CameraFeed({ canInspect, onNotice }: Props) {
         {stream ? <video ref={video} autoPlay playsInline muted className="frame-video" />
           : <div className="frame-empty">{error ?? "Camera off"}</div>}
         {stream && <span className="frame-tag live-tag">Live</span>}
+        {guide && (
+          <div className="guide">
+            <div className="guide-count">{guide.count}</div>
+            <div>Side {guide.side} of 4{guide.side > 1 ? ": turn the cell 90°" : ": hold the cell still"}</div>
+          </div>
+        )}
       </div>
       <div className="camfeed-controls">
         {devices.length > 1 && (
@@ -88,6 +123,10 @@ export function CameraFeed({ canInspect, onNotice }: Props) {
           </select>
         )}
         {stream ? <button className="btn" onClick={stop}>Turn off</button> : <button className="btn" onClick={() => start()}>Turn on camera</button>}
+        <button className="btn" onClick={capture4} disabled={!stream || !canInspect || busy}
+          title={canInspect ? "Capture 4 photos, turning the cell 90° between them" : "Select a model under Data source first"}>
+          Capture 4 sides
+        </button>
         <button className="btn btn-primary" onClick={capture} disabled={!stream || !canInspect || busy}
           title={canInspect ? "Send this frame down the line" : "Select a model under Data source first"}>
           Capture

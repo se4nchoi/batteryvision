@@ -2,140 +2,404 @@
   "note": "Synthetic images with scripted, illustrative detections. NOT model output.",
   "sequence": [
     {
-      "file": "cell_01.png",
+      "id": "cell_01",
       "ground_truth": "clean",
-      "detections": []
+      "views": [
+        {
+          "file": "cell_01_v0.png",
+          "angle": 0,
+          "detections": []
+        },
+        {
+          "file": "cell_01_v1.png",
+          "angle": 90,
+          "detections": []
+        },
+        {
+          "file": "cell_01_v2.png",
+          "angle": 180,
+          "detections": []
+        },
+        {
+          "file": "cell_01_v3.png",
+          "angle": 270,
+          "detections": []
+        }
+      ]
     },
     {
-      "file": "cell_02.png",
+      "id": "cell_02",
       "ground_truth": "scratch",
-      "detections": [
+      "views": [
         {
-          "label": "scratch",
-          "confidence": 0.91,
-          "bbox": [
-            0.277,
-            0.3257,
-            0.487,
-            0.4156
-          ]
-        }
-      ]
-    },
-    {
-      "file": "cell_03.png",
-      "ground_truth": "clean",
-      "detections": []
-    },
-    {
-      "file": "cell_04.png",
-      "ground_truth": "crack",
-      "detections": [
-        {
-          "label": "crack",
-          "confidence": 0.87,
-          "bbox": [
-            0.5177,
-            0.3975,
-            0.6616,
-            0.7197
-          ]
-        }
-      ]
-    },
-    {
-      "file": "cell_05.png",
-      "ground_truth": "scratch",
-      "detections": [
-        {
-          "label": "scratch",
-          "confidence": 0.44,
-          "bbox": [
-            0.3552,
-            0.4744,
-            0.6021,
-            0.5524
-          ]
-        }
-      ]
-    },
-    {
-      "file": "cell_06.png",
-      "ground_truth": "clean",
-      "detections": []
-    },
-    {
-      "file": "cell_07.png",
-      "ground_truth": "crack",
-      "detections": [
-        {
-          "label": "crack",
-          "confidence": 0.78,
-          "bbox": [
-            0.6316,
-            0.365,
-            0.7065,
-            0.7048
+          "file": "cell_02_v0.png",
+          "angle": 0,
+          "detections": [
+            {
+              "label": "scratch",
+              "confidence": 0.91,
+              "bbox": [
+                0.2089,
+                0.3311,
+                0.3972,
+                0.4336
+              ]
+            }
           ]
         },
         {
-          "label": "scratch",
-          "confidence": 0.66,
-          "bbox": [
-            0.2702,
-            0.3367,
-            0.5565,
-            0.497
-          ]
+          "file": "cell_02_v1.png",
+          "angle": 90,
+          "detections": []
+        },
+        {
+          "file": "cell_02_v2.png",
+          "angle": 180,
+          "detections": []
+        },
+        {
+          "file": "cell_02_v3.png",
+          "angle": 270,
+          "detections": []
         }
       ]
     },
     {
-      "file": "cell_08.png",
+      "id": "cell_03",
+      "ground_truth": "scratch",
+      "views": [
+        {
+          "file": "cell_03_v0.png",
+          "angle": 0,
+          "detections": []
+        },
+        {
+          "file": "cell_03_v1.png",
+          "angle": 90,
+          "detections": []
+        },
+        {
+          "file": "cell_03_v2.png",
+          "angle": 180,
+          "detections": [
+            {
+              "label": "scratch",
+              "confidence": 0.88,
+              "bbox": [
+                0.4139,
+                0.4709,
+                0.7087,
+                0.5419
+              ]
+            }
+          ]
+        },
+        {
+          "file": "cell_03_v3.png",
+          "angle": 270,
+          "detections": []
+        }
+      ]
+    },
+    {
+      "id": "cell_04",
       "ground_truth": "crack",
-      "detections": [
+      "views": [
         {
-          "label": "crack",
-          "confidence": 0.38,
-          "bbox": [
-            0.264,
-            0.3325,
-            0.4029,
-            0.634
+          "file": "cell_04_v0.png",
+          "angle": 0,
+          "detections": []
+        },
+        {
+          "file": "cell_04_v1.png",
+          "angle": 90,
+          "detections": [
+            {
+              "label": "crack",
+              "confidence": 0.87,
+              "bbox": [
+                0.4408,
+                0.3325,
+                0.526,
+                0.6829
+              ]
+            }
+          ]
+        },
+        {
+          "file": "cell_04_v2.png",
+          "angle": 180,
+          "detections": []
+        },
+        {
+          "file": "cell_04_v3.png",
+          "angle": 270,
+          "detections": []
+        }
+      ]
+    },
+    {
+      "id": "cell_05",
+      "ground_truth": "scratch",
+      "views": [
+        {
+          "file": "cell_05_v0.png",
+          "angle": 0,
+          "detections": [
+            {
+              "label": "scratch",
+              "confidence": 0.44,
+              "bbox": [
+                0.5086,
+                0.4771,
+                0.8069,
+                0.5408
+              ]
+            }
+          ]
+        },
+        {
+          "file": "cell_05_v1.png",
+          "angle": 90,
+          "detections": []
+        },
+        {
+          "file": "cell_05_v2.png",
+          "angle": 180,
+          "detections": []
+        },
+        {
+          "file": "cell_05_v3.png",
+          "angle": 270,
+          "detections": []
+        }
+      ]
+    },
+    {
+      "id": "cell_06",
+      "ground_truth": "clean",
+      "views": [
+        {
+          "file": "cell_06_v0.png",
+          "angle": 0,
+          "detections": []
+        },
+        {
+          "file": "cell_06_v1.png",
+          "angle": 90,
+          "detections": []
+        },
+        {
+          "file": "cell_06_v2.png",
+          "angle": 180,
+          "detections": []
+        },
+        {
+          "file": "cell_06_v3.png",
+          "angle": 270,
+          "detections": []
+        }
+      ]
+    },
+    {
+      "id": "cell_07",
+      "ground_truth": "crack",
+      "views": [
+        {
+          "file": "cell_07_v0.png",
+          "angle": 0,
+          "detections": [
+            {
+              "label": "crack",
+              "confidence": 0.78,
+              "bbox": [
+                0.3477,
+                0.3475,
+                0.4286,
+                0.6922
+              ]
+            }
+          ]
+        },
+        {
+          "file": "cell_07_v1.png",
+          "angle": 90,
+          "detections": []
+        },
+        {
+          "file": "cell_07_v2.png",
+          "angle": 180,
+          "detections": []
+        },
+        {
+          "file": "cell_07_v3.png",
+          "angle": 270,
+          "detections": [
+            {
+              "label": "scratch",
+              "confidence": 0.66,
+              "bbox": [
+                0.2098,
+                0.4225,
+                0.4323,
+                0.4704
+              ]
+            }
           ]
         }
       ]
     },
     {
-      "file": "cell_09.png",
-      "ground_truth": "clean",
-      "detections": []
-    },
-    {
-      "file": "cell_10.png",
-      "ground_truth": "scratch",
-      "detections": [
+      "id": "cell_08",
+      "ground_truth": "crack",
+      "views": [
         {
-          "label": "scratch",
-          "confidence": 0.72,
-          "bbox": [
-            0.2223,
-            0.4328,
-            0.5004,
-            0.5022
+          "file": "cell_08_v0.png",
+          "angle": 0,
+          "detections": []
+        },
+        {
+          "file": "cell_08_v1.png",
+          "angle": 90,
+          "detections": []
+        },
+        {
+          "file": "cell_08_v2.png",
+          "angle": 180,
+          "detections": [
+            {
+              "label": "crack",
+              "confidence": 0.38,
+              "bbox": [
+                0.4971,
+                0.34,
+                0.5752,
+                0.6839
+              ]
+            }
           ]
+        },
+        {
+          "file": "cell_08_v3.png",
+          "angle": 270,
+          "detections": []
         }
       ]
     },
     {
-      "file": "cell_11.png",
-      "ground_truth": "scratch",
-      "detections": []
+      "id": "cell_09",
+      "ground_truth": "clean",
+      "views": [
+        {
+          "file": "cell_09_v0.png",
+          "angle": 0,
+          "detections": []
+        },
+        {
+          "file": "cell_09_v1.png",
+          "angle": 90,
+          "detections": []
+        },
+        {
+          "file": "cell_09_v2.png",
+          "angle": 180,
+          "detections": []
+        },
+        {
+          "file": "cell_09_v3.png",
+          "angle": 270,
+          "detections": []
+        }
+      ]
     },
     {
-      "file": "cell_12.png",
+      "id": "cell_10",
+      "ground_truth": "scratch",
+      "views": [
+        {
+          "file": "cell_10_v0.png",
+          "angle": 0,
+          "detections": []
+        },
+        {
+          "file": "cell_10_v1.png",
+          "angle": 90,
+          "detections": [
+            {
+              "label": "scratch",
+              "confidence": 0.72,
+              "bbox": [
+                0.5065,
+                0.3499,
+                0.7316,
+                0.4695
+              ]
+            }
+          ]
+        },
+        {
+          "file": "cell_10_v2.png",
+          "angle": 180,
+          "detections": []
+        },
+        {
+          "file": "cell_10_v3.png",
+          "angle": 270,
+          "detections": []
+        }
+      ]
+    },
+    {
+      "id": "cell_11",
+      "ground_truth": "scratch",
+      "views": [
+        {
+          "file": "cell_11_v0.png",
+          "angle": 0,
+          "detections": []
+        },
+        {
+          "file": "cell_11_v1.png",
+          "angle": 90,
+          "detections": []
+        },
+        {
+          "file": "cell_11_v2.png",
+          "angle": 180,
+          "detections": []
+        },
+        {
+          "file": "cell_11_v3.png",
+          "angle": 270,
+          "detections": []
+        }
+      ]
+    },
+    {
+      "id": "cell_12",
       "ground_truth": "clean",
-      "detections": []
+      "views": [
+        {
+          "file": "cell_12_v0.png",
+          "angle": 0,
+          "detections": []
+        },
+        {
+          "file": "cell_12_v1.png",
+          "angle": 90,
+          "detections": []
+        },
+        {
+          "file": "cell_12_v2.png",
+          "angle": 180,
+          "detections": []
+        },
+        {
+          "file": "cell_12_v3.png",
+          "angle": 270,
+          "detections": []
+        }
+      ]
     }
   ]
 }

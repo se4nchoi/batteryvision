@@ -101,7 +101,6 @@ def test_all_three_outcomes_and_counters_match_records(client):
     assert metrics["passed"] == statuses.count("PASS")
     assert metrics["rejected"] == statuses.count("REJECT")
     assert metrics["review"] == statuses.count("REVIEW")
-    assert sum(metrics["defect_distribution"].values()) == sum(len(r["detections"]) for r in records)
 
 
 def test_demo_sequence_is_deterministic(client):
@@ -183,3 +182,40 @@ def test_saliency_overlay():
     assert im.size == (64, 40) and im.mode == "RGBA"
     alpha = np.asarray(im)[..., 3]
     assert alpha[20, 20] > alpha[0, 0]  # hot region more opaque than background
+
+
+def test_rotation_catches_back_side_defect(settings):
+    """Cell 3's scratch is only on the 180-degree side: one view passes it, four views reject it."""
+    from app.inference import DemoInferenceProvider
+    from app.simulation.engine import View, inspect_cell
+
+    demo = DemoInferenceProvider(settings.demo_dir)
+    cell = next(c for c in demo.sequence if c["id"] == "cell_03")
+    views = [View(settings.demo_dir / v["file"], f"/x/{v['file']}", v["angle"]) for v in cell["views"]]
+    policy = DecisionPolicy(0.6, 0.3)
+
+    front_only = inspect_cell(demo, policy, "C1", views[:1], "scratch", "line")
+    full = inspect_cell(demo, policy, "C2", views, "scratch", "line")
+    assert front_only.status == "PASS"
+    assert full.status == "REJECT" and full.primary_view == 2 and len(full.views) == 4
+    assert full.image_url == views[2].url and full.views[2].angle == 180
+    assert all(d.view == 2 for d in full.detections)
+    assert full.inference_ms is None  # demo: nothing measured
+
+
+def test_demo_cells_have_four_views(client):
+    state = client.post("/api/simulation/reset").json()
+    assert all(c["n_views"] == 4 for c in state["cells"])
+    step(client, 2)
+    current = client.get("/api/simulation/state").json()["current"]
+    assert len(current["views"]) == 4 and [v["angle"] for v in current["views"]] == [0, 90, 180, 270]
+
+
+def test_defect_distribution_counts_cells_not_boxes(client):
+    step(client, 15)
+    records = client.get("/api/inspections?limit=500").json()
+    expected: dict[str, int] = {}
+    for r in records:
+        for label in {d["label"] for d in r["detections"] if d["actionable"]}:
+            expected[label] = expected.get(label, 0) + 1
+    assert client.get("/api/metrics").json()["defect_distribution"] == expected

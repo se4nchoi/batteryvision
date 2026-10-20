@@ -89,12 +89,13 @@ interface Props {
   running: boolean;
   metrics: Metrics | null;
   sessionId: string | null;
+  tickSeconds: number;
 }
 
-export function Line3D({ cells, running, metrics, sessionId }: Props) {
+export function Line3D({ cells, running, metrics, sessionId, tickSeconds }: Props) {
   const host = useRef<HTMLDivElement>(null);
-  const props = useRef({ cells, running, metrics, sessionId });
-  props.current = { cells, running, metrics, sessionId };
+  const props = useRef({ cells, running, metrics, sessionId, tickSeconds });
+  props.current = { cells, running, metrics, sessionId, tickSeconds };
   const resetView = useRef<() => void>(() => {});
 
   useEffect(() => {
@@ -187,6 +188,16 @@ export function Line3D({ cells, running, metrics, sessionId }: Props) {
     cone.position.set(0.4, 2.18 - coneH / 2, 0);
     scene.add(cone);
 
+    // turning rollers at the camera station: the cell is rotated 360 degrees while it is imaged
+    const spinners = [0.24, 0.56].map((x) => {
+      const r = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 1.0, 16),
+        new THREE.MeshStandardMaterial({ color: 0xd0d5dd, metalness: 0.7, roughness: 0.3 }));
+      r.rotation.x = Math.PI / 2;
+      r.position.set(x, BELT_Y + 0.04, 0);
+      scene.add(r);
+      return r;
+    });
+
     // diverter: post + pivoting arm
     box(0.12, BELT_Y + 0.25, 0.12, metal, 2.1, (BELT_Y + 0.25) / 2, -0.75);
     const arm = new THREE.Group();
@@ -253,7 +264,7 @@ export function Line3D({ cells, running, metrics, sessionId }: Props) {
     const tick = () => {
       frame = requestAnimationFrame(tick);
       const dt = Math.min(clock.getDelta(), 0.05);
-      const { cells, running, metrics, sessionId } = props.current;
+      const { cells, running, metrics, sessionId, tickSeconds } = props.current;
 
       if (sessionId !== session) { session = sessionId; clearAll(); }
 
@@ -274,6 +285,7 @@ export function Line3D({ cells, running, metrics, sessionId }: Props) {
         const t = target(c, c.state === "QUEUED" ? q++ : 0);
         g.userData.target = t;
         g.userData.status = c.status && c.state !== "INSPECTING" ? c.status : null;
+        g.userData.spin = c.state === "INSPECTING" && (c.n_views ?? 1) > 1;
         lastState.set(c.cell_id, c.state);
         if (c.state === "ROUTING") routing = c.status;
         if (c.state === "INSPECTING") inspecting = true;
@@ -299,7 +311,8 @@ export function Line3D({ cells, running, metrics, sessionId }: Props) {
         if (t) g.position.lerp(t, k);
         g.scale.setScalar(THREE.MathUtils.lerp(g.scale.x, 1, k));
         setColor(g, g.userData.status ?? null);
-        if (running && t && g.position.distanceTo(t) > 0.02) g.rotation.z -= dt * 4; // rolling
+        if (g.userData.spin) g.rotation.z -= dt * ((2 * Math.PI) / Math.max(tickSeconds * 0.8, 0.5)); // one turn at the camera
+        else if (running && t && g.position.distanceTo(t) > 0.02) g.rotation.z -= dt * 4; // rolling on the belt
       }
 
       // belt, camera cone, diverter
@@ -307,6 +320,7 @@ export function Line3D({ cells, running, metrics, sessionId }: Props) {
       const coneMat = cone.material as THREE.MeshBasicMaterial;
       coneMat.opacity = THREE.MathUtils.lerp(coneMat.opacity, inspecting ? 0.22 + 0.06 * Math.sin(clock.elapsedTime * 8) : 0.06, k);
       (lens.material as THREE.MeshStandardMaterial).emissiveIntensity = inspecting ? 1.2 : 0.2;
+      if (inspecting) spinners.forEach((r) => { r.rotation.y += dt * 9; });
       const armAngle = routing === "PASS" ? 0.55 : routing === "REJECT" ? -0.55 : routing === "REVIEW" ? 0 : 0.9;
       arm.rotation.y = THREE.MathUtils.lerp(arm.rotation.y, armAngle, k);
 
