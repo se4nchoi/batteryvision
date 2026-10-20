@@ -99,7 +99,16 @@ function makeCell(): THREE.Group {
   );
   cap.rotation.x = Math.PI / 2;
   cap.position.z = 0.38;
-  g.add(body, cap);
+  // Printed label wrap (part of the circumference) and a seam: without them a turning cylinder looks
+  // identical at every angle, so the 360-degree rotation at the camera would be invisible.
+  const label = new THREE.Mesh(
+    new THREE.CylinderGeometry(R * 1.015, R * 1.015, 0.42, 32, 1, true, 0, Math.PI * 0.85),
+    new THREE.MeshStandardMaterial({ color: 0xf2f4f7, roughness: 0.6, side: THREE.DoubleSide }),
+  );
+  label.rotation.x = Math.PI / 2;
+  const seam = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.66), new THREE.MeshStandardMaterial({ color: 0x1d2939 }));
+  seam.position.set(-R * 0.98, 0, 0);
+  g.add(body, cap, label, seam);
   g.scale.setScalar(0.01);
   return g;
 }
@@ -343,7 +352,10 @@ export function Line3D({ cells, running, metrics, sessionId, tickSeconds }: Prop
         }
         g.userData.final = s ?? null;
         g.userData.status = c.status && c.state !== "INSPECTING" ? c.status : null;
-        g.userData.spin = c.state === "INSPECTING" && (c.n_views ?? 1) > 1;
+        // The inspection station always turns the cell once; how many sides were imaged is shown in the Camera card.
+        const atCamera = c.state === "INSPECTING";
+        if (atCamera && !g.userData.spin) g.userData.spun = 0; // just arrived: start one revolution
+        g.userData.spin = atCamera;
         lastState.set(c.cell_id, c.state);
         if (c.state === "INSPECTING") inspecting = true;
       }
@@ -384,7 +396,12 @@ export function Line3D({ cells, running, metrics, sessionId, tickSeconds }: Prop
         }
         g.scale.setScalar(THREE.MathUtils.lerp(g.scale.x, 1, k));
         setColor(g, g.userData.status ?? null);
-        if (g.userData.spin) g.rotation.z -= dt * ((2 * Math.PI) / Math.max(tickSeconds * 0.8, 0.5));
+        if (g.userData.spin && g.userData.spun < 2 * Math.PI) {
+          // exactly one full turn per inspection, finished within the step
+          const step = Math.min(dt * ((2 * Math.PI) / Math.max(tickSeconds * 0.8, 0.5)), 2 * Math.PI - g.userData.spun);
+          g.rotation.z -= step;
+          g.userData.spun += step;
+        }
         else if (moving && g.position.y > BELT_Y) g.rotation.z -= dt * 6; // rolls while carried on the belt
       }
       (["REJECT", "REVIEW"] as const).forEach((s) => {
@@ -397,7 +414,8 @@ export function Line3D({ cells, running, metrics, sessionId, tickSeconds }: Prop
       const coneMat = cone.material as THREE.MeshBasicMaterial;
       coneMat.opacity = THREE.MathUtils.lerp(coneMat.opacity, inspecting ? 0.22 + 0.06 * Math.sin(clock.elapsedTime * 8) : 0.06, k);
       (lens.material as THREE.MeshStandardMaterial).emissiveIntensity = inspecting ? 1.2 : 0.2;
-      if (inspecting) spinners.forEach((r) => { r.rotation.y += dt * 9; });
+      const turning = [...live.values()].some((g) => g.userData.spin && g.userData.spun < 2 * Math.PI);
+      if (turning) spinners.forEach((r) => { r.rotation.y += dt * 9; });
 
       const now: Record<Status, number> = { PASS: metrics?.passed ?? 0, REVIEW: metrics?.review ?? 0, REJECT: metrics?.rejected ?? 0 };
       (Object.keys(now) as Status[]).forEach((s) => {

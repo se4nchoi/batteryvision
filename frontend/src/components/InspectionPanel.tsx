@@ -124,6 +124,9 @@ export function InspectionPanel({ result, rejectThreshold, reviewThreshold }: Pr
         )}
       </div>
 
+      {views.length === 1 && (
+        <p className="hint">One photo per cell in this source: the cell turns at the station, but only this side was inspected.</p>
+      )}
       {views.length > 1 && (
         <div className="view-strip" role="tablist" aria-label="Cell sides">
           {views.map((v, i) => (

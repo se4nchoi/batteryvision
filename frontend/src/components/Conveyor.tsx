@@ -24,11 +24,14 @@ const STATUS_CLASS: Record<string, string> = { PASS: "pass", REJECT: "reject", R
 
 function CellGlyph({ cell }: { cell: Cell }) {
   const tone = cell.status && cell.state !== "INSPECTING" ? STATUS_CLASS[cell.status] : "neutral";
+  const spinning = cell.state === "INSPECTING";
   return (
-    <g className={`cell cell-${tone}`}>
+    <g className={`cell cell-${tone} ${spinning ? "spinning" : ""}`}>
       <rect x={-26} y={-13} width={52} height={26} rx={7} className="cell-body" />
       <rect x={26} y={-6} width={5} height={12} rx={1.5} className="cell-cap" />
       <rect x={-26} y={-13} width={52} height={7} rx={4} className="cell-shine" />
+      {/* printed band: scrolls across the body while the cell turns under the camera */}
+      <rect x={-22} y={-2} width={44} height={4} rx={2} className="cell-band" />
       <text y={33} textAnchor="middle" className="cell-id">
         {cell.cell_id.replace("CELL-", "#")}
         {cell.source === "upload" ? " ↑" : ""}
@@ -68,7 +71,7 @@ export function Conveyor({ cells, running, metrics, message }: Props) {
         {[
           { x: 135, t: "Queue" },
           { x: 360, t: "Transfer" },
-          { x: 500, t: cells.some((c) => (c.n_views ?? 1) > 1) ? "Camera · 360°" : "Camera" },
+          { x: 500, t: "Camera · 360°" },
           { x: 640, t: "Diverter" },
         ].map((s) => (
           <text key={s.t} x={s.x} y={24} textAnchor="middle" className="stage-label">

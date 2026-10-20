@@ -26,7 +26,9 @@ proof a cell is defect-free.
 
 **360° inspection.** Each cell can have several views (sides). The model runs on every view and
 the cell's result is the strongest finding across them. The Camera card flips through the sides,
-then rests on the side with the finding; in 3D the cell turns once on rollers under the camera.
+then rests on the side with the finding; in 3D every cell turns once on rollers under the camera
+(2D shows a rotating band). When a source has one photo per cell, the Camera card says that only that
+side was inspected.
 Live-mode dataset photos are single images, so they stay one view per cell. For real 360° input,
 use **Add image** with several photos of one cell, or **Live camera → Capture 4 sides**.
 

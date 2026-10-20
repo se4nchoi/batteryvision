@@ -227,7 +227,7 @@ Use it as a review aid and a sanity check, not as an explanation of the decision
 ## Why does ATSS outperform YOLOX-S here?
 
 Reasonable, checkable causes (not proven; each model was trained once, so run-to-run variance is unknown):
-1. **Input resolution.** ATSS runs at **992×800** (the 640×640 photos are upscaled ≈1.5×); YOLOX-S runs at
+1. **Input resolution** (Geti template defaults, not tuned for this data). ATSS runs at **992×800** (the 640×640 photos are upscaled ≈1.5×); YOLOX-S runs at
    **640×640**. Scratches are thin and small (median box ≈ 0.4% of the image), so the extra pixels per
    defect plausibly explain most of ATSS's lead on scratches (AP@50 0.866 vs 0.795), while cracks
    (larger, high contrast) are 1.000 for both.
