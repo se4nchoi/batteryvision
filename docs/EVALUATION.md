@@ -162,7 +162,8 @@ wood grain. Cell-level catch rate stays 100% because those cells still go to REV
 
 ### Leakage check
 22 of 153 test images are near-identical (dHash, Hamming ≤ 8) to a training image, consistent with
-burst photos from the same sessions. Scores are therefore optimistic for unseen conditions.
+burst photos from the same sessions. They have since been moved out of the test split; see
+[Deduplicated test set](#deduplicated-test-set-131-images-measured-2026-10-20) below.
 
 ### Failure examples
 No escapes and no false rejects at the current policy. For the report, use REVIEW cases instead
@@ -199,6 +200,31 @@ mAP@50, although its metadata sets `reverse_input_channels = True`).
   so thresholds should be selected on the **validation** split (next step).
 - YOLOX is more robust to blur, darkness and noise.
 - Neither model ever mistakes a crack for a scratch or vice versa; all errors are missed or false scratches.
+
+## Deduplicated test set (131 images, measured 2026-10-20)
+
+`scripts/dedup_test_set.py --dataset ..\datasets\battery` moved the 22 near-duplicate test images
+(18 boxes) to `datasets/battery/test_near_duplicates/` and rewrote `test/_annotations.coco.json`
+without them; the original is kept as `test/_annotations.full.coco.json`. The test set is now 131 images,
+123 boxes (45 crack / 78 scratch), 33 without defects, and the leakage check finds 0 near-duplicates.
+Same models, same policy. Results: `docs/results/benchmark.json` (the 153-image run is kept as
+`benchmark_20261020_152909.json`). The sections above still report the 153-image run.
+
+| | ATSS-MobileNetV2: 153 → 131 | YOLOX-S: 153 → 131 |
+|---|---|---|
+| mAP@50 / mAP@50:95 | 0.933 / 0.592 → **0.929 / 0.587** | 0.897 / 0.560 → **0.892 / 0.549** |
+| AP@50 crack / scratch | 1.000 / 0.866 → **1.000 / 0.858** | 1.000 / 0.795 → **1.000 / 0.784** |
+| Box recall at 0.60 | 0.624 → **0.577** | 0.454 → **0.390** |
+| Defective cells passed | 0 of 116 → **0 of 98** | 6 of 116 → **6 of 98** |
+| Good cells flagged | 3 of 37 → **3 of 33** | 1 of 37 → **1 of 33** |
+| Review rate | 20.9% → **23.7%** | 30.7% → **34.4%** |
+| Robustness: blur mAP@50 | 0.861 → **0.854** | 0.871 → **0.864** |
+
+The near-duplicates inflated mAP by under 1 point, so the earlier ranking and conclusions stand.
+They were easier than average at the reject threshold (box recall at 0.60 drops 5–6 points without
+them), so more cells now go to REVIEW instead of auto-reject. The remaining test photos still come
+from sessions that also appear in train (see [DATASET.md](DATASET.md)), so the later-session holdout
+below remains the better estimate for unseen conditions.
 
 ## Later-session holdout (measured 2026-10-20)
 

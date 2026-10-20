@@ -151,10 +151,11 @@ The dashboard's **Models** page then shows (pick a model in the list on the left
 
 ![Models page: line projection, results by background, robustness, threshold trade-off, all models side by side](docs/screenshots/model_comparison_02.png)
 
-*Models page comparing ATSS-MobileNetV2 and YOLOX-S. These screenshots come from an earlier benchmark
-run. Its leakage warning (test images that look like copies of training images) means those scores
-may be inflated, so report numbers from the later-session holdout in
-[docs/EVALUATION.md](docs/EVALUATION.md#later-session-holdout-measured-2026-10-20) instead.*
+*Models page comparing ATSS-MobileNetV2 and YOLOX-S, from the earlier 153-image benchmark. The 22 test
+images it flagged as copies of training images have since been moved out with
+`scripts\dedup_test_set.py`, and mAP@50 changed by under 1 point (see
+[docs/EVALUATION.md](docs/EVALUATION.md#deduplicated-test-set-131-images-measured-2026-10-20)). For
+unseen conditions, use the later-session holdout in the same document.*
 
 **Example data:** before you have results, switch the Models page to **Example data** to preview
 the layout. Those numbers are invented (`sample_data/demo/benchmark_example.json`, made by
@@ -183,7 +184,7 @@ backend/app
   policy.py               PASS / REVIEW / REJECT thresholds
   database/db.py          SQLite (stdlib) inspection log + session metrics
   evaluation.py           COCO mAP (pycocotools), P/R, image-level outcomes, sweep, perturbations, leakage
-backend/scripts           generate_samples.py, check_model.py, evaluate.py, benchmark.py
+backend/scripts           generate_samples.py, check_model.py, evaluate.py, benchmark.py, dedup_test_set.py
 frontend/src              React + TypeScript dashboard (SVG conveyor, no chart library)
 models/                   put Geti export here (git-ignored)
 docs/                     Geti workflow, evaluation, report outline, presentation script

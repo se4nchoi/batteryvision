@@ -31,7 +31,10 @@ and its Roboflow page on 2026-10-20. They can be quoted in the report.
   before `.rf.`; there is zero overlap between train/valid/test, and valid/test contain no augmented copies.
 - **The same photo sessions appear in train and test.** Many photos are bursts
   (e.g. `KakaoTalk_Photo_2025-04-26-16-25-05-001`, `-027`). By a filename-based heuristic, 152 of
-  153 test images come from a session/burst that also appears in train. Test scores therefore measure
+  153 test images come from a session/burst that also appears in train. 22 test images were also
+  near-identical (dHash) to a training image; `backend/scripts/dedup_test_set.py` moved them to
+  `datasets/battery/test_near_duplicates/`, leaving 131 test images (see EVALUATION.md).
+  Session overlap remains. Test scores therefore measure
   performance **on familiar batteries, backgrounds and lighting**, not on a new line. Run
   `scripts/benchmark.py --train-images ...` for the image-similarity check, and use the robustness
   results and a live-camera test to discuss generalization.

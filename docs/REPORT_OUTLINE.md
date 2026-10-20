@@ -27,7 +27,8 @@ Target: 5–8 pages. Numbers are measured (`docs/EVALUATION.md`, `docs/DATASET.m
 - Defects are small: median box ≈ 0.4% of the image (≈ 40×40 px).
 - Annotation: existing COCO boxes imported into Geti instead of hand-labelling; spot-check ✍️ (N images, issues found).
 - Leakage checks: no original photo in two splits; but 152/153 test photos come from sessions also in train,
-  and 22 test images are near-duplicates (dHash) of training images.
+  and 22 test images were near-duplicates (dHash) of training images. Removing them (131 test images left)
+  changes mAP@50 by under 1 point: ATSS 0.933 → 0.929, YOLOX-S 0.897 → 0.892.
 - Figure ✍️: example images with ground-truth boxes per class (Dataset replay in the dashboard shows them).
 
 ## 4. Training (½ page)
@@ -73,7 +74,7 @@ Target: 5–8 pages. Numbers are measured (`docs/EVALUATION.md`, `docs/DATASET.m
 ## 7. Limitations and next steps (½ page)
 - **Prevalence:** test set ~76% defective. At a 0.5% defect rate, ATSS would stop all defective cells but only
   ~6 in 100 stopped cells would be defective; YOLOX ~15 in 100 while missing ~3 per 10,000 cells.
-- **Familiar conditions:** same-session photos and 22 near-duplicates; tabletop backgrounds, not a factory belt;
+- **Familiar conditions:** same-session photos (the 22 near-duplicates are removed, but sessions still overlap); tabletop backgrounds, not a factory belt;
   dataset images are contrast-equalized, live webcam frames are not. Optional ✍️: webcam test on new surfaces.
 - **Rotation:** one photo per battery; 360° inspection is shown only as a simulated mechanism.
 - **Single training run** per model; thresholds not yet tuned on the validation split.

@@ -53,7 +53,7 @@ the defect 98% of the time, versus 48% for ATSS."
 "Three honest limits. First, this test set is 75% defective; on a real line with 0.5% defects, ATSS would
 miss none, but only about **6 of every 100** stopped cells would really be defective. YOLOX would miss about
 3 per 10,000 cells but stop far fewer good ones, so the right choice depends on what a missed defect costs.
-Second, the photos come from a few tabletop sessions, and 22 test images are near-copies of training images,
+Second, the photos come from a few tabletop sessions, and 22 test images were near-copies of training images (removing them moved mAP by under 1 point),
 so a factory camera would need re-validation. Third, the dataset has one photo per battery, so the 360°
 inspection is shown in simulation only. Next: photos from the real line, thresholds tuned on validation
 data, and a higher input size for scratches. Thank you."
@@ -63,7 +63,7 @@ data, and a higher input size for scratches. Thank you."
 **Likely questions**
 - *Why detection, not classification?* It shows the reviewer where the defect is and handles several defects per cell.
 - *Why a review band?* A missed defect costs more than a manual check, so uncertain cases go to people.
-- *Is accuracy inflated?* Possibly: test photos share sessions with training (152 of 153), and 22 are near-duplicates. That's why I also report robustness and per-background results.
+- *Is accuracy inflated?* Possibly: test photos share sessions with training (152 of 153), and 22 were near-duplicates; I removed those and mAP@50 changed by under 1 point (0.933 → 0.929). That's why I also report robustness and per-background results.
 - *Why did ATSS win?* Most likely input resolution (992×800 vs 640×640, both Geti defaults). Not proven: each model was trained once.
 - *Is the dashboard a digital twin?* No. It's a simulated line driven by real model outputs, with no physical synchronization.
 - *Are the machine names real?* The process steps are real cell-manufacturing stages; machine IDs and lot assignments are simulated.
