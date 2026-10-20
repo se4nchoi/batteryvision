@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Local runtime data
+backend/data/
+*.sqlite3
+*.db
+
+# Model artifacts (exported from Intel Geti) - never commit
+models/*
+!models/README.md
+
+# Datasets (third-party license; download locally)
+datasets/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.env
