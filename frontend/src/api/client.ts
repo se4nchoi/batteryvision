@@ -193,6 +193,8 @@ export interface RobustnessRow {
   false_reject_rate: number | null;
 }
 
+export interface Latency { n: number; mean_ms: number; median_ms: number; p95_ms: number }
+
 export interface BenchModel {
   name: string;
   path: string;
@@ -210,7 +212,9 @@ export interface BenchModel {
     review_rate: number | null;
     defect_catch_rate: number | null;
   };
-  latency?: { n: number; mean_ms: number; median_ms: number; p95_ms: number } | null;
+  latency?: Latency | null;
+  // per-device timing pass (benchmark.py --latency-devices); mAP is a same-results check
+  devices?: Record<string, { latency?: Latency; map50?: number; map50_95?: number; error?: string }>;
   robustness?: Record<string, RobustnessRow>;
   threshold_sweep?: SweepRow[];
   failures?: { file: string; ground_truth: string; decision: Status; top: [string, number] | null }[];
@@ -234,7 +238,7 @@ export interface Benchmark {
   path: string;
   generated_at?: string;
   command?: string;
-  machine?: { cpu: string; os: string; device: string };
+  machine?: { cpu: string; os: string; device: string; devices?: Record<string, string> };
   test_set?: {
     annotations: string;
     n_images: number;

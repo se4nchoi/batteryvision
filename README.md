@@ -138,6 +138,9 @@ cd backend
 ```
 
 This runs **every model in `models\`** on the same held-out test set and writes `docs/results/benchmark.json`.
+Add `--latency-devices CPU GPU.0 NPU` to also time every model on each OpenVINO device. Each pass runs in
+its own process, and a device that fails is recorded with its error. Download several Geti variants of one
+model (e.g. `atss_mbv2_fp16`, `atss_mbv2_fp16_xai`, `atss_mbv2_int8`) to compare precisions.
 The dashboard's **Models** page then shows (pick a model in the list on the left):
 
 - a comparison table (mAP@50, mAP@50:95, precision/recall/F1 at the reject threshold, defect escape and

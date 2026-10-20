@@ -226,6 +226,50 @@ them), so more cells now go to REVIEW instead of auto-reject. The remaining test
 from sessions that also appear in train (see [DATASET.md](DATASET.md)), so the later-session holdout
 below remains the better estimate for unseen conditions.
 
+## Speed: precision and device (measured 2026-10-20)
+
+Each Geti model was exported in three variants: FP16, FP16 with XAI head, and INT8 (post-training
+optimization). All six were run on the 131-image deduplicated test set with
+`scripts/benchmark.py --latency-devices CPU GPU.0 NPU`. Accuracy is measured on CPU. Then each model is
+reloaded on each device in a fresh process, given 10 warm-up calls, and timed once per test image. Times are
+end to end per image (preprocessing, inference, postprocessing), batch size 1, on an Intel Core Ultra 7 265K
+with its integrated GPU.
+
+Mean / p95 ms per image:
+
+| Model | CPU | iGPU (GPU.0) | Size | mAP@50 | Defective cells passed (of 98) | Good cells flagged (of 33) |
+|---|---|---|---|---|---|---|
+| ATSS FP16 | 46.2 / 71.7 | 46.9 / 55.9 | 5.7 MB | 0.929 | 0 | 3 |
+| ATSS FP16 + XAI | 52.5 / 73.5 | 48.2 / 55.0 | 5.8 MB | 0.929 | 0 | 3 |
+| ATSS INT8 | **21.0** / 29.2 | 24.5 / **26.6** | **3.9 MB** | 0.929 | 1 | 2 |
+| YOLOX-S FP16 | 42.7 / 60.9 | 25.9 / 28.5 | 18.4 MB | 0.892 | 6 | 1 |
+| YOLOX-S FP16 + XAI | 45.7 / 62.0 | 27.6 / 30.9 | 18.4 MB | 0.892 | 6 | 1 |
+| YOLOX-S INT8 | **18.7** / 29.6 | 20.7 / 29.2 | 9.8 MB | 0.902 | 8 | 0 |
+
+**Reading it**
+- **INT8 is the main speed gain: about 2.2× faster on CPU** (ATSS 46.2 → 21.0 ms, YOLOX-S 42.7 → 18.7 ms) at
+  half the file size or less. mAP@50 is unchanged for ATSS and slightly higher for YOLOX-S. However, INT8 lowers
+  confidence scores a little. At the 0.60 reject threshold, box recall drops (ATSS 0.577 → 0.520,
+  YOLOX-S 0.390 → 0.350). At the 0.30 review threshold, ATSS INT8 lets 1 defective cell pass (FP16: 0) and
+  YOLOX-S INT8 lets 8 pass (FP16: 6). If INT8 goes on the line, re-choose the thresholds for it on the
+  validation split.
+- **The XAI head costs 3–6 ms per image on CPU** (about +7–14%) and about 1–2 ms on the iGPU. That is the
+  price of the saliency heatmap. Use the plain export when the heatmap isn't needed.
+- **The iGPU helps YOLOX-S (42.7 → 25.9 ms) but not ATSS (46.2 → 46.9 ms).** For INT8 models the CPU is as
+  fast as the iGPU or faster. p95 latency is steadier on the iGPU (smaller gap between mean and p95).
+- **The iGPU gives slightly different results:** mAP@50 differs from CPU by 0.1–1.5 points (YOLOX-S
+  FP16 0.892 → 0.903, INT8 0.902 → 0.887). This comes from different kernels and precision, so validate on the
+  device you deploy on.
+- **The NPU (Intel AI Boost) could not be measured.** ATSS FP16 hung the device
+  (`ZE_RESULT_ERROR_DEVICE_LOST`), and after that every NPU run failed, including a YOLOX-S INT8 model
+  that had run on the NPU earlier in the session. Retry after a reboot or NPU driver update. Run the
+  YOLOX-S INT8 model first, because it is known to work.
+- FP16 vs FP32 was not compared (no FP32 export downloaded). On CPU, OpenVINO runs FP16 weights at higher
+  internal precision, so a large difference is not expected there.
+
+Raw numbers: `docs/results/benchmark.json` (per model: `devices`). The Models page shows them in
+**Speed by precision and device**.
+
 ## Later-session holdout (measured 2026-10-20)
 
 Same two models and policy (review ≥ 0.30, reject ≥ 0.60), run on photos the models have never seen:

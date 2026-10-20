@@ -13,6 +13,12 @@ For each model under models/ (models/<name>/model.xml), this measures:
   - latency (mean / median / p95, first call excluded)
 plus a train/test near-duplicate (leakage) check if --train-images is given.
 
+--latency-devices CPU GPU.0 NPU additionally reloads each model on every listed OpenVINO device and
+times it on the clean test images (10 warm-up calls, then one call per image), recording mAP on each
+device as a check that the device computes the same results. Each (model, device) pass runs in its own
+process, so a device crash (e.g. NPU "device lost") cannot affect the next pass; failures are recorded
+with their error.
+
 Output: docs/results/benchmark.json (read by the dashboard's Models page) and a
 timestamped copy. Every number is computed here; meta.json fields are shown as
 "reported by Geti" and are never mixed into measured columns.
@@ -21,9 +27,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import multiprocessing
 import platform
 import sys
 import time
+from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -93,6 +101,44 @@ def evaluate_model(provider, coco, images_dir, policy, ignore, perturbs, sweep_t
     return result
 
 
+def device_pass(xml, name, device, coco, images_dir, ignore, input_order) -> dict:
+    """Latency of one model on one device over the clean test images, plus mAP as a sanity check."""
+    try:
+        with ProcessPoolExecutor(max_workers=1, mp_context=multiprocessing.get_context("spawn")) as pool:
+            return pool.submit(_device_pass, xml, name, device, coco, images_dir, ignore, input_order).result()
+    except Exception as exc:  # compile or inference failure (e.g. NPU device lost): record it, keep going
+        lines = [ln for ln in str(exc).splitlines() if ln.strip()]
+        return {"error": f"{type(exc).__name__}: {(lines[-1] if lines else '')[:300]}"}
+
+
+def _device_pass(xml, name, device, coco, images_dir, ignore, input_order) -> dict:
+    provider = OpenVINOInferenceProvider(xml, device, min_confidence=0.01, ignore_labels=list(ignore), name=name,
+                                         input_order=input_order)
+    name_to_cat = {n.lower(): c for c, n in used_categories(coco).items()}
+    first = Image.open(images_dir / coco["images"][0]["file_name"]).convert("RGB")
+    for _ in range(10):
+        provider.predict_image(first)
+    coco_dets, latencies = [], []
+    for img in coco["images"]:
+        with Image.open(images_dir / img["file_name"]) as im:
+            pred = provider.predict_image(im.convert("RGB"))
+        latencies.append(pred.inference_ms)
+        coco_dets += to_coco_detections(img, pred.detections, name_to_cat)[0]
+    mp = coco_map(coco, coco_dets)
+    lat = latency_summary(latencies)
+    lat["note"] = "10 warm-up calls excluded; one call per test image."
+    return {"latency": lat, "map50": mp["map50"], "map50_95": mp["map50_95"]}
+
+
+def device_names(devices: list[str]) -> dict[str, str]:
+    try:
+        import openvino as ov
+        core = ov.Core()
+        return {d: core.get_property(d, "FULL_DEVICE_NAME") for d in devices if d in core.available_devices}
+    except Exception:
+        return {}
+
+
 def hash_dir(d: Path) -> dict[str, int]:
     out = {}
     for p in sorted(d.rglob("*")):
@@ -114,6 +160,8 @@ def main() -> None:
     ap.add_argument("--review", type=float, default=settings.review_threshold)
     ap.add_argument("--ignore-labels", default=",".join(settings.ignore_labels))
     ap.add_argument("--no-robustness", action="store_true", help="Clean images only (faster)")
+    ap.add_argument("--latency-devices", nargs="*", default=[],
+                    help="Also time every model on these OpenVINO devices, e.g. CPU GPU.0 NPU")
     ap.add_argument("--out", type=Path, default=REPO_ROOT / "docs" / "results")
     args = ap.parse_args()
 
@@ -153,6 +201,13 @@ def main() -> None:
             continue
         t0 = time.perf_counter()
         res = evaluate_model(provider, coco, args.images, policy, ignore, perturbs, sweep, groups)
+        if args.latency_devices:
+            res["devices"] = {}
+            for dev in args.latency_devices:
+                r = device_pass(xml, name, dev, coco, args.images, ignore, settings.input_order)
+                res["devices"][dev] = r
+                print(f"    {dev:<13} " + (f"{r['latency']['mean_ms']:.1f} ms mean, mAP50 {r['map50']:.3f}"
+                                           if "error" not in r else f"failed: {r['error']}"))
         models.append({
             "name": name, "path": str(xml), "sha256_12": provider.sha, "size_mb": provider.size_mb,
             "labels": provider.labels, "wrapper": provider.model_type, "meta": meta,
@@ -170,7 +225,8 @@ def main() -> None:
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "command": " ".join(sys.argv),
-        "machine": {"cpu": platform.processor() or platform.machine(), "os": platform.platform(), "device": args.device},
+        "machine": {"cpu": platform.processor() or platform.machine(), "os": platform.platform(), "device": args.device,
+                    "devices": device_names(args.latency_devices or [args.device])},
         "test_set": {"annotations": str(args.coco), "images": str(args.images), **dataset_summary(coco),
                      "backgrounds": {g: list(groups.values()).count(g) for g in sorted(set(groups.values()))},
                      "background_method": "median border colour (heuristic)"},

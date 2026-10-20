@@ -34,8 +34,11 @@ export function ModelsPage({ activeModel, onUseModel }: Props) {
   const isExample = source === "example";
 
   const models = useMemo(() => (bench?.models ?? []).filter((m) => !m.error), [bench]);
+  // One colour per architecture, so precision variants of the same network share it.
+  const families = useMemo(() => [...new Set(models.map((m) => m.meta.architecture ?? m.name))], [models]);
   const color = (name: string) => {
-    const i = models.findIndex((m) => m.name === name);
+    const m = models.find((x) => x.name === name);
+    const i = m ? families.indexOf(m.meta.architecture ?? m.name) : -1;
     return i >= 0 && i < MODEL_COLORS.length ? MODEL_COLORS[i] : OTHER;
   };
   const current = models.find((m) => m.name === selected) ?? models.find((m) => m.name === activeModel) ?? models[0];
@@ -119,6 +122,77 @@ export function ModelsPage({ activeModel, onUseModel }: Props) {
         <div className="card-header"><h2>All models side by side</h2></div>
         <CompareTable models={models} color={color} />
       </section>
+
+      {models.some((m) => m.devices) && (
+        <section className="card">
+          <div className="card-header"><h2>Speed by precision and device</h2></div>
+          <SpeedByDevice models={models} color={color} deviceNames={bench.machine?.devices ?? {}} />
+        </section>
+      )}
+    </>
+  );
+}
+
+// Mean time per image for each model on each OpenVINO device, from the same test images.
+function SpeedByDevice({ models, color, deviceNames }: {
+  models: BenchModel[]; color: (n: string) => string; deviceNames: Record<string, string>;
+}) {
+  const devices = [...new Set(models.flatMap((m) => Object.keys(m.devices ?? {})))];
+  const all = models.flatMap((m) => Object.values(m.devices ?? {}).map((d) => d.latency?.mean_ms ?? 0));
+  const max = Math.max(...all, 1);
+  const fastest = Math.min(...all.filter((v) => v > 0));
+  const sorted = [...models].sort((a, b) =>
+    (a.meta.architecture ?? a.name).localeCompare(b.meta.architecture ?? b.name) || a.name.localeCompare(b.name));
+  return (
+    <>
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Model</th><th>Precision</th>
+              {devices.map((d) => (
+                <th key={d} title={deviceNames[d] ?? d}>
+                  {d}<div className="device-name">{(deviceNames[d] ?? "").replace(/Intel\(R\)\s*|\(TM\)/g, "")}</div>
+                </th>
+              ))}
+              <th className="num">Same results on all devices</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((m) => {
+              const maps = Object.values(m.devices ?? {}).map((d) => d.map50).filter((v): v is number => v != null);
+              const spread = maps.length > 1 ? (Math.max(...maps) - Math.min(...maps)) * 100 : null;
+              return (
+                <tr key={m.name}>
+                  <td><span className="swatch" style={{ background: color(m.name) }} />{m.name}</td>
+                  <td className="muted">{m.meta.precision ?? "–"}{/xai/i.test(m.name) ? " + XAI" : ""}</td>
+                  {devices.map((d) => {
+                    const r = m.devices?.[d];
+                    if (!r) return <td key={d} className="muted">–</td>;
+                    if (r.error) return <td key={d}><span className="badge badge-reject" title={r.error}>Failed</span></td>;
+                    const v = r.latency!.mean_ms;
+                    return (
+                      <td key={d} title={`median ${ms(r.latency!.median_ms)} · p95 ${ms(r.latency!.p95_ms)} · mAP@50 ${pct(r.map50, 1)}`}>
+                        <span className="speed-cell">
+                          <span className="meter speed-meter"><span className="meter-fill" style={{ width: `${(v / max) * 100}%`, background: color(m.name) }} /></span>
+                          <span className={v === fastest ? "speed-value best" : "speed-value"}>{ms(v)}</span>
+                        </span>
+                      </td>
+                    );
+                  })}
+                  <td className={`num ${spread != null && spread > 1 ? "tone-reject" : ""}`}>
+                    {spread == null ? "–" : spread <= 1 ? "Yes" : `mAP differs by ${spread.toFixed(1)} pts`}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="hint speed-hint">
+        Mean time per image (shorter bar is faster), including pre- and post-processing, one image at a time,
+        10 warm-up calls excluded. Hover a cell for median, p95 and mAP on that device. Measured on this machine only.
+      </p>
     </>
   );
 }
