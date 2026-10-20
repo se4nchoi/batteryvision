@@ -21,13 +21,16 @@ into Intel Geti and spot-checked them there. I kept the test split out of Geti e
 stays unseen. Then I trained YOLOX-[Tiny/S ✍️], an anchor-free one-stage detector, and exported it
 to OpenVINO for CPU inference."
 
-### 1:20–2:10: Results (slide 3)
-"On the held-out test set: mAP at 0.5 IoU is [✍️], mAP 0.5 to 0.95 is [✍️]. Per class, [class]
-is strongest at [✍️] and [class] weakest at [✍️], mostly because [✍️ reason, e.g. small/thin
-defects]. At my operating threshold, precision is [✍️] and recall [✍️]. Inference takes about [✍️] ms
-per image on a laptop CPU.
+### 1:20–2:10: Results (dashboard **Models** tab)
+"I trained [YOLOX-Tiny and YOLOX-S ✍️] and evaluated both on the same held-out test set. [Best
+model ✍️] reaches mAP@50 of [✍️] at [✍️] ms per image. [Other model ✍️] is [✍️ faster / more
+accurate], so the trade-off is [✍️]." *(point at the accuracy-vs-latency chart)*
+"A public dataset can look easy, so I tested where it breaks. With blur or darker lighting, mAP drops
+to [✍️] (*robustness chart*). [✍️ leakage result: 'the leakage check found no near-duplicates' /
+'N test images were near-copies of training images']. And this curve (*threshold sweep*) is why I
+reject at 0.6: lower would catch [✍️] more defects but reject [✍️] more good cells."
 One honest caveat: [if applicable ✍️] the dataset has few defect-free images, so it can't fully
-validate the 'pass' decisions."
+validate the 'pass' decisions.
 
 ### 2:10–3:40: Live demo (dashboard)
 1. "This is BatteryVision, a *simulated* inspection line. The backend owns every cell's state;
@@ -35,7 +38,8 @@ validate the 'pass' decisions."
 2. "Each cell goes from the queue to the camera, where the real model runs" (point at the
    inspection panel) "and here are its boxes and confidences, with measured latency."
 3. "Above 0.6 confidence it's rejected. Between 0.3 and 0.6 it goes to manual review, because
-   uncertain cases shouldn't be decided by the model alone. Everything is logged to SQLite."
+   uncertain cases shouldn't be decided by the model alone. Every decision is logged with this
+   trace line: the exact model hash and the rule that fired, matching the hash on the Models page."
 4. **Inject image**: "Here's an unseen test image. Watch the line react to the model's prediction."
    Wait for it to reach the camera and the bin.
    *(Demo-mode variant: "These are scripted examples, clearly labelled DEMO, to show each path:

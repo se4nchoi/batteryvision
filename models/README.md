@@ -1,25 +1,30 @@
 # models/
 
-Put the OpenVINO model downloaded from Intel Geti here. Everything except this README is git-ignored.
+Put models downloaded from Intel Geti here, **one folder per model**. Everything except this README
+and `meta.example.json` is git-ignored.
 
 ```
 models/
-  model.xml   # OpenVINO IR graph (includes ModelAPI metadata: model type, labels, preprocessing)
-  model.bin   # weights
+  yolox_tiny_fp16/
+    model.xml        # OpenVINO IR graph (carries ModelAPI metadata: model type, labels, preprocessing)
+    model.bin        # weights
+    meta.json        # optional: facts copied from Geti (see meta.example.json)
+  yolox_s_fp16/
+    model.xml
+    model.bin
+    meta.json
 ```
 
-If your download has different file names or sits in a subfolder, either rename the files or point to them:
+The folder name is the model's name everywhere: the Live model picker, the Models page, and each
+inspection record (stored with a SHA-256 of the files). A single `models/model.xml` also works and is
+registered as `default`.
 
-```powershell
-$env:BV_MODEL_XML = "C:\path\to\export\model.xml"; .\start.ps1
-```
+`meta.json` values (architecture, precision, Geti's own validation score, training time) are shown
+with a ⁽ᴳ⁾ mark as *reported by Geti*. They are never mixed into the measured columns.
 
-Verify before presenting:
+Check each model before presenting:
 
 ```powershell
 cd backend
-.\.venv\Scripts\python scripts\check_model.py ..\models\model.xml <test_image.jpg>
+.\.venv\Scripts\python scripts\check_model.py ..\models\yolox_tiny_fp16\model.xml <test_image.jpg>
 ```
-
-`check_model.py` prints the input/output shapes, the label names the model carries, and the
-detections for one image. Check that the label names match your Geti project's labels.

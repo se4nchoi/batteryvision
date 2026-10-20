@@ -27,6 +27,11 @@ class Prediction(BaseModel):
     inference_ms: float | None
     image_width: int
     image_height: int
+    # Identity of the model that produced this (None for demo replay).
+    model_name: str | None = None
+    model_sha: str | None = None
+    # Saliency overlay PNG written by the provider, if the model exports an XAI output.
+    explain_file: str | None = None
 
 
 class InspectionResult(BaseModel):
@@ -42,3 +47,9 @@ class InspectionResult(BaseModel):
     # Known label for the image, if any ("clean", "scratch", ...). None = unknown.
     ground_truth: str | None = None
     source: str = "line"  # "line" (virtual conveyor) or "upload"
+    # Traceability: which model and which policy produced this decision.
+    model_name: str | None = None
+    model_sha: str | None = None
+    reject_threshold: float | None = None
+    review_threshold: float | None = None
+    explain_url: str | None = None

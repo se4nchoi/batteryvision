@@ -57,8 +57,9 @@ Candidate: <https://universe.roboflow.com/battery-oqphu/battery-defect-inspectio
 ## 4. Train YOLOX ✍️
 
 1. **Models → Train model**.
-2. Architecture: **YOLOX-Tiny** (fastest; good for a CPU demo) or **YOLOX-S** (usually more accurate).
-   If time allows, train both and compare. That makes a good report table.
+2. Architecture: train **both YOLOX-Tiny and YOLOX-S** on the same dataset revision. Start both
+   right away; they can run while you do other work. Geti v3 explicitly supports training several
+   architectures on one dataset revision for comparison. If time allows, add a third (e.g. RT-DETR or ATSS).
 3. Keep default hyperparameters for the first run, and note the epochs / input size Geti uses.
 4. Record start/end time and hardware ✍️.
 
@@ -71,20 +72,29 @@ Candidate: <https://universe.roboflow.com/battery-oqphu/battery-defect-inspectio
 
 ## 6. Export / download the model
 
-- From the trained model, download the **OpenVINO** format (**FP16** or **FP32**; INT8 is optional).
-- You should get `model.xml` + `model.bin`. Copy them into `models\`.
+- For each trained model, download the **OpenVINO** format (**FP16**). Also download **INT8** of
+  the best model if offered; FP16 vs INT8 makes a quick accuracy-vs-speed comparison.
+- Put each download in its own folder, named after what it is:
+  `models\yolox_tiny_fp16\`, `models\yolox_s_fp16\`, `models\yolox_s_int8\`.
+- Copy `models\meta.example.json` into each folder as `meta.json` and fill in the values from Geti
+  (architecture, precision, Geti's validation score). The dashboard shows them marked ⁽ᴳ⁾ as
+  "reported by Geti".
 
-## 7. Load into BatteryVision
+## 7. Compare and load into BatteryVision
 
 ```powershell
 cd backend
-.\.venv\Scripts\python scripts\check_model.py ..\models\model.xml ..\datasets\battery\test\<image>.jpg
-.\.venv\Scripts\python scripts\evaluate.py --model ..\models\model.xml `
-    --coco ..\datasets\battery\test\_annotations.coco.json --images ..\datasets\battery\test
+.\.venv\Scripts\python scripts\check_model.py ..\models\yolox_tiny_fp16\model.xml ..\datasets\battery\test\<image>.jpg
+.\.venv\Scripts\python scripts\benchmark.py `
+    --coco ..\datasets\battery\test\_annotations.coco.json `
+    --images ..\datasets\battery\test `
+    --train-images ..\datasets\battery\train
 cd ..
 Copy-Item datasets\battery\test\*.jpg sample_data\live\ -ErrorAction SilentlyContinue
 .\start.ps1
 ```
+
+Open the **Models** tab for the side-by-side comparison, and click **Use on line** to run any model on the virtual line.
 
 If `check_model.py` fails to load the model, the export likely lacks ModelAPI metadata. Note the
 error, then check the Geti version's export options for an "OpenVINO / deployment" variant. Do not

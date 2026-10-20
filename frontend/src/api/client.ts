@@ -28,6 +28,11 @@ export interface InspectionResult {
   image_height: number;
   ground_truth: string | null;
   source: string;
+  model_name: string | null;
+  model_sha: string | null;
+  reject_threshold: number | null;
+  review_threshold: number | null;
+  explain_url: string | null;
 }
 
 export interface Cell {
@@ -41,6 +46,7 @@ export interface Cell {
 export interface SimState {
   session_id: string;
   mode: Mode;
+  model: string | null;
   running: boolean;
   tick: number;
   tick_seconds: number;
@@ -73,10 +79,14 @@ export interface InspectionRecord {
   confidence: number | null;
   inference_ms: number | null;
   ground_truth: string | null;
+  model_name: string | null;
+  model_sha: string | null;
 }
 
 export interface SystemStatus {
   mode: Mode;
+  model: string | null;
+  live_models: string[];
   running: boolean;
   live_available: boolean;
   live_error: string | null;
@@ -108,10 +118,109 @@ export const api = {
   pause: () => post<SimState>("/api/simulation/pause"),
   step: () => post<SimState>("/api/simulation/step"),
   reset: () => post<SimState>("/api/simulation/reset"),
-  setMode: (mode: Mode) => post<SimState>("/api/mode", { mode }),
+  setMode: (mode: Mode, model?: string) => post<SimState>("/api/mode", { mode, model }),
   upload: (file: File, enqueue: boolean) => {
     const form = new FormData();
     form.append("file", file);
     return request<unknown>(`/api/inspect?enqueue=${enqueue}`, { method: "POST", body: form });
   },
+};
+
+// ---- model registry & benchmark (scripts/benchmark.py output) ----------------
+
+export interface ModelMeta {
+  architecture?: string;
+  precision?: string;
+  geti_version?: string;
+  geti_validation_score?: { metric?: string; value?: number; split?: string };
+  training_minutes?: number;
+  notes?: string;
+  [key: string]: unknown;
+}
+
+export interface RegisteredModel {
+  name: string;
+  path: string;
+  loaded: boolean;
+  error: string | null;
+  sha256_12: string | null;
+  size_mb: number | null;
+  labels: string[];
+  meta: ModelMeta;
+}
+
+export interface PR {
+  tp: number;
+  fp: number;
+  fn: number;
+  precision: number | null;
+  recall: number | null;
+  f1: number | null;
+}
+
+export interface SweepRow {
+  threshold: number;
+  defect_recall: number | null;
+  escape_rate: number | null;
+  false_reject_rate: number | null;
+  box_precision: number | null;
+  box_recall: number | null;
+}
+
+export interface RobustnessRow {
+  map50: number;
+  map50_95: number;
+  precision: number | null;
+  recall: number | null;
+  defect_escape_rate: number | null;
+  false_reject_rate: number | null;
+}
+
+export interface BenchModel {
+  name: string;
+  path: string;
+  error?: string;
+  sha256_12?: string;
+  size_mb?: number;
+  labels?: string[];
+  meta: ModelMeta;
+  coco?: { map50: number; map50_95: number; per_class: Record<string, { ap50: number; ap50_95: number }> };
+  pr_at_threshold?: { threshold: number; overall: PR; per_class: Record<string, PR> };
+  image_level?: {
+    matrix: Record<"defective" | "no_defect_annotated", Record<Status, number>>;
+    defect_escape_rate: number | null;
+    false_reject_rate: number | null;
+    review_rate: number | null;
+    defect_catch_rate: number | null;
+  };
+  latency?: { n: number; mean_ms: number; median_ms: number; p95_ms: number } | null;
+  robustness?: Record<string, RobustnessRow>;
+  threshold_sweep?: SweepRow[];
+  failures?: { file: string; ground_truth: string; decision: Status; top: [string, number] | null }[];
+  unmatched_model_labels?: string[];
+}
+
+export interface Benchmark {
+  available: boolean;
+  path: string;
+  generated_at?: string;
+  command?: string;
+  machine?: { cpu: string; os: string; device: string };
+  test_set?: {
+    annotations: string;
+    n_images: number;
+    n_boxes: number;
+    boxes_per_class: Record<string, number>;
+    images_without_annotations: number;
+  };
+  policy?: { reject_threshold: number; review_threshold: number; ignore_labels: string[] };
+  perturbations?: string[];
+  leakage?: { checked: boolean; count?: number; test_images?: number; method?: string; near_duplicates?: { test: string; train: string; distance: number }[] };
+  models?: BenchModel[];
+}
+
+export const modelsApi = {
+  registry: () => request<{ active: string | null; models: RegisteredModel[] }>("/api/models"),
+  benchmark: () => request<Benchmark>("/api/benchmark"),
+  useModel: (model: string) => post<SimState>("/api/mode", { mode: "live", model }),
 };

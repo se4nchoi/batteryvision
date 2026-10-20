@@ -3,6 +3,7 @@ import { api, type InspectionRecord, type Metrics, type Mode, type SimState, typ
 import { Conveyor } from "./components/Conveyor";
 import { InspectionPanel } from "./components/InspectionPanel";
 import { DefectDistribution, EventLog, KpiStrip, StatusHistory } from "./components/Analytics";
+import { ModelsPage } from "./components/ModelsPage";
 
 const POLL_MS = 400;
 
@@ -15,6 +16,7 @@ export default function App() {
   const [notice, setNotice] = useState<string | null>(null);
   const lastKey = useRef("");
   const fileInput = useRef<HTMLInputElement>(null);
+  const [view, setView] = useState<"line" | "models">("line");
 
   const refreshRecords = useCallback(async () => {
     const [m, r] = await Promise.all([api.metrics(), api.inspections(30)]);
@@ -66,8 +68,8 @@ export default function App() {
     }
   };
 
-  const switchMode = async (mode: Mode) => {
-    await act(() => api.setMode(mode));
+  const switchMode = async (mode: Mode, model?: string) => {
+    await act(() => api.setMode(mode, model));
     api.status().then(setStatus).catch(() => {});
   };
 
@@ -86,7 +88,7 @@ export default function App() {
   // Keyboard shortcuts for the live presentation: Space start/pause, → step, R reset.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement || view !== "line") return;
       if (e.code === "Space") {
         e.preventDefault();
         act(sim?.running ? api.pause : api.start);
@@ -115,9 +117,14 @@ export default function App() {
           </div>
         </div>
 
+        <nav className="tabs" aria-label="View">
+          <button className={view === "line" ? "on" : ""} onClick={() => setView("line")}>Line</button>
+          <button className={view === "models" ? "on" : ""} onClick={() => setView("models")}>Models</button>
+        </nav>
+
         <div className="status-group">
           <span className={`mode-badge mode-${mode}`}>
-            {mode === "demo" ? "DEMO · SIMULATED PREDICTIONS" : "LIVE · OPENVINO INFERENCE"}
+            {mode === "demo" ? "DEMO · SIMULATED PREDICTIONS" : `LIVE · ${sim?.model ?? "OPENVINO"}`}
           </span>
           <span className={`run-state ${error ? "down" : sim?.running ? "running" : "paused"}`}>
             <i />
@@ -138,6 +145,13 @@ export default function App() {
               Live
             </button>
           </div>
+          {(status?.live_models.length ?? 0) > 1 && (
+            <select className="model-select" value={mode === "live" ? sim?.model ?? "" : ""}
+              onChange={(e) => switchMode("live", e.target.value)} aria-label="Live model">
+              <option value="" disabled>model…</option>
+              {status!.live_models.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          )}
           {sim?.running ? (
             <button className="btn" onClick={() => act(api.pause)}>❚❚ Pause</button>
           ) : (
@@ -156,6 +170,10 @@ export default function App() {
 
       {(error || notice) && <div className={`banner ${error ? "banner-error" : ""}`}>{error ?? notice}</div>}
 
+      {view === "models" ? (
+        <ModelsPage activeModel={sim?.model ?? null} mode={mode}
+          onUseModel={(m) => { switchMode("live", m); setView("line"); }} />
+      ) : (<>
       <KpiStrip metrics={metrics} mode={mode} />
 
       <main className="main-grid">
@@ -197,6 +215,7 @@ export default function App() {
           <StatusHistory history={metrics?.status_history ?? []} />
         </section>
       </main>
+      </>)}
     </div>
   );
 }

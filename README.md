@@ -49,21 +49,27 @@ cd frontend; npm run dev        # http://localhost:5173 (proxies /api to :8000)
 ## Switching to real inference
 
 1. Train in Geti and download the OpenVINO model (see [docs/GETI_WORKFLOW.md](docs/GETI_WORKFLOW.md)).
-2. Copy `model.xml` + `model.bin` into `models\`.
+2. Put each model in its own folder: `models\yolox_tiny_fp16\model.xml` + `model.bin` (+ optional `meta.json`, see [models/README.md](models/README.md)).
 3. Check the model:
    ```powershell
-   cd backend; .\.venv\Scripts\python scripts\check_model.py ..\models\model.xml ..\sample_data\live\<some_test_image>.jpg
+   cd backend; .\.venv\Scripts\python scripts\check_model.py ..\models\yolox_tiny_fp16\model.xml ..\sample_data\live\<some_test_image>.jpg
    ```
 4. Copy a few **held-out test** images into `sample_data\live\`.
-5. Restart with `.\start.ps1`. The header shows `LIVE · OPENVINO INFERENCE`, and the Demo/Live toggle switches between the two.
+5. Restart with `.\start.ps1`. The header shows `LIVE · <model name>`. Use the Demo/Live toggle, and the model picker when there are several models.
 6. In LIVE mode, use **Inject image** to send any image down the line as the next cell.
+
+Every inspection record stores the model name, a SHA-256 of its files, and the thresholds used. The
+inspection panel shows this as a one-line **TRACE**. If the export includes a saliency (XAI) output,
+the panel overlays it as a heatmap; otherwise none is shown.
 
 Configuration (environment variables, set before `.\start.ps1`):
 
 | Variable | Default | Meaning |
 |---|---|---|
 | `BV_MODE` | `auto` | `auto` / `demo` / `live` |
-| `BV_MODEL_XML` | `models\model.xml` | path to the IR model |
+| `BV_MODELS_DIR` | `models` | folder scanned for `<name>\model.xml` |
+| `BV_DEFAULT_MODEL` | *(first found)* | model used for LIVE at startup |
+| `BV_MODEL_XML` | *(unset)* | extra model outside `models\`, registered as `custom` |
 | `BV_REJECT_THRESHOLD` | `0.60` | detection confidence at or above this → REJECT |
 | `BV_REVIEW_THRESHOLD` | `0.30` | confidence in [review, reject) → REVIEW |
 | `BV_IGNORE_LABELS` | *(empty)* | comma list of labels shown but never acted on, e.g. `battery` |
@@ -72,22 +78,33 @@ Configuration (environment variables, set before `.\start.ps1`):
 
 Example: `$env:BV_REJECT_THRESHOLD = "0.5"; .\start.ps1`
 
-## Evaluation
+## Model comparison (Models tab)
 
 ```powershell
 cd backend
-.\.venv\Scripts\python scripts\evaluate.py --model ..\models\model.xml `
-    --coco ..\datasets\battery\test\_annotations.coco.json --images ..\datasets\battery\test
+.\.venv\Scripts\python scripts\benchmark.py `
+    --coco ..\datasets\battery\test\_annotations.coco.json `
+    --images ..\datasets\battery\test `
+    --train-images ..\datasets\battery\train
 ```
 
-This writes `docs/results/evaluation_<timestamp>.md/.json` with mAP@50, mAP@50:95, per-class AP,
-precision/recall at the operating threshold, an image-level PASS/REVIEW/REJECT outcome
-table, and latency. See [docs/EVALUATION.md](docs/EVALUATION.md).
+This runs **every model in `models\`** on the same held-out test set and writes `docs/results/benchmark.json`.
+The dashboard's **Models** tab then shows:
+
+- a comparison table (mAP@50, mAP@50:95, precision/recall/F1 at the reject threshold, defect escape and
+  false-reject rates, latency mean/p95, size, SHA-256), with the best value in each column starred
+- accuracy vs latency, per-class AP, and **robustness** (mAP under blur, dark, bright, low contrast, noise, JPEG)
+- for the selected model: a **threshold sweep** (defect recall vs false rejects), the image-level
+  outcome table, and the specific failure images to show in the report
+- warnings: possible train/test **near-duplicates (leakage)**, no defect-free test images, small test set
+
+A single model can also be evaluated with `scripts\evaluate.py --model ...`, which writes a Markdown report.
+See [docs/EVALUATION.md](docs/EVALUATION.md).
 
 ## Tests
 
 ```powershell
-cd backend;  .\.venv\Scripts\python -m pytest -q     # 18 tests: API, simulation, policy, eval, OpenVINO fixture
+cd backend;  .\.venv\Scripts\python -m pytest -q     # 23 tests: API, simulation, policy, eval, benchmark, OpenVINO fixtures
 cd frontend; npm test                                 # bbox → pixel geometry
 ```
 
@@ -99,11 +116,12 @@ backend/app
   simulation/engine.py    tick-based line; backend owns cell states + decisions
   inference/base.py       InferenceProvider interface + bbox normalization
   inference/demo.py       DemoInferenceProvider (scripted, no model)
-  inference/openvino_provider.py  OpenVINOInferenceProvider (ModelAPI)
+  inference/openvino_provider.py  OpenVINOInferenceProvider (ModelAPI), model hash, saliency overlay
+  inference/registry.py   discovers models/<name>/model.xml, loads each
   policy.py               PASS / REVIEW / REJECT thresholds
   database/db.py          SQLite (stdlib) inspection log + session metrics
-  evaluation.py           COCO mAP (pycocotools), P/R, image-level outcomes
-backend/scripts           generate_samples.py, check_model.py, evaluate.py
+  evaluation.py           COCO mAP (pycocotools), P/R, image-level outcomes, sweep, perturbations, leakage
+backend/scripts           generate_samples.py, check_model.py, evaluate.py, benchmark.py
 frontend/src              React + TypeScript dashboard (SVG conveyor, no chart library)
 models/                   put Geti export here (git-ignored)
 docs/                     Geti workflow, evaluation, report outline, presentation script
@@ -119,8 +137,8 @@ to 0..1, and `inference_ms` is `null` unless it was actually measured.
  "inference_ms": null, "image_url": "/sample-images/demo/cell_02.png", "image_width": 640, "image_height": 400}
 ```
 
-API: `GET /api/health · /api/status · /api/metrics · /api/inspections · /api/simulation/state · /api/model/info`,
-`POST /api/simulation/{start,pause,step,reset} · /api/mode · /api/inspect[?enqueue=true]` (multipart image, LIVE only, 10 MB limit).
+API: `GET /api/health · /api/status · /api/metrics · /api/inspections · /api/simulation/state · /api/model/info · /api/models · /api/benchmark`,
+`POST /api/simulation/{start,pause,step,reset} · /api/mode {mode, model?} · /api/inspect[?enqueue=true]` (multipart image, LIVE only, 10 MB limit).
 Interactive docs: http://localhost:8000/docs
 
 ## Honesty rules this project follows

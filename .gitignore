@@ -16,6 +16,7 @@ backend/data/
 # Model artifacts (exported from Intel Geti) - never commit
 models/*
 !models/README.md
+!models/meta.example.json
 
 # Datasets (third-party license; download locally)
 datasets/

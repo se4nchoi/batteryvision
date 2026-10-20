@@ -151,3 +151,100 @@ def latency_summary(values: list[float]) -> dict | None:
     a = np.asarray(values)
     return {"n": int(a.size), "mean_ms": float(a.mean()), "median_ms": float(np.median(a)),
             "p95_ms": float(np.percentile(a, 95)), "note": "First call excluded (warm-up)."}
+
+
+# ---- model comparison helpers (used by scripts/benchmark.py) ------------------
+
+def threshold_sweep(coco_gt: dict, coco_dets: list[dict], predictions: dict[int, list[Detection]],
+                    ignore_labels: set[str], thresholds: list[float]) -> list[dict]:
+    """Trade-off curve for a single reject threshold t (REJECT if top confidence >= t, else PASS).
+
+    Image level: defect recall (defective images rejected) and false reject rate.
+    Box level: precision / recall at t (IoU >= 0.5).
+    """
+    cats = used_categories(coco_gt)
+    defective = {a["image_id"] for a in coco_gt["annotations"]
+                 if a["category_id"] in cats and cats[a["category_id"]].lower() not in ignore_labels}
+    clean = [img["id"] for img in coco_gt["images"] if img["id"] not in defective]
+    rows = []
+    for t in thresholds:
+        def rejected(image_id: int) -> bool:
+            return any(d.actionable and d.confidence >= t for d in predictions.get(image_id, []))
+        caught = sum(rejected(i) for i in defective)
+        false_rej = sum(rejected(i) for i in clean)
+        box = pr_at_threshold(coco_gt, coco_dets, t)["overall"]
+        rows.append({
+            "threshold": round(t, 3),
+            "defect_recall": caught / len(defective) if defective else None,
+            "escape_rate": 1 - caught / len(defective) if defective else None,
+            "false_reject_rate": false_rej / len(clean) if clean else None,
+            "box_precision": box["precision"],
+            "box_recall": box["recall"],
+        })
+    return rows
+
+
+def dataset_summary(coco_gt: dict) -> dict:
+    cats = used_categories(coco_gt)
+    counts: dict[str, int] = {}
+    with_boxes = set()
+    for a in coco_gt["annotations"]:
+        if a["category_id"] in cats:
+            counts[cats[a["category_id"]]] = counts.get(cats[a["category_id"]], 0) + 1
+            with_boxes.add(a["image_id"])
+    return {
+        "n_images": len(coco_gt["images"]),
+        "n_boxes": sum(counts.values()),
+        "boxes_per_class": counts,
+        "images_without_annotations": len(coco_gt["images"]) - len(with_boxes),
+    }
+
+
+# Box-preserving perturbations: none of these move or resize the image, so ground truth stays valid.
+def perturbations() -> dict:
+    import io as _io
+
+    from PIL import ImageEnhance, ImageFilter
+
+    def noise(im, sigma=15.0):
+        a = np.asarray(im.convert("RGB"), dtype=np.float32)
+        a += np.random.default_rng(0).normal(0, sigma, a.shape)  # fixed seed: repeatable
+        from PIL import Image as _Image
+        return _Image.fromarray(a.clip(0, 255).astype(np.uint8))
+
+    def jpeg(im, quality=20):
+        from PIL import Image as _Image
+        buf = _io.BytesIO()
+        im.convert("RGB").save(buf, "JPEG", quality=quality)
+        return _Image.open(_io.BytesIO(buf.getvalue())).convert("RGB")
+
+    return {
+        "clean": lambda im: im,
+        "blur": lambda im: im.filter(ImageFilter.GaussianBlur(2)),
+        "dark": lambda im: ImageEnhance.Brightness(im).enhance(0.5),
+        "bright": lambda im: ImageEnhance.Brightness(im).enhance(1.5),
+        "low_contrast": lambda im: ImageEnhance.Contrast(im).enhance(0.5),
+        "noise": noise,
+        "jpeg_q20": jpeg,
+    }
+
+
+def dhash(im, size: int = 16) -> int:
+    """256-bit difference hash; near-identical images have a small Hamming distance."""
+    g = np.asarray(im.convert("L").resize((size + 1, size)), dtype=np.int16)
+    bits = (g[:, 1:] > g[:, :-1]).flatten()
+    return int("".join("1" if b else "0" for b in bits), 2)
+
+
+def near_duplicates(test: dict[str, int], train: dict[str, int], max_distance: int = 8) -> list[dict]:
+    """Flag test images whose hash is within max_distance bits (of 256) of a training image."""
+    if not test or not train:
+        return []
+    names, hashes = list(train), list(train.values())
+    out = []
+    for tname, th in test.items():
+        dist = np.array([(th ^ h).bit_count() for h in hashes])
+        j = int(dist.argmin())
+        if dist[j] <= max_distance:
+            out.append({"test": tname, "train": names[j], "distance": int(dist[j])})
+    return out

@@ -54,6 +54,9 @@ def inspect_image(provider: InferenceProvider, policy: DecisionPolicy, cell_id: 
         cell_id=cell_id, mode=pred.mode, status=status, reason=reason, detections=pred.detections,
         inference_ms=pred.inference_ms, image_url=image_url, image_width=pred.image_width,
         image_height=pred.image_height, ground_truth=ground_truth, source=source,
+        model_name=pred.model_name, model_sha=pred.model_sha,
+        reject_threshold=policy.reject_threshold, review_threshold=policy.review_threshold,
+        explain_url=f"/explain/{pred.explain_file}" if pred.explain_file else None,
     )
 
 
@@ -136,6 +139,8 @@ class LineSimulation:
                 reason=f"Inference error: {exc}", detections=[], inference_ms=None,
                 image_url=cell.image_url, image_width=1, image_height=1,
                 ground_truth=cell.ground_truth, source=cell.source,
+                model_name=getattr(self.provider, "name", None), model_sha=getattr(self.provider, "sha", None),
+                reject_threshold=self.policy.reject_threshold, review_threshold=self.policy.review_threshold,
             )
 
     def tick(self) -> None:
@@ -163,6 +168,7 @@ class LineSimulation:
             return {
                 "session_id": self.session_id,
                 "mode": self.provider.mode,
+                "model": getattr(self.provider, "name", None),
                 "running": self.running,
                 "tick": self.tick_count,
                 "tick_seconds": self.tick_seconds,

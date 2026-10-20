@@ -1,0 +1,8 @@
+{
+  "architecture": "YOLOX-Tiny",
+  "precision": "FP16",
+  "geti_version": "3.x (copy from Geti)",
+  "geti_validation_score": { "metric": "F-measure", "value": 0.0, "split": "validation" },
+  "training_minutes": 0,
+  "notes": "Copy these values from Geti. They are shown as 'reported by Geti', never as measured."
+}

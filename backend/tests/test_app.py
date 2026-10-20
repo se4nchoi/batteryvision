@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 from PIL import Image
 
 from app.config import Settings
-from app.inference import load_live_provider
+from app.inference import load_registry
 from app.inference.base import clamp_bbox
 from app.inference.openvino_provider import normalize_result
 from app.main import create_app
@@ -22,7 +22,10 @@ from app.schemas import Detection
 def settings(tmp_path: Path) -> Settings:
     s = Settings()
     s.mode = "auto"
-    s.model_xml = tmp_path / "missing" / "model.xml"  # guarantees no model
+    s.models_dir = tmp_path / "models"  # empty: no model
+    s.model_xml = tmp_path / "missing" / "model.xml"  # registered but unloadable
+    s.explain_dir = tmp_path / "explain"
+    s.benchmark_path = tmp_path / "benchmark.json"
     s.db_path = tmp_path / "test.sqlite3"
     s.live_dir = tmp_path / "live"
     s.upload_dir = tmp_path / "uploads"
@@ -54,8 +57,21 @@ def test_demo_mode_without_model(client):
 
 
 def test_missing_model_does_not_crash(settings):
-    provider, error = load_live_provider(settings)
-    assert provider is None and error
+    [entry] = load_registry(settings)
+    assert entry.provider is None and "FileNotFoundError" in entry.error
+    assert entry.summary()["loaded"] is False
+
+
+def test_models_and_benchmark_endpoints_without_data(client):
+    models = client.get("/api/models").json()
+    assert models["active"] == "demo-script" and models["models"][0]["loaded"] is False
+    assert client.get("/api/benchmark").json()["available"] is False
+
+
+def test_benchmark_endpoint_serves_file(client, settings):
+    settings.benchmark_path.write_text('{"generated_at": "x", "models": []}', encoding="utf-8")
+    b = client.get("/api/benchmark").json()
+    assert b["available"] is True and b["models"] == []
 
 
 def test_live_mode_refused_without_model(client):
@@ -111,6 +127,8 @@ def test_demo_results_never_labeled_live(client):
     for r in client.get("/api/inspections?limit=500").json():
         assert r["mode"] == "demo"
         assert r["inference_ms"] is None  # no synthetic latency
+        assert r["model_name"] == "demo-script" and r["model_sha"] is None
+        assert r["reject_threshold"] == 0.6 and r["review_threshold"] == 0.3
     assert client.get("/api/metrics").json()["avg_inference_ms"] is None
 
 
@@ -152,3 +170,16 @@ def test_normalize_modelapi_result_fixture():
     assert [d.label for d in dets] == ["Battery", "crack"]  # sorted by confidence
     assert dets[0].actionable is False and dets[1].actionable is True
     assert dets[1].bbox == [0.1562, 0.125, 0.4688, 0.375]
+
+
+def test_saliency_overlay():
+    from app.inference.openvino_provider import saliency_overlay
+
+    assert saliency_overlay(None, 64, 40) is None
+    assert saliency_overlay(np.zeros((1, 2, 8, 8)), 64, 40) is None  # flat map: nothing to show
+    sal = np.zeros((1, 2, 8, 8), np.uint8)
+    sal[0, 1, 2:4, 2:4] = 255
+    im = saliency_overlay(sal, 64, 40)
+    assert im.size == (64, 40) and im.mode == "RGBA"
+    alpha = np.asarray(im)[..., 3]
+    assert alpha[20, 20] > alpha[0, 0]  # hot region more opaque than background

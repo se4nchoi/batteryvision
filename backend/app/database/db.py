@@ -29,6 +29,15 @@ CREATE TABLE IF NOT EXISTS inspections (
 CREATE INDEX IF NOT EXISTS idx_inspections_session ON inspections(session_id, id);
 """
 
+# Traceability columns, added in place to databases created by earlier versions.
+TRACE_COLUMNS = {
+    "model_name": "TEXT",
+    "model_sha": "TEXT",
+    "reject_threshold": "REAL",
+    "review_threshold": "REAL",
+    "explain_url": "TEXT",
+}
+
 
 class InspectionStore:
     def __init__(self, path: Path):
@@ -38,6 +47,11 @@ class InspectionStore:
         self._lock = threading.Lock()
         with self._lock:
             self._conn.executescript(SCHEMA)
+            have = {r[1] for r in self._conn.execute("PRAGMA table_info(inspections)")}
+            for col, typ in TRACE_COLUMNS.items():
+                if col not in have:
+                    self._conn.execute(f"ALTER TABLE inspections ADD COLUMN {col} {typ}")
+            self._conn.commit()
 
     def add(self, session_id: str, r: InspectionResult) -> dict:
         actionable = [d for d in r.detections if d.actionable]
@@ -56,6 +70,7 @@ class InspectionStore:
             "image_url": r.image_url,
             "ground_truth": r.ground_truth,
             "detections": json.dumps([d.model_dump() for d in r.detections]),
+            **{c: getattr(r, c) for c in TRACE_COLUMNS},
         }
         cols = ", ".join(row)
         with self._lock:

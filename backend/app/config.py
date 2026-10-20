@@ -24,8 +24,12 @@ class Settings:
     # Startup mode: "demo", "live", or "auto" (live if a model loads, else demo).
     mode: str = field(default_factory=lambda: _env("MODE", "auto").lower())
 
-    # Exported Geti / OpenVINO IR model. The .bin is expected next to the .xml.
-    model_xml: Path = field(default_factory=lambda: Path(_env("MODEL_XML", str(REPO_ROOT / "models" / "model.xml"))))
+    # Exported Geti / OpenVINO IR models: models/<name>/model.xml (+ .bin), or models/model.xml.
+    models_dir: Path = field(default_factory=lambda: Path(_env("MODELS_DIR", str(REPO_ROOT / "models"))))
+    # Optional extra model outside models_dir.
+    model_xml: Path | None = field(default_factory=lambda: Path(v) if (v := _env("MODEL_XML", "")) else None)
+    # Model used for LIVE mode at startup (name of a models/ subfolder); default = first found.
+    default_model: str = field(default_factory=lambda: _env("DEFAULT_MODEL", ""))
     device: str = field(default_factory=lambda: _env("DEVICE", "CPU"))
 
     # Decision policy (see app/policy.py and docs/EVALUATION.md).
@@ -38,6 +42,9 @@ class Settings:
     demo_dir: Path = field(default_factory=lambda: REPO_ROOT / "sample_data" / "demo")
     live_dir: Path = field(default_factory=lambda: Path(_env("LIVE_DIR", str(REPO_ROOT / "sample_data" / "live"))))
     upload_dir: Path = field(default_factory=lambda: REPO_ROOT / "backend" / "data" / "uploads")
+    explain_dir: Path = field(default_factory=lambda: REPO_ROOT / "backend" / "data" / "explain")
+    # Output of scripts/benchmark.py, shown on the Models page.
+    benchmark_path: Path = field(default_factory=lambda: Path(_env("BENCHMARK", str(REPO_ROOT / "docs" / "results" / "benchmark.json"))))
 
     db_path: Path = field(default_factory=lambda: Path(_env("DB_PATH", str(REPO_ROOT / "backend" / "data" / "batteryvision.sqlite3"))))
 

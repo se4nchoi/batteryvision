@@ -62,18 +62,29 @@ def test_live_mode_through_api(tmp_path: Path):
 
     s = Settings()
     s.mode = "auto"
-    s.model_xml = tmp_path / "model.xml"
-    build_ssd_like_ir(s.model_xml)
+    s.models_dir = tmp_path / "models"
+    for name in ("yolox_tiny", "yolox_s"):
+        (s.models_dir / name).mkdir(parents=True)
+        build_ssd_like_ir(s.models_dir / name / "model.xml")
+    (s.models_dir / "yolox_s" / "meta.json").write_text('{"architecture": "YOLOX-S"}', encoding="utf-8")
+    s.model_xml = None
+    s.explain_dir, s.benchmark_path = tmp_path / "explain", tmp_path / "b.json"
     s.db_path, s.upload_dir, s.live_dir = tmp_path / "db.sqlite3", tmp_path / "up", tmp_path / "live"
     s.live_dir.mkdir()
     Image.new("RGB", (320, 240)).save(s.live_dir / "a.png")
     s.tick_seconds = 3600
     with TestClient(create_app(s)) as c:
-        assert c.get("/api/status").json()["mode"] == "live"  # auto picks the loaded model
+        st = c.get("/api/status").json()
+        assert st["mode"] == "live" and st["live_models"] == ["yolox_s", "yolox_tiny"]  # auto picks a loaded model
+        models = {m["name"]: m for m in c.get("/api/models").json()["models"]}
+        assert models["yolox_s"]["meta"] == {"architecture": "YOLOX-S"} and len(models["yolox_s"]["sha256_12"]) == 12
+        assert c.post("/api/mode", json={"mode": "live", "model": "yolox_tiny"}).json()["model"] == "yolox_tiny"
+        assert c.post("/api/mode", json={"mode": "live", "model": "nope"}).status_code == 404
         for _ in range(4):
             c.post("/api/simulation/step")
         rec = c.get("/api/inspections").json()[0]
         assert rec["mode"] == "live" and rec["status"] == "REJECT" and rec["inference_ms"] > 0
+        assert rec["model_name"] == "yolox_tiny" and rec["model_sha"] == models["yolox_tiny"]["sha256_12"]
         assert c.get("/api/metrics").json()["avg_inference_ms"] is not None
 
         buf = io.BytesIO()

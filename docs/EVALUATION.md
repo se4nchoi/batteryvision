@@ -19,6 +19,27 @@ Notes:
 - A "defect-free" row only exists if the test set contains images with no defect annotations.
 - Report **Geti validation** numbers and **held-out test** numbers separately, and say which is which.
 
+## Comparing models and methods (`scripts/benchmark.py` → Models tab)
+
+A public, curated dataset can give a high score that says little about real use. The benchmark is
+built to show **where a model breaks**, not just one headline number:
+
+| Comparison | What changes | What to conclude |
+|---|---|---|
+| Architecture | YOLOX-Tiny vs YOLOX-S (vs others) | accuracy gained per ms of latency |
+| Precision | FP16 vs INT8 of one model | speed-up vs accuracy lost |
+| Robustness | the same test images blurred, darkened, brightened, low-contrast, noisy, JPEG-compressed | how fragile the score is to camera/lighting changes; a big drop means "high mAP" won't transfer |
+| Threshold sweep | reject threshold 0.05 → 0.95 | the escape-vs-false-reject trade-off that justifies the 0.60 / 0.30 policy |
+| Leakage check | dHash (256-bit) of every test image vs every training image | near-identical pairs inflate scores; inspect the flagged pairs and report the count |
+
+Every value on the Models page comes from `benchmark.json`. Geti-reported values (`meta.json`) carry a
+⁽ᴳ⁾ mark and sit in separate columns. Each model is identified by a SHA-256 of its files, and the same
+hash is stored with every live inspection, so a decision on the line can be traced to the exact
+model that was benchmarked.
+
+Caveats: perturbations are synthetic stand-ins for real camera changes. The leakage check finds
+near-identical images, not semantic duplicates (e.g. the same cell photographed twice from different angles).
+
 ## Decision policy (assumptions)
 
 ```

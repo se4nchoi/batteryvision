@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { InspectionResult } from "../api/client";
 import { bboxToRect } from "../lib/geometry";
 
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function InspectionPanel({ result, rejectThreshold, reviewThreshold }: Props) {
+  const [showHeat, setShowHeat] = useState(true);
   if (!result) {
     return (
       <div className="inspection empty">
@@ -28,6 +30,7 @@ export function InspectionPanel({ result, rejectThreshold, reviewThreshold }: Pr
       <div className="frame">
         <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet" className="frame-svg">
           <image href={result.image_url} x={0} y={0} width={w} height={h} />
+          {result.explain_url && showHeat && <image href={result.explain_url} x={0} y={0} width={w} height={h} opacity={0.75} />}
           {result.detections.map((d, i) => {
             const r = bboxToRect(d.bbox, w, h);
             const cls = d.actionable ? `box box-${d.confidence >= rejectThreshold ? "reject" : "review"}` : "box box-ignored";
@@ -43,6 +46,11 @@ export function InspectionPanel({ result, rejectThreshold, reviewThreshold }: Pr
           })}
         </svg>
         {isDemo && <div className="demo-watermark">DEMO · SCRIPTED RESULT</div>}
+        {result.explain_url && (
+          <button className="btn btn-xs heat-toggle" onClick={() => setShowHeat(!showHeat)}>
+            {showHeat ? "Hide" : "Show"} saliency
+          </button>
+        )}
       </div>
 
       <div className={`verdict verdict-${tone}`}>
@@ -75,6 +83,13 @@ export function InspectionPanel({ result, rejectThreshold, reviewThreshold }: Pr
           </dd>
         </div>
       </dl>
+      <div className="decision-trace mono">
+        <span className="trace-key">TRACE</span>
+        {result.model_name ?? "?"}{result.model_sha ? `@${result.model_sha}` : ""}
+        {" → "}policy REJECT≥{(result.reject_threshold ?? rejectThreshold).toFixed(2)} / REVIEW≥{(result.review_threshold ?? reviewThreshold).toFixed(2)}
+        {" → "}{result.status}
+        {result.explain_url ? " · saliency from model" : ""}
+      </div>
       {isDemo && <p className="disclaimer">Confidence values in DEMO mode are illustrative and scripted, not model output.</p>}
       {result.detections.length === 0 && (
         <p className="disclaimer">No detection ≠ verified defect-free. PASS means nothing actionable was found at the configured threshold.</p>

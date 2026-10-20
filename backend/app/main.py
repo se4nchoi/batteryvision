@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import io
+import json
 import logging
 import uuid
 from contextlib import asynccontextmanager, suppress
@@ -16,7 +17,7 @@ from pydantic import BaseModel
 
 from .config import REPO_ROOT, Settings, settings as default_settings
 from .database.db import InspectionStore
-from .inference import DemoInferenceProvider, load_live_provider
+from .inference import DemoInferenceProvider, load_registry
 from .policy import DecisionPolicy
 from .simulation.engine import LineSimulation, inspect_image
 
@@ -28,16 +29,26 @@ MAX_PIXELS = 40_000_000
 
 class ModeRequest(BaseModel):
     mode: str
+    model: str | None = None  # LIVE only: which registered model; default = current or first loaded
 
 
 def create_app(settings: Settings = default_settings) -> FastAPI:
     policy = DecisionPolicy(settings.reject_threshold, settings.review_threshold)
     store = InspectionStore(settings.db_path)
     demo = DemoInferenceProvider(settings.demo_dir, settings.ignore_labels)
-    live, live_error = (None, "Live model loading disabled (BV_MODE=demo)") if settings.mode == "demo" \
-        else load_live_provider(settings)
-    if settings.mode == "live" and live is None:
+    registry = [] if settings.mode == "demo" else load_registry(settings)
+    live_models = {e.name: e.provider for e in registry if e.provider is not None}
+    if settings.mode == "demo":
+        live_error = "Live model loading disabled (BV_MODE=demo)"
+    elif not registry:
+        live_error = f"No model found in {settings.models_dir} (expected <name>/model.xml + model.bin)"
+    elif not live_models:
+        live_error = "; ".join(f"{e.name}: {e.error}" for e in registry)
+    else:
+        live_error = None
+    if settings.mode == "live" and not live_models:
         log.warning("BV_MODE=live requested but no model loaded; falling back to demo mode")
+    live = live_models.get(settings.default_model) or next(iter(live_models.values()), None)
     initial = live if (live is not None and settings.mode in ("live", "auto")) else demo
     sim = LineSimulation(initial, policy, store, settings.live_dir, settings.tick_seconds)
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
@@ -73,7 +84,9 @@ def create_app(settings: Settings = default_settings) -> FastAPI:
             "mode": sim.provider.mode,
             "running": sim.running,
             "session_id": sim.session_id,
-            "live_available": live is not None,
+            "model": getattr(sim.provider, "name", None),
+            "live_available": bool(live_models),
+            "live_models": list(live_models),
             "live_error": live_error,
             "policy": {"reject_threshold": policy.reject_threshold, "review_threshold": policy.review_threshold,
                        "ignore_labels": settings.ignore_labels},
@@ -81,14 +94,31 @@ def create_app(settings: Settings = default_settings) -> FastAPI:
 
     @app.get("/api/model/info")
     def model_info():
-        return {"active": sim.provider.info(), "live": live.info() if live else None, "live_error": live_error}
+        return {"active": sim.provider.info(), "live_error": live_error}
+
+    @app.get("/api/models")
+    def models():
+        return {"active": getattr(sim.provider, "name", None), "models": [e.summary() for e in registry]}
+
+    @app.get("/api/benchmark")
+    def benchmark():
+        path = settings.benchmark_path
+        if not path.is_file():
+            return {"available": False, "path": str(path)}
+        try:
+            return {"available": True, "path": str(path), **json.loads(path.read_text(encoding="utf-8"))}
+        except ValueError as exc:
+            raise HTTPException(500, f"Benchmark file unreadable: {exc}")
 
     @app.post("/api/mode")
     def set_mode(req: ModeRequest):
         if req.mode == "live":
-            if live is None:
+            if not live_models:
                 raise HTTPException(409, f"No live model loaded. {live_error or ''}".strip())
-            sim.set_provider(live)
+            name = req.model or (sim.provider.name if sim.provider.mode == "live" else next(iter(live_models)))
+            if name not in live_models:
+                raise HTTPException(404, f"Unknown or unloaded model '{name}'. Loaded: {list(live_models)}")
+            sim.set_provider(live_models[name])
         elif req.mode == "demo":
             sim.set_provider(demo)
         else:
@@ -163,6 +193,8 @@ def create_app(settings: Settings = default_settings) -> FastAPI:
     settings.live_dir.mkdir(parents=True, exist_ok=True)
     app.mount("/sample-images/live", StaticFiles(directory=settings.live_dir), name="live-images")
     app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
+    settings.explain_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/explain", StaticFiles(directory=settings.explain_dir), name="explain")
 
     dist = REPO_ROOT / "frontend" / "dist"
     if dist.is_dir():  # production build: serve the dashboard from the same port
