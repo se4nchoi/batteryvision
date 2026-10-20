@@ -1,0 +1,141 @@
+{
+  "note": "Synthetic images with scripted, illustrative detections. NOT model output.",
+  "sequence": [
+    {
+      "file": "cell_01.png",
+      "ground_truth": "clean",
+      "detections": []
+    },
+    {
+      "file": "cell_02.png",
+      "ground_truth": "scratch",
+      "detections": [
+        {
+          "label": "scratch",
+          "confidence": 0.91,
+          "bbox": [
+            0.277,
+            0.3257,
+            0.487,
+            0.4156
+          ]
+        }
+      ]
+    },
+    {
+      "file": "cell_03.png",
+      "ground_truth": "clean",
+      "detections": []
+    },
+    {
+      "file": "cell_04.png",
+      "ground_truth": "crack",
+      "detections": [
+        {
+          "label": "crack",
+          "confidence": 0.87,
+          "bbox": [
+            0.5177,
+            0.3975,
+            0.6616,
+            0.7197
+          ]
+        }
+      ]
+    },
+    {
+      "file": "cell_05.png",
+      "ground_truth": "scratch",
+      "detections": [
+        {
+          "label": "scratch",
+          "confidence": 0.44,
+          "bbox": [
+            0.3552,
+            0.4744,
+            0.6021,
+            0.5524
+          ]
+        }
+      ]
+    },
+    {
+      "file": "cell_06.png",
+      "ground_truth": "clean",
+      "detections": []
+    },
+    {
+      "file": "cell_07.png",
+      "ground_truth": "crack",
+      "detections": [
+        {
+          "label": "crack",
+          "confidence": 0.78,
+          "bbox": [
+            0.6316,
+            0.365,
+            0.7065,
+            0.7048
+          ]
+        },
+        {
+          "label": "scratch",
+          "confidence": 0.66,
+          "bbox": [
+            0.2702,
+            0.3367,
+            0.5565,
+            0.497
+          ]
+        }
+      ]
+    },
+    {
+      "file": "cell_08.png",
+      "ground_truth": "crack",
+      "detections": [
+        {
+          "label": "crack",
+          "confidence": 0.38,
+          "bbox": [
+            0.264,
+            0.3325,
+            0.4029,
+            0.634
+          ]
+        }
+      ]
+    },
+    {
+      "file": "cell_09.png",
+      "ground_truth": "clean",
+      "detections": []
+    },
+    {
+      "file": "cell_10.png",
+      "ground_truth": "scratch",
+      "detections": [
+        {
+          "label": "scratch",
+          "confidence": 0.72,
+          "bbox": [
+            0.2223,
+            0.4328,
+            0.5004,
+            0.5022
+          ]
+        }
+      ]
+    },
+    {
+      "file": "cell_11.png",
+      "ground_truth": "scratch",
+      "detections": []
+    },
+    {
+      "file": "cell_12.png",
+      "ground_truth": "clean",
+      "detections": []
+    }
+  ]
+}
