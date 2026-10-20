@@ -57,6 +57,7 @@ class View:
     path: Path
     url: str
     angle: int | None = None
+    assembled: bool = False  # True for a filler side taken from another (defect-free) photo
 
 
 @dataclass
@@ -70,6 +71,13 @@ class Cell:
     lot_id: str | None = None
     genealogy: dict[str, str] | None = None
 
+    def defect_angle(self) -> int | None:
+        """Angle of the side with the strongest actionable finding (None if nothing was found)."""
+        r = self.result
+        if r is None or not any(d.actionable for d in r.detections) or not r.views:
+            return None
+        return r.views[r.primary_view].angle
+
     def to_dict(self) -> dict:
         return {
             "cell_id": self.cell_id,
@@ -79,6 +87,7 @@ class Cell:
             "n_views": len(self.views),
             "source": self.source,
             "status": self.result.status if self.result else None,
+            "defect_angle": self.defect_angle(),
         }
 
 
@@ -159,8 +168,11 @@ class LineSimulation:
     def _load_sources(self) -> list[tuple[list[View], str | None]]:
         """(views, ground_truth) per cell, in a fixed, repeatable order.
 
-        Demo cells have 4 rendered views (0/90/180/270 degrees). Live-mode dataset images
-        are single photos, so each becomes a one-view cell; no extra sides are invented.
+        Demo cells have 4 rendered views (0/90/180/270 degrees). Dataset photos are one photo per
+        battery; when labels are known, each cell is ASSEMBLED from 4 sides for the 360-degree demo:
+        its own photo on one side (position rotates from cell to cell) and other defect-free photos
+        of the same split on the remaining sides. Every side is inspected. Unlabelled live images stay
+        single-view.
         """
         if isinstance(self.provider, DemoInferenceProvider):
             d = self.provider.demo_dir
@@ -168,14 +180,38 @@ class LineSimulation:
                      c.get("ground_truth")) for c in self.provider.sequence]
         if isinstance(self.provider, AnnotationReplayProvider):
             p = self.provider
-            return [([View(p.split_dir / f, f"/dataset/{p.split}/{f}")], p.ground_truth(f)) for f in p.order]
+            return self._assemble_sides([([View(p.split_dir / f, f"/dataset/{p.split}/{f}")], p.ground_truth(f))
+                                         for f in p.order])
         if not self.live_dir.is_dir():
             return []
         files = sorted(p for p in self.live_dir.iterdir() if p.suffix.lower() in IMAGE_EXTS)
         if self.live_order:
             rank = {n: i for i, n in enumerate(self.live_order)}
             files.sort(key=lambda p: rank.get(p.name, len(rank)))
-        return [([View(p, f"/sample-images/live/{p.name}")], self.live_truth.get(p.name)) for p in files]
+        sources = [([View(p, f"/sample-images/live/{p.name}")], self.live_truth.get(p.name)) for p in files]
+        return self._assemble_sides(sources) if self.live_truth else sources
+
+    @staticmethod
+    def _assemble_sides(sources: list[tuple[list[View], str | None]], n_sides: int = 4) -> list[tuple[list[View], str | None]]:
+        """Build 4-side cells from single photos (see _load_sources). Deterministic."""
+        clean = [views[0] for views, gt in sources if not is_defective(gt)]
+        if not clean or any(gt is None for _, gt in sources):
+            return sources
+        out, k = [], 0
+        for i, (views, gt) in enumerate(sources):
+            own = views[0]
+            pos = i % n_sides
+            fillers = [c for c in clean if c.path != own.path] or clean
+            sides = []
+            for s in range(n_sides):
+                if s == pos:
+                    sides.append(View(own.path, own.url, s * 90))
+                else:
+                    f = fillers[k % len(fillers)]
+                    k += 1
+                    sides.append(View(f.path, f.url, s * 90, assembled=True))
+            out.append((sides, gt))
+        return out
 
     def _new_cell(self, views: list[View], ground_truth: str | None, source: str) -> Cell:
         self.seq += 1
@@ -239,6 +275,8 @@ class LineSimulation:
     def _inspect(self, cell: Cell) -> InspectionResult:
         result = self._run_inspection(cell)
         result.lot_id, result.genealogy = cell.lot_id, cell.genealogy
+        result.sides_assembled = any(v.assembled for v in cell.views)
+        result.own_view = next((i for i, v in enumerate(cell.views) if not v.assembled), 0) if result.sides_assembled else None
         return result
 
     def _run_inspection(self, cell: Cell) -> InspectionResult:

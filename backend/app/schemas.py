@@ -72,3 +72,6 @@ class InspectionResult(BaseModel):
     # Batch traceability (simulated genealogy): production lot and upstream machines.
     lot_id: str | None = None
     genealogy: dict[str, str] | None = None
+    # 360-degree demo with single-photo datasets: sides assembled from other defect-free photos.
+    sides_assembled: bool = False
+    own_view: int | None = None  # index of the side that is this cell's own photo

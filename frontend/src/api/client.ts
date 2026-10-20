@@ -44,6 +44,8 @@ export interface InspectionResult {
   explain_url: string | null;
   views: ViewResult[];
   primary_view: number;
+  sides_assembled?: boolean; // sides built from other defect-free dataset photos (360-degree demo)
+  own_view?: number | null;  // which side is this cell's own photo
 }
 
 export interface Cell {
@@ -53,6 +55,7 @@ export interface Cell {
   source: string;
   status: Status | null;
   n_views: number;
+  defect_angle: number | null; // side (degrees) with the strongest finding, once inspected
 }
 
 export interface SimState {

@@ -314,3 +314,27 @@ def test_batch_report_statistics():
     assert w["W1"]["rate"] == 0.25 and w["W2"]["rate"] == 0.75
     assert w["W2"]["suspect"] and not w["W1"]["suspect"]
     assert all(l["ucl"] is not None for l in r["lots"])
+
+
+def test_dataset_cells_get_four_assembled_sides(settings):
+    make_split(settings.dataset_dir)
+    with TestClient(create_app(settings)) as c:
+        c.post("/api/mode", json={"mode": "replay", "model": "test"})
+        assert all(cell["n_views"] == 4 for cell in c.get("/api/simulation/state").json()["cells"])
+        seen = []
+        for _ in range(5):
+            st = c.post("/api/simulation/step").json()
+            cur = st["current"]
+            if cur and cur["cell_id"] not in [s["cell_id"] for s in seen]:
+                seen.append(cur)
+                at_camera = next(x for x in st["cells"] if x["cell_id"] == cur["cell_id"])
+                assert len(cur["views"]) == 4 and [v["angle"] for v in cur["views"]] == [0, 90, 180, 270]
+                assert cur["sides_assembled"] is True and cur["own_view"] is not None
+                fillers = [v["image_url"] for i, v in enumerate(cur["views"]) if i != cur["own_view"]]
+                assert all(u.endswith("c.jpg") for u in fillers)  # fillers are the defect-free photo
+                if cur["status"] == "REJECT":
+                    assert cur["primary_view"] == cur["own_view"]
+                    assert at_camera["defect_angle"] == cur["own_view"] * 90
+                else:
+                    assert at_camera["defect_angle"] is None
+        assert {s["own_view"] for s in seen} == {0, 1, 2}  # own photo's side rotates between cells

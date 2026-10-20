@@ -108,7 +108,18 @@ function makeCell(): THREE.Group {
   label.rotation.x = Math.PI / 2;
   const seam = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.66), new THREE.MeshStandardMaterial({ color: 0x1d2939 }));
   seam.position.set(-R * 0.98, 0, 0);
-  g.add(body, cap, label, seam);
+  // Defect mark: a red patch on the side where the inspection found the defect. It sits on a pivot that is
+  // turned to that side's angle, so it comes into view under the camera as the cell rotates.
+  const pivot = new THREE.Object3D();
+  pivot.name = "defect-pivot";
+  const mark = new THREE.Mesh(
+    new THREE.CylinderGeometry(R * 1.04, R * 1.04, 0.3, 12, 1, true, Math.PI - 0.38, 0.76),
+    new THREE.MeshStandardMaterial({ color: COLORS.REJECT, emissive: COLORS.REJECT, emissiveIntensity: 0.6, side: THREE.DoubleSide }),
+  );
+  mark.rotation.x = Math.PI / 2; // geometry angle PI = straight up (+y) in the cell frame
+  pivot.add(mark);
+  pivot.visible = false;
+  g.add(body, cap, label, seam, pivot);
   g.scale.setScalar(0.01);
   return g;
 }
@@ -354,7 +365,21 @@ export function Line3D({ cells, running, metrics, sessionId, tickSeconds }: Prop
         g.userData.status = c.status && c.state !== "INSPECTING" ? c.status : null;
         // The inspection station always turns the cell once; how many sides were imaged is shown in the Camera card.
         const atCamera = c.state === "INSPECTING";
-        if (atCamera && !g.userData.spin) g.userData.spun = 0; // just arrived: start one revolution
+        if (atCamera && !g.userData.spin) {
+          g.userData.spun = 0; // just arrived: start one revolution with the 0-degree side facing the camera
+          g.rotation.z = 0;
+        }
+        const pivot = g.getObjectByName("defect-pivot");
+        if (pivot) {
+          pivot.visible = c.defect_angle != null;
+          if (c.defect_angle != null) {
+            pivot.rotation.z = THREE.MathUtils.degToRad(c.defect_angle); // side a faces up after a turn of a
+            const mat = ((pivot.children[0] as THREE.Mesh).material as THREE.MeshStandardMaterial);
+            const tone = c.status === "REVIEW" ? COLORS.REVIEW : COLORS.REJECT;
+            mat.color.setHex(tone);
+            mat.emissive.setHex(tone);
+          }
+        }
         g.userData.spin = atCamera;
         lastState.set(c.cell_id, c.state);
         if (c.state === "INSPECTING") inspecting = true;

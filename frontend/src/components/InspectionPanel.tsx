@@ -129,6 +129,12 @@ export function InspectionPanel({ result, rejectThreshold, reviewThreshold }: Pr
       {views.length === 1 && (
         <p className="hint">One photo per cell in this source: the cell turns at the station, but only this side was inspected.</p>
       )}
+      {result.sides_assembled && result.own_view != null && (
+        <p className="hint">
+          360° demo: the {angle(views[result.own_view], result.own_view)} side is this cell's own photo; the other sides are other
+          defect-free test photos. All 4 sides were inspected.
+        </p>
+      )}
       {views.length > 1 && (
         <div className="view-strip" role="tablist" aria-label="Cell sides">
           {views.map((v, i) => (
@@ -136,7 +142,7 @@ export function InspectionPanel({ result, rejectThreshold, reviewThreshold }: Pr
               className={`view-thumb ${i === sel ? "active" : ""} ${viewTone(i) ? `tone-${viewTone(i)}` : ""}`}
               onClick={() => { setScanning(false); setSelected(i); }}>
               <img src={v.image_url} alt="" />
-              <span>{angle(v, i)}</span>
+              <span>{angle(v, i)}{result.sides_assembled && i === result.own_view ? " · own photo" : ""}</span>
             </button>
           ))}
         </div>
