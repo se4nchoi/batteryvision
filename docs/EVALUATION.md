@@ -200,6 +200,47 @@ mAP@50, although its metadata sets `reverse_input_channels = True`).
 - YOLOX is more robust to blur, darkness and noise.
 - Neither model ever mistakes a crack for a scratch or vice versa; all errors are missed or false scratches.
 
+## Saliency (XAI): does it explain the detections?
+
+Both exports include Geti's XAI head, which outputs one coarse activation map per class (ATSS 25×31
+cells, YOLOX-S 40×40 cells; each cell covers about 16–26 px of the 640 px image). Measured on the 116
+defective test images with `backend/scripts/saliency_check.py`, using the map of the annotated class:
+
+| | ATSS-MobileNetV2 | YOLOX-S |
+|---|---|---|
+| Pointing game: hottest point inside the annotated box (+8 px) | 48% | **98%** |
+| Saliency mass inside annotated boxes (vs. their share of image area) | 2.3% vs 1.5% (×1.5) | 2.4% vs 1.5% (×1.6) |
+| Pointing game on wood / grey / green backgrounds | 44% / 63% / 40% | 100% / 100% / 95% |
+
+What this supports:
+- **YOLOX-S's map is a reliable "where" pointer**: its peak lands on the defect in 98% of images, so
+  the heatmap is useful for an operator reviewing a flagged cell.
+- **ATSS's map is not** (peak on the defect about half the time), even though ATSS detects better. Map
+  quality and detection accuracy are different properties.
+- Both maps are **diffuse**: only ~1.5× more activation falls on the defect than its area alone would
+  predict, so most activation is spread over the cell and background.
+
+What it does not support: saliency shows *where* the class score is high, not *why* (which visual
+features). It cannot tell texture from shape, and at this resolution it cannot outline a thin scratch.
+Use it as a review aid and a sanity check, not as an explanation of the decision.
+
+## Why does ATSS outperform YOLOX-S here?
+
+Reasonable, checkable causes (not proven; each model was trained once, so run-to-run variance is unknown):
+1. **Input resolution.** ATSS runs at **992×800** (the 640×640 photos are upscaled ≈1.5×); YOLOX-S runs at
+   **640×640**. Scratches are thin and small (median box ≈ 0.4% of the image), so the extra pixels per
+   defect plausibly explain most of ATSS's lead on scratches (AP@50 0.866 vs 0.795), while cracks
+   (larger, high contrast) are 1.000 for both.
+2. **Confidence calibration.** YOLOX scores are objectness × class probability, which tends to give lower
+   numbers (Geti's default threshold for this export is 0.225 vs 0.30 for ATSS). At the shared 0.30 / 0.60
+   policy YOLOX therefore loses recall; at its own lower threshold its trade-off is competitive.
+3. **Training recipe / sample assignment.** ATSS selects positive anchors adaptively from IoU statistics,
+   which is known to help small objects; YOLOX's defaults are tuned for general object sizes. Epoch counts
+   and early stopping chosen by Geti also differ between templates.
+
+How to confirm: retrain YOLOX-S at a larger input size (e.g. 992×800 or tiling) and compare scratch AP;
+pick per-model thresholds on the validation split; repeat each training 2–3 times to see the variance.
+
 ## Limitations (keep in the report)
 
 - **No detection ≠ defect-free.** PASS means nothing was found above threshold.
