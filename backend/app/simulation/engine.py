@@ -17,6 +17,7 @@ from pathlib import Path
 
 from ..database.db import InspectionStore
 from ..inference import InferenceProvider
+from ..inference.annotations import AnnotationReplayProvider
 from ..inference.demo import DemoInferenceProvider
 from ..policy import DecisionPolicy
 from ..schemas import InspectionResult, ViewResult
@@ -130,6 +131,9 @@ class LineSimulation:
             d = self.provider.demo_dir
             return [([View(d / v["file"], f"/sample-images/demo/{v['file']}", v.get("angle")) for v in c["views"]],
                      c.get("ground_truth")) for c in self.provider.sequence]
+        if isinstance(self.provider, AnnotationReplayProvider):
+            p = self.provider
+            return [([View(p.split_dir / f, f"/dataset/{p.split}/{f}")], p.ground_truth(f)) for f in p.order]
         if not self.live_dir.is_dir():
             return []
         files = sorted(p for p in self.live_dir.iterdir() if p.suffix.lower() in IMAGE_EXTS)

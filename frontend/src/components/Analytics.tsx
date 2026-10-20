@@ -61,7 +61,8 @@ export function InspectionTable({ records, showModel = false }: { records: Inspe
               <td className="mono">{r.cell_id}</td>
               <td><StatusBadge status={r.status} /></td>
               <td className="cap">{r.primary_defect ?? <span className="muted">None</span>}</td>
-              <td className="num">{r.confidence != null ? `${(r.confidence * 100).toFixed(0)}%` : "–"}</td>
+              <td className="num">{r.model_name?.startsWith("annotations") && r.confidence != null ? "Annotated"
+                : r.confidence != null ? `${(r.confidence * 100).toFixed(0)}%` : "–"}</td>
               <td className="num">{r.inference_ms != null ? `${r.inference_ms.toFixed(1)} ms` : "–"}</td>
               {showModel && (
                 <td className="muted">{r.model_name}{r.model_sha ? <span className="mono"> · {r.model_sha.slice(0, 8)}</span> : ""}</td>

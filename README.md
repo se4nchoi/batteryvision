@@ -85,6 +85,14 @@ Configuration (environment variables, set before `.\start.ps1`):
 
 Example: `$env:BV_REJECT_THRESHOLD = "0.5"; .\start.ps1`
 
+## Dataset replay
+
+With the dataset extracted to `datasets/battery/` (see [docs/DATASET.md](docs/DATASET.md)), the
+**Data source** menu offers **Dataset test** and **Dataset valid**. The line then runs on the real
+photos and shows their **annotated** boxes (ground truth, not predictions): annotated defects are
+rejected, the rest pass. Small defects get a zoom inset in the Camera card. Live mode uses the
+same test photos automatically when `sample_data/live/` is empty.
+
 ## 3D view and live camera
 
 - **3D view:** the Inspection line card has a 3D/2D switch. After the camera, cells pass a reject

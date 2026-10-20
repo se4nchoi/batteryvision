@@ -41,6 +41,8 @@ class Settings:
     # Image sources for the virtual line.
     demo_dir: Path = field(default_factory=lambda: REPO_ROOT / "sample_data" / "demo")
     live_dir: Path = field(default_factory=lambda: Path(_env("LIVE_DIR", str(REPO_ROOT / "sample_data" / "live"))))
+    # Extracted COCO dataset (git-ignored): <dataset_dir>/{train,valid,test}/_annotations.coco.json
+    dataset_dir: Path = field(default_factory=lambda: Path(_env("DATASET_DIR", str(REPO_ROOT / "datasets" / "battery"))))
     upload_dir: Path = field(default_factory=lambda: REPO_ROOT / "backend" / "data" / "uploads")
     explain_dir: Path = field(default_factory=lambda: REPO_ROOT / "backend" / "data" / "explain")
     # Output of scripts/benchmark.py, shown on the Models page.

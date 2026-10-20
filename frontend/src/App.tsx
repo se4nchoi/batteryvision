@@ -101,7 +101,9 @@ export default function App() {
   };
 
   const setSource = async (value: string) => {
-    await act(() => (value === "demo" ? api.setMode("demo") : api.setMode("live", value)));
+    await act(() => (value === "demo" ? api.setMode("demo")
+      : value.startsWith("replay:") ? api.setMode("replay", value.slice(7))
+        : api.setMode("live", value)));
     api.status().then(setStatus).catch(() => {});
   };
 
@@ -135,7 +137,8 @@ export default function App() {
   const mode = sim?.mode ?? status?.mode ?? "demo";
   const policy = status?.policy ?? { reject_threshold: 0.6, review_threshold: 0.3, ignore_labels: [] };
   const runState = error ? "offline" : sim?.running ? "running" : "paused";
-  const source = mode === "demo" ? "demo" : sim?.model ?? "";
+  const replaySplit = sim?.model?.match(/^annotations \((\w+)\)$/)?.[1] ?? null;
+  const source = replaySplit ? `replay:${replaySplit}` : mode === "demo" ? "demo" : sim?.model ?? "";
 
   return (
     <div className="shell">
@@ -152,7 +155,10 @@ export default function App() {
         <div className="sidebar-foot">
           <label className="field-label" htmlFor="source">Data source</label>
           <select id="source" className="select" aria-label="Data source" value={source} onChange={(e) => setSource(e.target.value)}>
-            <option value="demo">Demo (scripted)</option>
+            <option value="demo">Demo (synthetic)</option>
+            {Object.entries(status?.replay_splits ?? {}).map(([split, n]) => (
+              <option key={split} value={`replay:${split}`}>Dataset {split} ({n} photos)</option>
+            ))}
             {(status?.live_models ?? []).map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
           {!status?.live_available && <p className="hint">No model in <code>models/</code> yet.</p>}
@@ -190,8 +196,14 @@ export default function App() {
 
             {error && <div className="alert alert-error">{error}</div>}
             {!error && notice && <div className="alert">{notice}</div>}
-            {!error && mode === "demo" && (
+            {!error && mode === "demo" && !replaySplit && (
               <div className="alert alert-warning">Demo mode: synthetic images with scripted results. No model is running.</div>
+            )}
+            {!error && replaySplit && (
+              <div className="alert alert-warning">
+                Dataset replay: real {replaySplit}-set photos with their <b>annotated</b> boxes (ground truth, not model
+                predictions). Every annotated defect is rejected, so there are no review cases. No model is running.
+              </div>
             )}
 
             {/* 1. Line + camera (largest) → 2. totals → 3. log → 4. session data */}

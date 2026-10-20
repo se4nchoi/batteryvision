@@ -26,6 +26,7 @@ def settings(tmp_path: Path) -> Settings:
     s.model_xml = tmp_path / "missing" / "model.xml"  # registered but unloadable
     s.explain_dir = tmp_path / "explain"
     s.benchmark_path = tmp_path / "benchmark.json"
+    s.dataset_dir = tmp_path / "dataset"  # isolated from any real dataset on disk
     s.db_path = tmp_path / "test.sqlite3"
     s.live_dir = tmp_path / "live"
     s.upload_dir = tmp_path / "uploads"
@@ -227,3 +228,40 @@ def test_example_benchmark_is_marked(client):
     ex = client.get("/api/benchmark?example=true").json()
     assert ex["example"] is True and ex["available"] is True
     assert all(m["name"].startswith("example_") for m in ex["models"])
+
+
+def make_split(root: Path) -> Path:
+    """Tiny COCO split: two defective images and one without annotations."""
+    import json as _json
+    split = root / "test"
+    split.mkdir(parents=True)
+    images = []
+    for i, name in enumerate(["a.jpg", "b.jpg", "c.jpg"], start=1):
+        Image.new("RGB", (640, 640), (60, 60, 60)).save(split / name)
+        images.append({"id": i, "file_name": name, "width": 640, "height": 640})
+    ann = {"images": images,
+           "categories": [{"id": 0, "name": "Battery"}, {"id": 1, "name": "crack"}, {"id": 2, "name": "scratch"}],
+           "annotations": [{"id": 1, "image_id": 1, "category_id": 2, "bbox": [64, 64, 128, 64]},
+                           {"id": 2, "image_id": 2, "category_id": 1, "bbox": [320, 320, 64, 64]}]}
+    (split / "_annotations.coco.json").write_text(_json.dumps(ann), encoding="utf-8")
+    return split
+
+
+def test_dataset_replay(settings):
+    make_split(settings.dataset_dir)
+    with TestClient(create_app(settings)) as c:
+        assert c.get("/api/status").json()["replay_splits"] == {"test": 3}
+        state = c.post("/api/mode", json={"mode": "replay", "model": "test"}).json()
+        assert state["mode"] == "demo" and state["model"] == "annotations (test)"
+        for _ in range(6):
+            c.post("/api/simulation/step")
+        recs = c.get("/api/inspections?limit=50").json()
+        assert len(recs) == 3
+        by_gt = {r["ground_truth"]: r for r in recs}
+        assert by_gt["no defect annotated"]["status"] == "PASS"
+        assert by_gt["scratch"]["status"] == "REJECT" and by_gt["crack"]["status"] == "REJECT"
+        assert all(r["inference_ms"] is None and r["model_name"] == "annotations (test)" for r in recs)
+        assert by_gt["scratch"]["detections"][0]["bbox"] == [0.1, 0.1, 0.3, 0.2]
+        img = c.get(recs[0]["image_url"])
+        assert img.status_code == 200
+        assert c.post("/api/mode", json={"mode": "replay", "model": "nope"}).status_code == 404

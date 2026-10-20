@@ -99,6 +99,7 @@ export interface SystemStatus {
   mode: Mode;
   model: string | null;
   live_models: string[];
+  replay_splits: Record<string, number>; // dataset splits available for annotation replay
   running: boolean;
   live_available: boolean;
   live_error: string | null;
@@ -130,7 +131,7 @@ export const api = {
   pause: () => post<SimState>("/api/simulation/pause"),
   step: () => post<SimState>("/api/simulation/step"),
   reset: () => post<SimState>("/api/simulation/reset"),
-  setMode: (mode: Mode, model?: string) => post<SimState>("/api/mode", { mode, model }),
+  setMode: (mode: Mode | "replay", model?: string) => post<SimState>("/api/mode", { mode, model }),
   /** One file = one-view cell; several files = several views (e.g. rotations) of one cell. */
   upload: (files: File | File[], enqueue: boolean) => {
     const form = new FormData();

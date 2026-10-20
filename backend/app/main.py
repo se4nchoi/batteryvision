@@ -18,6 +18,7 @@ from pydantic import BaseModel
 from .config import REPO_ROOT, Settings, settings as default_settings
 from .database.db import InspectionStore
 from .inference import DemoInferenceProvider, load_registry
+from .inference.annotations import AnnotationReplayProvider
 from .policy import DecisionPolicy
 from .simulation.engine import LineSimulation, View, inspect_cell
 
@@ -50,6 +51,18 @@ def create_app(settings: Settings = default_settings) -> FastAPI:
     if settings.mode == "live" and not live_models:
         log.warning("BV_MODE=live requested but no model loaded; falling back to demo mode")
     live = live_models.get(settings.default_model) or next(iter(live_models.values()), None)
+    # Dataset replay: real valid/test photos with their annotated boxes (if the dataset is extracted).
+    replay: dict[str, AnnotationReplayProvider] = {}
+    for split in ("test", "valid"):
+        if (settings.dataset_dir / split / "_annotations.coco.json").is_file():
+            try:
+                replay[split] = AnnotationReplayProvider(settings.dataset_dir / split, settings.ignore_labels)
+            except Exception as exc:  # malformed annotations should not stop the app
+                log.warning("Dataset split %s not loaded: %s", split, exc)
+    # Live mode feeds the line from sample_data/live; fall back to the dataset's test split.
+    has_images = lambda d: d.is_dir() and any(p.suffix.lower() in {".jpg", ".jpeg", ".png", ".bmp"} for p in d.iterdir())
+    if not has_images(settings.live_dir) and has_images(settings.dataset_dir / "test"):
+        settings.live_dir = settings.dataset_dir / "test"
     initial = live if (live is not None and settings.mode in ("live", "auto")) else demo
     sim = LineSimulation(initial, policy, store, settings.live_dir, settings.tick_seconds)
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
@@ -88,6 +101,7 @@ def create_app(settings: Settings = default_settings) -> FastAPI:
             "model": getattr(sim.provider, "name", None),
             "live_available": bool(live_models),
             "live_models": list(live_models),
+            "replay_splits": {k: len(v.images) for k, v in replay.items()},
             "live_error": live_error,
             "policy": {"reject_threshold": policy.reject_threshold, "review_threshold": policy.review_threshold,
                        "ignore_labels": settings.ignore_labels},
@@ -125,8 +139,13 @@ def create_app(settings: Settings = default_settings) -> FastAPI:
             sim.set_provider(live_models[name])
         elif req.mode == "demo":
             sim.set_provider(demo)
+        elif req.mode == "replay":
+            split = req.model or "test"
+            if split not in replay:
+                raise HTTPException(404, f"Dataset split '{split}' not found under {settings.dataset_dir}")
+            sim.set_provider(replay[split])
         else:
-            raise HTTPException(422, "mode must be 'demo' or 'live'")
+            raise HTTPException(422, "mode must be 'demo', 'replay' or 'live'")
         return sim.snapshot()
 
     # ---- records ---------------------------------------------------------
@@ -201,6 +220,8 @@ def create_app(settings: Settings = default_settings) -> FastAPI:
 
     # ---- static files ----------------------------------------------------
     app.mount("/sample-images/demo", StaticFiles(directory=settings.demo_dir), name="demo-images")
+    for split, prov in replay.items():
+        app.mount(f"/dataset/{split}", StaticFiles(directory=prov.split_dir), name=f"dataset-{split}")
     settings.live_dir.mkdir(parents=True, exist_ok=True)
     app.mount("/sample-images/live", StaticFiles(directory=settings.live_dir), name="live-images")
     app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")

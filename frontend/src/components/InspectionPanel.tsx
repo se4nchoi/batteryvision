@@ -17,8 +17,8 @@ function viewsOf(r: InspectionResult): ViewResult[] {
     : [{ image_url: r.image_url, image_width: r.image_width, image_height: r.image_height, angle: null, inference_ms: r.inference_ms }];
 }
 
-function ViewImage({ view, detections, reject, heatUrl }: {
-  view: ViewResult; detections: Detection[]; reject: number; heatUrl?: string | null;
+function ViewImage({ view, detections, reject, heatUrl, annotated }: {
+  view: ViewResult; detections: Detection[]; reject: number; heatUrl?: string | null; annotated: boolean;
 }) {
   const { image_width: w, image_height: h } = view;
   const stroke = Math.max(w, h) / 220;
@@ -30,7 +30,7 @@ function ViewImage({ view, detections, reject, heatUrl }: {
       {detections.map((d, i) => {
         const r = bboxToRect(d.bbox, w, h);
         const cls = d.actionable ? `box box-${d.confidence >= reject ? "reject" : "review"}` : "box box-ignored";
-        const text = `${d.label} ${Math.round(d.confidence * 100)}%`;
+        const text = annotated ? `${d.label} (annotated)` : `${d.label} ${Math.round(d.confidence * 100)}%`;
         const labelY = r.y > font * 1.6 ? r.y - font * 0.4 : r.y + r.height + font * 1.1;
         return (
           <g key={i} className={cls}>
@@ -41,6 +41,29 @@ function ViewImage({ view, detections, reject, heatUrl }: {
         );
       })}
     </svg>
+  );
+}
+
+/** Magnified crop around a (small) defect, so it is visible at dashboard size. */
+function ZoomInset({ view, det, reject }: { view: ViewResult; det: Detection; reject: number }) {
+  const { image_width: w, image_height: h } = view;
+  const r = bboxToRect(det.bbox, w, h);
+  // square crop, about 3x the box, at least 18% of the image side, kept inside the image
+  const side = Math.min(Math.max(Math.max(r.width, r.height) * 4, Math.max(w, h) * 0.25), Math.max(w, h));
+  const cx = r.x + r.width / 2, cy = r.y + r.height / 2;
+  const x0 = Math.min(Math.max(cx - side / 2, 0), Math.max(w - side, 0));
+  const y0 = Math.min(Math.max(cy - side / 2, 0), Math.max(h - side, 0));
+  const tone = !det.actionable ? "ignored" : det.confidence >= reject ? "reject" : "review";
+  return (
+    <div className="zoom-inset" aria-label="Zoomed view of the finding">
+      <svg viewBox={`${x0} ${y0} ${side} ${side}`} preserveAspectRatio="xMidYMid slice">
+        <image href={view.image_url} x={0} y={0} width={w} height={h} />
+        <g className={`box box-${tone}`}>
+          <rect x={r.x} y={r.y} width={r.width} height={r.height} strokeWidth={side / 90} />
+        </g>
+      </svg>
+      <span>Zoom ×{Math.max(1, Math.round(Math.max(w, h) / side))}</span>
+    </div>
   );
 }
 
@@ -72,10 +95,14 @@ export function InspectionPanel({ result, rejectThreshold, reviewThreshold }: Pr
   const views = viewsOf(result);
   const sel = Math.min(selected, views.length - 1);
   const isDemo = result.mode === "demo";
+  const annotated = result.model_name?.startsWith("annotations") ?? false; // dataset replay: ground truth
   const reject = result.reject_threshold ?? rejectThreshold;
   const review = result.review_threshold ?? reviewThreshold;
   const actionable = result.detections.filter((d) => d.actionable);
   const top = actionable[0] && actionable.reduce((a, b) => (b.confidence > a.confidence ? b : a));
+  // strongest finding on the side being shown (drives the zoom inset)
+  const focus = result.detections.filter((d) => (d.view ?? 0) === sel)
+    .reduce<Detection | null>((a, b) => (!a || b.confidence > a.confidence ? b : a), null);
   const viewTone = (i: number) => {
     const best = Math.max(0, ...actionable.filter((d) => (d.view ?? 0) === i).map((d) => d.confidence));
     return best >= reject ? "reject" : best >= review ? "review" : "";
@@ -86,8 +113,11 @@ export function InspectionPanel({ result, rejectThreshold, reviewThreshold }: Pr
     <div className="inspection">
       <div className="frame">
         <ViewImage view={views[sel]} detections={result.detections.filter((d) => (d.view ?? 0) === sel)} reject={reject}
-          heatUrl={sel === result.primary_view && showHeat ? result.explain_url : null} />
-        {isDemo && <span className="frame-tag">Demo image</span>}
+          heatUrl={sel === result.primary_view && showHeat ? result.explain_url : null} annotated={annotated} />
+        {focus && (focus.bbox[2] - focus.bbox[0]) * (focus.bbox[3] - focus.bbox[1]) < 0.06 && (
+          <ZoomInset view={views[sel]} det={focus} reject={reject} />
+        )}
+        {isDemo && <span className="frame-tag">{annotated ? "Dataset photo · annotations" : "Demo image"}</span>}
         {views.length > 1 && <span className={`frame-angle ${scanning ? "scanning" : ""}`}>{scanning ? "Rotating… " : ""}{angle(views[sel], sel)}</span>}
         {result.explain_url && (
           <button className="btn btn-sm frame-btn" onClick={() => setShowHeat(!showHeat)}>{showHeat ? "Hide" : "Show"} heatmap</button>
@@ -117,13 +147,15 @@ export function InspectionPanel({ result, rejectThreshold, reviewThreshold }: Pr
           <dt>Finding</dt>
           <dd>
             {result.reason.startsWith("Inference error") ? result.reason
+              : top && annotated ? `${sentence(top.label)} (annotated)`
               : top ? `${sentence(top.label)}, ${Math.round(top.confidence * 100)}%${views.length > 1 ? ` at ${angle(views[top.view ?? 0], top.view ?? 0)}` : ""}`
+              : annotated ? "No defect annotated"
                 : `Nothing above ${Math.round(review * 100)}%${views.length > 1 ? ` on ${views.length} sides` : ""}`}
           </dd>
         </div>
         <div>
           <dt>Inference</dt>
-          <dd>{result.inference_ms != null ? `${result.inference_ms.toFixed(1)} ms${views.length > 1 ? ` (${views.length} views)` : ""}` : isDemo ? "Not run (demo)" : "–"}</dd>
+          <dd>{result.inference_ms != null ? `${result.inference_ms.toFixed(1)} ms${views.length > 1 ? ` (${views.length} views)` : ""}` : annotated ? "No model (annotations)" : isDemo ? "Not run (demo)" : "–"}</dd>
         </div>
         <div>
           <dt>Known label</dt>

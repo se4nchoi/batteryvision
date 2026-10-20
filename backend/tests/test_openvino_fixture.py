@@ -69,6 +69,7 @@ def test_live_mode_through_api(tmp_path: Path):
     (s.models_dir / "yolox_s" / "meta.json").write_text('{"architecture": "YOLOX-S"}', encoding="utf-8")
     s.model_xml = None
     s.explain_dir, s.benchmark_path = tmp_path / "explain", tmp_path / "b.json"
+    s.dataset_dir = tmp_path / "dataset"
     s.db_path, s.upload_dir, s.live_dir = tmp_path / "db.sqlite3", tmp_path / "up", tmp_path / "live"
     s.live_dir.mkdir()
     Image.new("RGB", (320, 240)).save(s.live_dir / "a.png")

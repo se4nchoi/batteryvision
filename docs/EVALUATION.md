@@ -54,8 +54,9 @@ then report test results at the chosen values. Trade-off: lower thresholds → f
 
 ## Results (fill in)
 
-**Dataset:** TBD name, license TBD, classes TBD, images train/valid/test = TBD / TBD / TBD,
-clean images in test: TBD.
+**Dataset:** Roboflow "Battery Defect Inspection" v8 (CC BY 4.0), classes crack / scratch,
+images train/valid/test = 3,214 (1,072 originals ×3 augmented) / 306 / 153, test images without
+defect annotations: 37. Test photos come from the same photo sessions as training (see `docs/DATASET.md`).
 **Model:** YOLOX-TBD, input TBD, trained in Geti vTBD for TBD epochs (TBD min).
 
 ### Geti validation score (screenshot)

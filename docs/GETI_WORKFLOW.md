@@ -21,8 +21,9 @@ mention that you spot-checked the annotations (step 3).
 
 ## 1. Get and vet the dataset (before uploading)
 
-Candidate: <https://universe.roboflow.com/battery-oqphu/battery-defect-inspection>
-(the page needs a browser login, so it could not be verified automatically).
+Dataset: <https://universe.roboflow.com/battery-oqphu/battery-defect-inspection>, version 8 "Final-1",
+CC BY 4.0, classes **crack** and **scratch**. Verified facts and leakage checks are in
+[DATASET.md](DATASET.md).
 
 1. Sign in to Roboflow and open the dataset page. Record the following ✍️:
    - **License** (e.g. CC BY 4.0 → attribute it in the report)
