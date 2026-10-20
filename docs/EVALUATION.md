@@ -200,6 +200,58 @@ mAP@50, although its metadata sets `reverse_input_channels = True`).
 - YOLOX is more robust to blur, darkness and noise.
 - Neither model ever mistakes a crack for a scratch or vice versa; all errors are missed or false scratches.
 
+## Later-session holdout (measured 2026-10-20)
+
+Same two models and policy (review ≥ 0.30, reject ≥ 0.60), run on photos the models have never seen:
+a later photo session by the same dataset author, with the same kind of cells and partly different
+backgrounds (mostly grey and green mat, few wood). Set construction and overlap removal:
+[DATASET.md](DATASET.md#later-session-holdout-battery-defect-detection-v2-final300-test-only).
+Reports: `docs/results/later_session_clean/benchmark.json` (45 never-augmented photos, headline) and
+`docs/results/later_session/benchmark.json` (160 photos, 115 of them Roboflow-augmented; includes
+robustness and a duplicate check, which found 0 duplicates against `datasets/battery`).
+
+| Cell-level, at the current policy | Main test set (153) | Holdout, clean (45) | Holdout, all (160) |
+|---|---|---|---|
+| **ATSS** defective cells caught (REVIEW or REJECT) | 100% | **47%** (14 / 30) | 55% (60 / 110) |
+| **ATSS** defective cells auto-rejected (≥ 0.60) | 75% (87 / 116) | **0%** (0 / 30) | 8% (9 / 110) |
+| **ATSS** good cells flagged for review | 8% (3 / 37) | 13% (2 / 15) | 16% (8 / 50) |
+| **YOLOX-S** defective cells caught | 95% | **3%** (1 / 30) | 6% (7 / 110) |
+| **YOLOX-S** good cells flagged | 3% (1 / 37) | 0% | 0% |
+| Good cells auto-rejected (both models) | 0% | 0% | 0% |
+
+| Detection quality | ATSS clean / all | YOLOX-S clean / all |
+|---|---|---|
+| mAP@50 | 0.711 / 0.475 | 0.931 / 0.460 |
+| mAP@50:95 | 0.293 / 0.160 | 0.310 / 0.123 |
+| Box recall at 0.30 (crack / scratch, clean) | 1 of 15 / 8 of 15 | 0 of 15 / 1 of 15 |
+
+**What it shows**
+- **Defects are missed, not mistaken.** Most escapes have the right class at the right place, scored
+  0.06–0.28: below the review threshold. The models still *rank* defects above background (YOLOX's 0.931
+  mAP@50 on the clean set), but their confidence no longer matches the thresholds. With 45 images, mAP
+  mostly measures ranking at very low scores and says little about decisions at 0.30 / 0.60.
+- **No threshold rescues ATSS.** On the clean set, catching 97% of defective cells needs a 0.15 threshold,
+  which also flags 87% of good cells. YOLOX's scores separate better (0.05 catches 57% with no good cell
+  flagged), but that is far below an acceptable catch rate and the threshold would be chosen on test data.
+- **Good cells stay safe.** No good cell is auto-rejected by either model. The failure mode under change
+  is **escapes**, which is the costly one on a real line.
+- **Robustness collapses as well** (ATSS, 160 set, mAP@50): clean 0.475 · blur 0.143 · darker 0.085 ·
+  low contrast 0.152. On the main test set the same perturbations cost only 6–7 points.
+- **Background and session are confounded.** Escapes concentrate on grey and green-mat photos, but those
+  are also the newest photos. This set cannot say whether background, lighting or the cells themselves
+  cause the drop.
+
+**What to claim in the report.** The main test set measures a fixed station: same backgrounds, lighting
+and photo sessions as training. That is a fair assumption for a factory, where the inspection cell is
+enclosed and controlled. This holdout shows the condition is necessary: a later session with partly new
+backgrounds halves ATSS's catch rate and removes YOLOX-S's almost entirely. Every new station, camera or
+lighting change therefore needs re-validation and, most likely, retraining on its own images. ATSS degrades
+far less than YOLOX-S, which is another argument for ATSS.
+
+**Next step if time allows.** Add this export's train-split photos (unaugmented originals) to the Geti
+project and retrain; keep `unseen_clean` (45 photos) as the held-out test. That measures how much a few
+hundred photos of the new conditions recover.
+
 ## Saliency (XAI): does it explain the detections?
 
 Both exports include Geti's XAI head, which outputs one coarse activation map per class (ATSS 25×31
@@ -246,7 +298,9 @@ pick per-model thresholds on the validation split; repeat each training 2–3 ti
 - **No detection ≠ defect-free.** PASS means nothing was found above threshold.
 - If the dataset has few or no clean images, **PASS correctness and false-reject rate are not validated**.
 - Public dataset images (camera, lighting, cell type) differ from any real production line, so these
-  results do not predict deployment performance without re-validation on site.
+  results do not predict deployment performance without re-validation on site. Measured: on a later
+  photo session of the same author, ATSS catches 47% of defective cells instead of 100% (see
+  "Later-session holdout").
 - A small test set gives wide uncertainty. Report the number of images and boxes next to every metric.
 - Near-duplicate or augmented images across splits inflate scores. State how splits were made.
 - The DEMO mode of the dashboard uses scripted results and is excluded from all metrics.

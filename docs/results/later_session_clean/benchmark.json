@@ -1,25 +1,25 @@
 {
-  "generated_at": "2026-10-20T06:41:04+00:00",
-  "command": "scripts/benchmark.py --coco ../datasets/battery_later/clean.coco.json --images ../datasets/battery_later/images --no-robustness --out ../docs/results/later_session_clean",
+  "generated_at": "2026-10-20T06:44:23+00:00",
+  "command": "scripts/benchmark.py --coco ../datasets/battery_later/unseen_clean.coco.json --images ../datasets/battery_later/images --no-robustness --out ../docs/results/later_session_clean",
   "machine": {
     "cpu": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
     "os": "Windows-11-10.0.26200-SP0",
     "device": "CPU"
   },
   "test_set": {
-    "annotations": "..\\datasets\\battery_later\\clean.coco.json",
+    "annotations": "..\\datasets\\battery_later\\unseen_clean.coco.json",
     "images": "..\\datasets\\battery_later\\images",
-    "n_images": 54,
-    "n_boxes": 39,
+    "n_images": 45,
+    "n_boxes": 30,
     "boxes_per_class": {
       "scratch": 15,
-      "crack": 24
+      "crack": 15
     },
     "images_without_annotations": 15,
     "backgrounds": {
       "green mat": 15,
       "grey / neutral": 27,
-      "wood / brown": 12
+      "wood / brown": 3
     },
     "background_method": "median border colour (heuristic)"
   },
@@ -56,24 +56,24 @@
         },
         "notes": "Geti 'OpenVINO FP16 with XAI head (Explanation included)', version 1, 20 Oct 2026"
       },
-      "eval_seconds": 5.1,
+      "eval_seconds": 2.6,
       "robustness": {
         "clean": {
-          "map50": 0.7498838770176477,
-          "map50_95": 0.34792512810206616,
-          "precision": 1.0,
-          "recall": 0.23076923076923078,
-          "defect_escape_rate": 0.41025641025641024,
+          "map50": 0.7109686260362164,
+          "map50_95": 0.29304387334763143,
+          "precision": null,
+          "recall": 0.0,
+          "defect_escape_rate": 0.5333333333333333,
           "false_reject_rate": 0.0
         }
       },
       "coco": {
-        "map50": 0.7498838770176477,
-        "map50_95": 0.34792512810206616,
+        "map50": 0.7109686260362164,
+        "map50_95": 0.29304387334763143,
         "per_class": {
           "crack": {
-            "ap50": 0.8924675324675324,
-            "ap50_95": 0.469713906470428
+            "ap50": 0.8146370305046698,
+            "ap50_95": 0.3599513969615585
           },
           "scratch": {
             "ap50": 0.6073002215677626,
@@ -85,21 +85,21 @@
         "threshold": 0.6,
         "iou": 0.5,
         "overall": {
-          "tp": 9,
+          "tp": 0,
           "fp": 0,
           "fn": 30,
-          "precision": 1.0,
-          "recall": 0.23076923076923078,
-          "f1": 0.375
+          "precision": null,
+          "recall": 0.0,
+          "f1": null
         },
         "per_class": {
           "crack": {
-            "tp": 9,
+            "tp": 0,
             "fp": 0,
             "fn": 15,
-            "precision": 1.0,
-            "recall": 0.375,
-            "f1": 0.5454545454545454
+            "precision": null,
+            "recall": 0.0,
+            "f1": null
           },
           "scratch": {
             "tp": 0,
@@ -116,7 +116,7 @@
           "defective": {
             "PASS": 16,
             "REVIEW": 14,
-            "REJECT": 9
+            "REJECT": 0
           },
           "no_defect_annotated": {
             "PASS": 13,
@@ -124,33 +124,33 @@
             "REJECT": 0
           }
         },
-        "defective_images": 39,
+        "defective_images": 30,
         "no_defect_images": 15,
-        "defect_catch_rate": 0.5897435897435898,
-        "defect_escape_rate": 0.41025641025641024,
+        "defect_catch_rate": 0.4666666666666667,
+        "defect_escape_rate": 0.5333333333333333,
         "false_reject_rate": 0.0,
-        "review_rate": 0.2962962962962963
+        "review_rate": 0.35555555555555557
       },
       "operating_points": {
         "review": {
           "threshold": 0.3,
           "iou": 0.5,
           "overall": {
-            "tp": 18,
+            "tp": 9,
             "fp": 7,
             "fn": 21,
-            "precision": 0.72,
-            "recall": 0.46153846153846156,
-            "f1": 0.5625
+            "precision": 0.5625,
+            "recall": 0.3,
+            "f1": 0.3913043478260869
           },
           "per_class": {
             "crack": {
-              "tp": 10,
+              "tp": 1,
               "fp": 0,
               "fn": 14,
               "precision": 1.0,
-              "recall": 0.4166666666666667,
-              "f1": 0.5882352941176471
+              "recall": 0.06666666666666667,
+              "f1": 0.125
             },
             "scratch": {
               "tp": 8,
@@ -166,21 +166,21 @@
           "threshold": 0.6,
           "iou": 0.5,
           "overall": {
-            "tp": 9,
+            "tp": 0,
             "fp": 0,
             "fn": 30,
-            "precision": 1.0,
-            "recall": 0.23076923076923078,
-            "f1": 0.375
+            "precision": null,
+            "recall": 0.0,
+            "f1": null
           },
           "per_class": {
             "crack": {
-              "tp": 9,
+              "tp": 0,
               "fp": 0,
               "fn": 15,
-              "precision": 1.0,
-              "recall": 0.375,
-              "f1": 0.5454545454545454
+              "precision": null,
+              "recall": 0.0,
+              "f1": null
             },
             "scratch": {
               "tp": 0,
@@ -204,7 +204,7 @@
           ],
           "matrix": [
             [
-              10,
+              1,
               0,
               14
             ],
@@ -231,7 +231,7 @@
           ],
           "matrix": [
             [
-              9,
+              0,
               0,
               15
             ],
@@ -251,26 +251,26 @@
       },
       "cell_binary": {
         "flagged": {
-          "tp": 23,
+          "tp": 14,
           "fn": 16,
           "fp": 2,
           "tn": 13,
-          "accuracy": 0.6666666666666666,
-          "precision": 0.92,
-          "recall": 0.5897435897435898,
+          "accuracy": 0.6,
+          "precision": 0.875,
+          "recall": 0.4666666666666667,
           "specificity": 0.8666666666666667,
-          "f1": 0.71875
+          "f1": 0.608695652173913
         },
         "rejected": {
-          "tp": 9,
+          "tp": 0,
           "fn": 30,
           "fp": 0,
           "tn": 15,
-          "accuracy": 0.4444444444444444,
-          "precision": 1.0,
-          "recall": 0.23076923076923078,
+          "accuracy": 0.3333333333333333,
+          "precision": null,
+          "recall": 0.0,
           "specificity": 1.0,
-          "f1": 0.375
+          "f1": null
         }
       },
       "by_background": {
@@ -293,20 +293,20 @@
           "box_precision": null
         },
         "wood / brown": {
-          "n_images": 12,
-          "n_defective": 12,
+          "n_images": 3,
+          "n_defective": 3,
           "n_clean": 0,
-          "defect_catch_rate": 0.9166666666666666,
+          "defect_catch_rate": 0.6666666666666666,
           "false_reject_rate": null,
-          "box_recall": 0.75,
-          "box_precision": 1.0
+          "box_recall": 0.0,
+          "box_precision": null
         }
       },
       "latency": {
-        "n": 53,
-        "mean_ms": 89.34075471698111,
-        "median_ms": 85.64,
-        "p95_ms": 107.606,
+        "n": 44,
+        "mean_ms": 53.599090909090904,
+        "median_ms": 51.045,
+        "p95_ms": 66.789,
         "note": "First call excluded (warm-up)."
       },
       "threshold_sweep": [
@@ -315,128 +315,128 @@
           "defect_recall": 1.0,
           "escape_rate": 0.0,
           "false_reject_rate": 1.0,
-          "box_precision": 0.18781725888324874,
-          "box_recall": 0.9487179487179487
+          "box_precision": 0.14893617021276595,
+          "box_recall": 0.9333333333333333
         },
         {
           "threshold": 0.1,
           "defect_recall": 1.0,
           "escape_rate": 0.0,
           "false_reject_rate": 1.0,
-          "box_precision": 0.47692307692307695,
-          "box_recall": 0.7948717948717948
+          "box_precision": 0.39285714285714285,
+          "box_recall": 0.7333333333333333
         },
         {
           "threshold": 0.15,
-          "defect_recall": 0.9743589743589743,
-          "escape_rate": 0.02564102564102566,
+          "defect_recall": 0.9666666666666667,
+          "escape_rate": 0.033333333333333326,
           "false_reject_rate": 0.8666666666666667,
-          "box_precision": 0.5,
-          "box_recall": 0.7435897435897436
+          "box_precision": 0.40816326530612246,
+          "box_recall": 0.6666666666666666
         },
         {
           "threshold": 0.2,
-          "defect_recall": 0.8974358974358975,
-          "escape_rate": 0.10256410256410253,
+          "defect_recall": 0.8666666666666667,
+          "escape_rate": 0.1333333333333333,
           "false_reject_rate": 0.7333333333333333,
-          "box_precision": 0.4897959183673469,
-          "box_recall": 0.6153846153846154
+          "box_precision": 0.375,
+          "box_recall": 0.5
         },
         {
           "threshold": 0.25,
-          "defect_recall": 0.6666666666666666,
-          "escape_rate": 0.33333333333333337,
+          "defect_recall": 0.5666666666666667,
+          "escape_rate": 0.43333333333333335,
           "false_reject_rate": 0.4666666666666667,
-          "box_precision": 0.5454545454545454,
-          "box_recall": 0.46153846153846156
+          "box_precision": 0.375,
+          "box_recall": 0.3
         },
         {
           "threshold": 0.3,
-          "defect_recall": 0.5897435897435898,
-          "escape_rate": 0.41025641025641024,
+          "defect_recall": 0.4666666666666667,
+          "escape_rate": 0.5333333333333333,
           "false_reject_rate": 0.13333333333333333,
-          "box_precision": 0.72,
-          "box_recall": 0.46153846153846156
+          "box_precision": 0.5625,
+          "box_recall": 0.3
         },
         {
           "threshold": 0.35,
-          "defect_recall": 0.358974358974359,
-          "escape_rate": 0.641025641025641,
+          "defect_recall": 0.16666666666666666,
+          "escape_rate": 0.8333333333333334,
           "false_reject_rate": 0.0,
           "box_precision": 1.0,
-          "box_recall": 0.358974358974359
+          "box_recall": 0.16666666666666666
         },
         {
           "threshold": 0.4,
-          "defect_recall": 0.2564102564102564,
-          "escape_rate": 0.7435897435897436,
+          "defect_recall": 0.03333333333333333,
+          "escape_rate": 0.9666666666666667,
           "false_reject_rate": 0.0,
           "box_precision": 1.0,
-          "box_recall": 0.2564102564102564
+          "box_recall": 0.03333333333333333
         },
         {
           "threshold": 0.45,
-          "defect_recall": 0.23076923076923078,
-          "escape_rate": 0.7692307692307692,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.23076923076923078
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.5,
-          "defect_recall": 0.23076923076923078,
-          "escape_rate": 0.7692307692307692,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.23076923076923078
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.55,
-          "defect_recall": 0.23076923076923078,
-          "escape_rate": 0.7692307692307692,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.23076923076923078
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.6,
-          "defect_recall": 0.23076923076923078,
-          "escape_rate": 0.7692307692307692,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.23076923076923078
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.65,
-          "defect_recall": 0.23076923076923078,
-          "escape_rate": 0.7692307692307692,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.23076923076923078
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.7,
-          "defect_recall": 0.23076923076923078,
-          "escape_rate": 0.7692307692307692,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.23076923076923078
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.75,
-          "defect_recall": 0.1794871794871795,
-          "escape_rate": 0.8205128205128205,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.1794871794871795
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.8,
-          "defect_recall": 0.07692307692307693,
-          "escape_rate": 0.9230769230769231,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.07692307692307693
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.85,
@@ -590,24 +590,24 @@
         "precision": "FP16",
         "notes": "Geti OpenVINO FP16 export with XAI head, 20 Oct 2026. Geti validation score not recorded yet."
       },
-      "eval_seconds": 4.5,
+      "eval_seconds": 2.5,
       "robustness": {
         "clean": {
-          "map50": 0.9554455445544554,
-          "map50_95": 0.3498411965256676,
-          "precision": 1.0,
-          "recall": 0.23076923076923078,
-          "defect_escape_rate": 0.7435897435897436,
+          "map50": 0.9306930693069307,
+          "map50_95": 0.31046765116072045,
+          "precision": null,
+          "recall": 0.0,
+          "defect_escape_rate": 0.9666666666666667,
           "false_reject_rate": 0.0
         }
       },
       "coco": {
-        "map50": 0.9554455445544554,
-        "map50_95": 0.3498411965256676,
+        "map50": 0.9306930693069307,
+        "map50_95": 0.31046765116072045,
         "per_class": {
           "crack": {
-            "ap50": 0.9108910891089109,
-            "ap50_95": 0.529402079305675
+            "ap50": 0.8613861386138614,
+            "ap50_95": 0.4506549885757807
           },
           "scratch": {
             "ap50": 1.0,
@@ -619,21 +619,21 @@
         "threshold": 0.6,
         "iou": 0.5,
         "overall": {
-          "tp": 9,
+          "tp": 0,
           "fp": 0,
           "fn": 30,
-          "precision": 1.0,
-          "recall": 0.23076923076923078,
-          "f1": 0.375
+          "precision": null,
+          "recall": 0.0,
+          "f1": null
         },
         "per_class": {
           "crack": {
-            "tp": 9,
+            "tp": 0,
             "fp": 0,
             "fn": 15,
-            "precision": 1.0,
-            "recall": 0.375,
-            "f1": 0.5454545454545454
+            "precision": null,
+            "recall": 0.0,
+            "f1": null
           },
           "scratch": {
             "tp": 0,
@@ -650,7 +650,7 @@
           "defective": {
             "PASS": 29,
             "REVIEW": 1,
-            "REJECT": 9
+            "REJECT": 0
           },
           "no_defect_annotated": {
             "PASS": 15,
@@ -658,33 +658,33 @@
             "REJECT": 0
           }
         },
-        "defective_images": 39,
+        "defective_images": 30,
         "no_defect_images": 15,
-        "defect_catch_rate": 0.2564102564102564,
-        "defect_escape_rate": 0.7435897435897436,
+        "defect_catch_rate": 0.03333333333333333,
+        "defect_escape_rate": 0.9666666666666667,
         "false_reject_rate": 0.0,
-        "review_rate": 0.018518518518518517
+        "review_rate": 0.022222222222222223
       },
       "operating_points": {
         "review": {
           "threshold": 0.3,
           "iou": 0.5,
           "overall": {
-            "tp": 10,
+            "tp": 1,
             "fp": 0,
             "fn": 29,
             "precision": 1.0,
-            "recall": 0.2564102564102564,
-            "f1": 0.4081632653061224
+            "recall": 0.03333333333333333,
+            "f1": 0.06451612903225806
           },
           "per_class": {
             "crack": {
-              "tp": 9,
+              "tp": 0,
               "fp": 0,
               "fn": 15,
-              "precision": 1.0,
-              "recall": 0.375,
-              "f1": 0.5454545454545454
+              "precision": null,
+              "recall": 0.0,
+              "f1": null
             },
             "scratch": {
               "tp": 1,
@@ -700,21 +700,21 @@
           "threshold": 0.6,
           "iou": 0.5,
           "overall": {
-            "tp": 9,
+            "tp": 0,
             "fp": 0,
             "fn": 30,
-            "precision": 1.0,
-            "recall": 0.23076923076923078,
-            "f1": 0.375
+            "precision": null,
+            "recall": 0.0,
+            "f1": null
           },
           "per_class": {
             "crack": {
-              "tp": 9,
+              "tp": 0,
               "fp": 0,
               "fn": 15,
-              "precision": 1.0,
-              "recall": 0.375,
-              "f1": 0.5454545454545454
+              "precision": null,
+              "recall": 0.0,
+              "f1": null
             },
             "scratch": {
               "tp": 0,
@@ -738,7 +738,7 @@
           ],
           "matrix": [
             [
-              9,
+              0,
               0,
               15
             ],
@@ -765,7 +765,7 @@
           ],
           "matrix": [
             [
-              9,
+              0,
               0,
               15
             ],
@@ -785,26 +785,26 @@
       },
       "cell_binary": {
         "flagged": {
-          "tp": 10,
+          "tp": 1,
           "fn": 29,
           "fp": 0,
           "tn": 15,
-          "accuracy": 0.46296296296296297,
+          "accuracy": 0.35555555555555557,
           "precision": 1.0,
-          "recall": 0.2564102564102564,
+          "recall": 0.03333333333333333,
           "specificity": 1.0,
-          "f1": 0.4081632653061224
+          "f1": 0.06451612903225806
         },
         "rejected": {
-          "tp": 9,
+          "tp": 0,
           "fn": 30,
           "fp": 0,
           "tn": 15,
-          "accuracy": 0.4444444444444444,
-          "precision": 1.0,
-          "recall": 0.23076923076923078,
+          "accuracy": 0.3333333333333333,
+          "precision": null,
+          "recall": 0.0,
           "specificity": 1.0,
-          "f1": 0.375
+          "f1": null
         }
       },
       "by_background": {
@@ -827,134 +827,134 @@
           "box_precision": null
         },
         "wood / brown": {
-          "n_images": 12,
-          "n_defective": 12,
+          "n_images": 3,
+          "n_defective": 3,
           "n_clean": 0,
-          "defect_catch_rate": 0.75,
+          "defect_catch_rate": 0.0,
           "false_reject_rate": null,
-          "box_recall": 0.75,
-          "box_precision": 1.0
+          "box_recall": 0.0,
+          "box_precision": null
         }
       },
       "latency": {
-        "n": 53,
-        "mean_ms": 78.62301886792454,
-        "median_ms": 77.8,
-        "p95_ms": 87.624,
+        "n": 44,
+        "mean_ms": 52.16340909090909,
+        "median_ms": 49.019999999999996,
+        "p95_ms": 68.1,
         "note": "First call excluded (warm-up)."
       },
       "threshold_sweep": [
         {
           "threshold": 0.05,
-          "defect_recall": 0.6666666666666666,
-          "escape_rate": 0.33333333333333337,
+          "defect_recall": 0.5666666666666667,
+          "escape_rate": 0.43333333333333335,
           "false_reject_rate": 0.0,
           "box_precision": 1.0,
-          "box_recall": 0.6666666666666666
+          "box_recall": 0.5666666666666667
         },
         {
           "threshold": 0.1,
-          "defect_recall": 0.46153846153846156,
-          "escape_rate": 0.5384615384615384,
+          "defect_recall": 0.3,
+          "escape_rate": 0.7,
           "false_reject_rate": 0.0,
           "box_precision": 1.0,
-          "box_recall": 0.46153846153846156
+          "box_recall": 0.3
         },
         {
           "threshold": 0.15,
-          "defect_recall": 0.358974358974359,
-          "escape_rate": 0.641025641025641,
+          "defect_recall": 0.16666666666666666,
+          "escape_rate": 0.8333333333333334,
           "false_reject_rate": 0.0,
           "box_precision": 1.0,
-          "box_recall": 0.358974358974359
+          "box_recall": 0.16666666666666666
         },
         {
           "threshold": 0.2,
-          "defect_recall": 0.3333333333333333,
-          "escape_rate": 0.6666666666666667,
+          "defect_recall": 0.13333333333333333,
+          "escape_rate": 0.8666666666666667,
           "false_reject_rate": 0.0,
           "box_precision": 1.0,
-          "box_recall": 0.3333333333333333
+          "box_recall": 0.13333333333333333
         },
         {
           "threshold": 0.25,
-          "defect_recall": 0.28205128205128205,
-          "escape_rate": 0.717948717948718,
+          "defect_recall": 0.06666666666666667,
+          "escape_rate": 0.9333333333333333,
           "false_reject_rate": 0.0,
           "box_precision": 1.0,
-          "box_recall": 0.28205128205128205
+          "box_recall": 0.06666666666666667
         },
         {
           "threshold": 0.3,
-          "defect_recall": 0.2564102564102564,
-          "escape_rate": 0.7435897435897436,
+          "defect_recall": 0.03333333333333333,
+          "escape_rate": 0.9666666666666667,
           "false_reject_rate": 0.0,
           "box_precision": 1.0,
-          "box_recall": 0.2564102564102564
+          "box_recall": 0.03333333333333333
         },
         {
           "threshold": 0.35,
-          "defect_recall": 0.23076923076923078,
-          "escape_rate": 0.7692307692307692,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.23076923076923078
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.4,
-          "defect_recall": 0.23076923076923078,
-          "escape_rate": 0.7692307692307692,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.23076923076923078
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.45,
-          "defect_recall": 0.23076923076923078,
-          "escape_rate": 0.7692307692307692,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.23076923076923078
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.5,
-          "defect_recall": 0.23076923076923078,
-          "escape_rate": 0.7692307692307692,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.23076923076923078
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.55,
-          "defect_recall": 0.23076923076923078,
-          "escape_rate": 0.7692307692307692,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.23076923076923078
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.6,
-          "defect_recall": 0.23076923076923078,
-          "escape_rate": 0.7692307692307692,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.23076923076923078
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.65,
-          "defect_recall": 0.15384615384615385,
-          "escape_rate": 0.8461538461538461,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.15384615384615385
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.7,
-          "defect_recall": 0.02564102564102564,
-          "escape_rate": 0.9743589743589743,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
           "false_reject_rate": 0.0,
-          "box_precision": 1.0,
-          "box_recall": 0.02564102564102564
+          "box_precision": null,
+          "box_recall": 0.0
         },
         {
           "threshold": 0.75,

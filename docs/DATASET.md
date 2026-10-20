@@ -44,6 +44,42 @@ and its Roboflow page on 2026-10-20. They can be quoted in the report.
 - Live-camera frames are **not** contrast-equalized or stretched like the dataset images, so expect
   lower confidence on webcam captures than on test images.
 
+## Later-session holdout: "Battery-Defect-Detection" v2 "Final300" (test only)
+
+A second export from the same Roboflow workspace, used **only as an extra test batch, never for training**.
+Facts read from `Battery-Defect-Detection.v2-final300.coco.zip` on 2026-10-20.
+
+| | |
+|---|---|
+| Source | <https://universe.roboflow.com/battery-oqphu/battery-defect-detection-lnlzj> (version 2, "Final300", generated 2025-05-23) |
+| License | **CC BY 4.0**, same author as the main dataset |
+| Export | 300 originals → 720 files (train 210 × 3 augmented, valid 60, test 30), stretch 640×640, adaptive equalization |
+| Labels | `crack`, `scratch`, plus a whole-cell `battery` box on **every** image (dropped for evaluation) |
+| Defect-free cells | 100 of 300 photos have only the `battery` box, so false rejects **can** be measured |
+
+**Overlap with the main dataset.** 123 of the 300 photos have the same original file name as a photo in
+`datasets/battery` (76 in its train split, 34 valid, 13 test). A further 17 are pixel-identical
+(dHash distance 0–7) to main-dataset photos saved under different `KakaoTalk_…` names. All 140 were
+removed. What is left was never seen by the models:
+
+| Set | Images | With defect (crack / scratch boxes) | Defect-free | Notes |
+|---|---|---|---|---|
+| `unseen_clean` | 45 | 30 (15 / 15) | 15 | from v2's valid/test splits, **never augmented**: headline set |
+| `unseen` | 160 | 110 (60 / 50) | 50 | adds one copy of each train-split original; those 115 copies carry Roboflow's augmentation (hue, grayscale, blur ≤ 3 px, shear, noise) |
+
+Backgrounds (border-colour heuristic) in `unseen`: green mat 47, grey/neutral 93, wood 20
+(`unseen_clean`: 15 / 27 / 3). The main test set is mostly wood and grey. Photos are `IMG_7171`–`IMG_72xx`,
+taken after the main dataset's `IMG_7111` and below.
+
+Rebuild after unzipping the export into `datasets/battery_later_raw/` (output is git-ignored):
+
+```powershell
+cd backend; .\.venv\Scripts\python scripts\build_holdout.py --raw ..\datasets\battery_later_raw --seen ..\datasets\battery --out ..\datasets\battery_later
+```
+
+The dHash check is not optional: the 17 renamed duplicates were mostly easy wood-background shots,
+and leaving them in raised cell catch rate by about 6 points (61% → 55% for ATSS on the 160 set). Results: [EVALUATION.md](EVALUATION.md#later-session-holdout-measured-2026-10-20).
+
 ## Where it lives locally
 
 `datasets/battery/{train,valid,test}/` (git-ignored; the license allows redistribution, but the
