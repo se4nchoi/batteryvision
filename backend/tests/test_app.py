@@ -219,3 +219,11 @@ def test_defect_distribution_counts_cells_not_boxes(client):
         for label in {d["label"] for d in r["detections"] if d["actionable"]}:
             expected[label] = expected.get(label, 0) + 1
     assert client.get("/api/metrics").json()["defect_distribution"] == expected
+
+
+def test_example_benchmark_is_marked(client):
+    real = client.get("/api/benchmark").json()
+    assert real["available"] is False and not real.get("example")
+    ex = client.get("/api/benchmark?example=true").json()
+    assert ex["example"] is True and ex["available"] is True
+    assert all(m["name"].startswith("example_") for m in ex["models"])

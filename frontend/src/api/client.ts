@@ -215,6 +215,7 @@ export interface BenchModel {
 
 export interface Benchmark {
   available: boolean;
+  example?: boolean; // bundled EXAMPLE data with invented numbers
   path: string;
   generated_at?: string;
   command?: string;
@@ -234,6 +235,6 @@ export interface Benchmark {
 
 export const modelsApi = {
   registry: () => request<{ active: string | null; models: RegisteredModel[] }>("/api/models"),
-  benchmark: () => request<Benchmark>("/api/benchmark"),
+  benchmark: (example = false) => request<Benchmark>(`/api/benchmark${example ? "?example=true" : ""}`),
   useModel: (model: string) => post<SimState>("/api/mode", { mode: "live", model }),
 };

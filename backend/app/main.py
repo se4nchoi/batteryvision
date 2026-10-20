@@ -102,7 +102,10 @@ def create_app(settings: Settings = default_settings) -> FastAPI:
         return {"active": getattr(sim.provider, "name", None), "models": [e.summary() for e in registry]}
 
     @app.get("/api/benchmark")
-    def benchmark():
+    def benchmark(example: bool = Query(False, description="Serve the bundled EXAMPLE data (invented numbers) instead")):
+        if example:
+            data = json.loads((settings.demo_dir / "benchmark_example.json").read_text(encoding="utf-8"))
+            return {"available": True, "path": "example", **data, "example": True}
         path = settings.benchmark_path
         if not path.is_file():
             return {"available": False, "path": str(path)}

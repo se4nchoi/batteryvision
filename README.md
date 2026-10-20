@@ -87,7 +87,9 @@ Example: `$env:BV_REJECT_THRESHOLD = "0.5"; .\start.ps1`
 
 ## 3D view and live camera
 
-- **3D view:** the Inspection line card has a 3D/2D switch. The 3D scene (three.js) renders the
+- **3D view:** the Inspection line card has a 3D/2D switch. After the camera, cells pass a reject
+  station (a pusher shoves them off the far side) and a review station (pushed off the near side);
+  accepted cells ride to the end of the belt into the accept bin. The 3D scene (three.js) renders the
   same backend states as the 2D view: cells move belt → camera → diverter → bin, the diverter arm
   turns toward the chosen lane, and finished cells pile up in their bin. Drag to orbit, scroll to zoom,
   and press **Reset view** to go back. It is a simulated view; no physical line is connected.
@@ -115,6 +117,10 @@ The dashboard's **Models** page then shows (pick a model in the list on the left
 - for the selected model: a **threshold sweep** (defect recall vs false rejects), the image-level
   outcome table, and the specific failure images to show in the report
 - warnings: possible train/test **near-duplicates (leakage)**, no defect-free test images, small test set
+
+**Example data:** before you have results, switch the Models page to **Example data** to preview
+the layout. Those numbers are invented (`sample_data/demo/benchmark_example.json`, made by
+`scripts/make_example_benchmark.py`), shown under an "Example data" banner, and must not be reported.
 
 A single model can also be evaluated with `scripts\evaluate.py --model ...`, which writes a Markdown report.
 See [docs/EVALUATION.md](docs/EVALUATION.md).

@@ -17,16 +17,19 @@ const PERTURB_LABEL: Record<string, string> = {
 interface Props { activeModel: string | null; mode: string; onUseModel: (name: string) => void }
 
 export function ModelsPage({ activeModel, onUseModel }: Props) {
+  const [source, setSource] = useState<"real" | "example">("real");
   const [bench, setBench] = useState<Benchmark | null>(null);
   const [registry, setRegistry] = useState<RegisteredModel[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = () => {
-    modelsApi.benchmark().then(setBench).catch((e) => setError((e as Error).message));
+    setError(null);
+    modelsApi.benchmark(source === "example").then(setBench).catch((e) => setError((e as Error).message));
     modelsApi.registry().then((r) => setRegistry(r.models)).catch(() => {});
   };
-  useEffect(load, []);
+  useEffect(() => { setSelected(null); load(); }, [source]); // eslint-disable-line react-hooks/exhaustive-deps
+  const isExample = source === "example";
 
   const models = useMemo(() => (bench?.models ?? []).filter((m) => !m.error), [bench]);
   const color = (name: string) => {
@@ -41,18 +44,31 @@ export function ModelsPage({ activeModel, onUseModel }: Props) {
       <div>
         <h1>Models</h1>
         <p className="page-sub">
-          {bench?.available && bench.test_set
-            ? `Benchmarked on ${bench.test_set.n_images} held-out test images (${bench.test_set.n_boxes} defects) · ${new Date(bench.generated_at!).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}`
-            : "Compare trained models on the same held-out test images."}
+          {isExample ? "Example layout with invented numbers."
+            : bench?.available && bench.test_set
+              ? `Benchmarked on ${bench.test_set.n_images} held-out test images (${bench.test_set.n_boxes} defects) · ${new Date(bench.generated_at!).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}`
+              : "Compare trained models on the same held-out test images."}
         </p>
       </div>
-      <div className="actions"><button className="btn" onClick={load}><IconRefresh />Reload</button></div>
+      <div className="actions">
+        <div className="segmented" role="group" aria-label="Data shown">
+          <button className={!isExample ? "active" : ""} aria-pressed={!isExample} onClick={() => setSource("real")}>Your results</button>
+          <button className={isExample ? "active" : ""} aria-pressed={isExample} onClick={() => setSource("example")}>Example data</button>
+        </div>
+        {!isExample && <button className="btn" onClick={load}><IconRefresh />Reload</button>}
+      </div>
     </header>
+  );
+  const exampleBanner = isExample && (
+    <div className="alert alert-warning">
+      <b>Example data.</b> These numbers are invented to preview this page. They were not measured and must not be reported.
+    </div>
   );
 
   if (error) return <>{header}<div className="alert alert-error">{error}</div></>;
   if (!bench) return header;
-  if (!bench.available || models.length === 0) return <>{header}<EmptyState registry={registry} failed={(bench.models ?? []).filter((m) => m.error)} /></>;
+  if (!bench.available || models.length === 0)
+    return <>{header}<EmptyState registry={registry} failed={(bench.models ?? []).filter((m) => m.error)} onExample={() => setSource("example")} /></>;
 
   const ts = bench.test_set!;
   const alerts: { tone: string; text: string }[] = [];
@@ -66,11 +82,12 @@ export function ModelsPage({ activeModel, onUseModel }: Props) {
   return (
     <>
       {header}
+      {exampleBanner}
       {alerts.map((a, i) => <div key={i} className={`alert alert-${a.tone}`}>{a.text}</div>)}
 
       <div className="models-layout">
         <section className="card model-list">
-          <div className="card-header"><h2>Trained models</h2></div>
+          <div className="card-header"><h2>Trained models</h2>{isExample && <span className="badge badge-review">Example</span>}</div>
           <ul>
             {models.map((m) => (
               <li key={m.name}>
@@ -90,8 +107,8 @@ export function ModelsPage({ activeModel, onUseModel }: Props) {
         </section>
 
         {current && (
-          <ModelDetail m={current} models={models} color={color} reject={bench.policy!.reject_threshold}
-            isActive={current.name === activeModel} canUse={loaded.has(current.name)} onUse={() => onUseModel(current.name)} />
+          <ModelDetail m={current} models={models} color={color} reject={bench.policy!.reject_threshold} isExample={isExample}
+            isActive={current.name === activeModel} canUse={!isExample && loaded.has(current.name)} onUse={() => onUseModel(current.name)} />
         )}
       </div>
 
@@ -103,9 +120,9 @@ export function ModelsPage({ activeModel, onUseModel }: Props) {
   );
 }
 
-function ModelDetail({ m, models, color, reject, isActive, canUse, onUse }: {
+function ModelDetail({ m, models, color, reject, isActive, canUse, onUse, isExample }: {
   m: BenchModel; models: BenchModel[]; color: (n: string) => string; reject: number;
-  isActive: boolean; canUse: boolean; onUse: () => void;
+  isActive: boolean; canUse: boolean; onUse: () => void; isExample: boolean;
 }) {
   const pr = m.pr_at_threshold?.overall;
   const il = m.image_level;
@@ -135,6 +152,7 @@ function ModelDetail({ m, models, color, reject, isActive, canUse, onUse }: {
           <div className="model-title">
             <span className="swatch lg" style={{ background: color(m.name) }} />
             <h2>{m.name}</h2>
+            {isExample && <span className="badge badge-review">Example data</span>}
             {isActive && <span className="badge badge-pass">Running on the line</span>}
           </div>
           {!isActive && canUse && <button className="btn btn-primary" onClick={onUse}>Use on line</button>}
@@ -218,7 +236,7 @@ function ModelDetail({ m, models, color, reject, isActive, canUse, onUse }: {
               <ul className="mistakes">
                 {m.failures!.map((f) => (
                   <li key={f.file}>
-                    <span className={`badge ${f.ground_truth === "defective" ? "badge-review" : "badge-reject"}`}>
+                    <span className={`badge ${f.ground_truth === "defective" ? "badge-reject" : "badge-review"}`}>
                       {f.ground_truth === "defective" ? "Missed" : "False reject"}
                     </span>
                     <span className="mono">{f.file}</span>
@@ -305,7 +323,7 @@ function Sweep({ rows, reject }: { rows: SweepRow[]; reject: number }) {
   );
 }
 
-function EmptyState({ registry, failed }: { registry: RegisteredModel[]; failed: BenchModel[] }) {
+function EmptyState({ registry, failed, onExample }: { registry: RegisteredModel[]; failed: BenchModel[]; onExample: () => void }) {
   return (
     <div className="grid two">
       <section className="card">
@@ -321,6 +339,10 @@ function EmptyState({ registry, failed }: { registry: RegisteredModel[]; failed:
             </li>
             <li>Click Reload.</li>
           </ol>
+          <div className="empty-example">
+            <span className="muted">Want to see the layout first?</span>
+            <button className="btn" onClick={onExample}>Preview with example data</button>
+          </div>
           {failed.length > 0 && <div className="alert alert-error">Failed to load: {failed.map((f) => `${f.name} (${f.error})`).join("; ")}</div>}
         </div>
       </section>

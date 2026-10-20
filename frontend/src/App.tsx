@@ -17,7 +17,8 @@ function Segmented<T extends string>({ value, onChange, options }: {
   return (
     <div className="segmented" role="group">
       {options.map((o) => (
-        <button key={o.value} className={value === o.value ? "active" : ""} onClick={() => onChange(o.value)}>{o.label}</button>
+        <button key={o.value} className={value === o.value ? "active" : ""} aria-pressed={value === o.value}
+          onClick={() => onChange(o.value)}>{o.label}</button>
       ))}
     </div>
   );
@@ -142,14 +143,15 @@ export default function App() {
         <div className="logo">BatteryVision</div>
         <nav className="nav">
           {NAV.map((n) => (
-            <button key={n.id} className={view === n.id ? "active" : ""} onClick={() => setView(n.id)}>
+            <button key={n.id} className={view === n.id ? "active" : ""} aria-current={view === n.id ? "page" : undefined}
+              onClick={() => setView(n.id)}>
               {n.icon}{n.label}
             </button>
           ))}
         </nav>
         <div className="sidebar-foot">
           <label className="field-label" htmlFor="source">Data source</label>
-          <select id="source" className="select" value={source} onChange={(e) => setSource(e.target.value)}>
+          <select id="source" className="select" aria-label="Data source" value={source} onChange={(e) => setSource(e.target.value)}>
             <option value="demo">Demo (scripted)</option>
             {(status?.live_models ?? []).map((m) => <option key={m} value={m}>{m}</option>)}
           </select>

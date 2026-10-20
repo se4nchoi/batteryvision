@@ -1,0 +1,967 @@
+{
+  "example": true,
+  "note": "EXAMPLE DATA for previewing the Models page. Invented numbers, not measured. Do not report.",
+  "generated_at": "2026-10-20T00:00:00+00:00",
+  "command": "scripts/make_example_benchmark.py",
+  "machine": {
+    "cpu": "example",
+    "os": "example",
+    "device": "CPU"
+  },
+  "test_set": {
+    "annotations": "example",
+    "images": "example",
+    "n_images": 170,
+    "n_boxes": 212,
+    "boxes_per_class": {
+      "scratch": 128,
+      "crack": 84
+    },
+    "images_without_annotations": 30
+  },
+  "policy": {
+    "reject_threshold": 0.6,
+    "review_threshold": 0.3,
+    "ignore_labels": []
+  },
+  "perturbations": [
+    "clean",
+    "blur",
+    "dark",
+    "bright",
+    "low_contrast",
+    "noise",
+    "jpeg_q20"
+  ],
+  "leakage": {
+    "checked": true,
+    "count": 0,
+    "test_images": 170,
+    "method": "dHash 256-bit, Hamming <= 8",
+    "near_duplicates": []
+  },
+  "models": [
+    {
+      "name": "example_yolox_tiny_fp16",
+      "path": "models/example_yolox_tiny_fp16/model.xml",
+      "sha256_12": "example02373",
+      "size_mb": 10.2,
+      "labels": [
+        "scratch",
+        "crack"
+      ],
+      "wrapper": "YOLOX",
+      "meta": {
+        "architecture": "YOLOX-Tiny",
+        "precision": "FP16",
+        "note": "EXAMPLE DATA, not a real model",
+        "geti_validation_score": {
+          "metric": "F-measure",
+          "value": 0.84,
+          "split": "validation"
+        }
+      },
+      "coco": {
+        "map50": 0.862,
+        "map50_95": 0.521,
+        "per_class": {
+          "scratch": {
+            "ap50": 0.817,
+            "ap50_95": 0.471
+          },
+          "crack": {
+            "ap50": 0.907,
+            "ap50_95": 0.571
+          }
+        }
+      },
+      "pr_at_threshold": {
+        "threshold": 0.6,
+        "overall": {
+          "tp": 171,
+          "fp": 25,
+          "fn": 41,
+          "precision": 0.874,
+          "recall": 0.808,
+          "f1": 0.84
+        },
+        "per_class": {}
+      },
+      "image_level": {
+        "matrix": {
+          "defective": {
+            "PASS": 12,
+            "REVIEW": 10,
+            "REJECT": 118
+          },
+          "no_defect_annotated": {
+            "PASS": 24,
+            "REVIEW": 2,
+            "REJECT": 4
+          }
+        },
+        "defective_images": 140,
+        "no_defect_images": 30,
+        "defect_catch_rate": 0.9143,
+        "defect_escape_rate": 0.0857,
+        "false_reject_rate": 0.1333,
+        "review_rate": 0.0706
+      },
+      "latency": {
+        "n": 169,
+        "mean_ms": 18.4,
+        "median_ms": 17.7,
+        "p95_ms": 24.8
+      },
+      "robustness": {
+        "clean": {
+          "map50": 0.862,
+          "map50_95": 0.521,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "blur": {
+          "map50": 0.713,
+          "map50_95": 0.401,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "dark": {
+          "map50": 0.77,
+          "map50_95": 0.447,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "bright": {
+          "map50": 0.804,
+          "map50_95": 0.475,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "low_contrast": {
+          "map50": 0.736,
+          "map50_95": 0.42,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "noise": {
+          "map50": 0.678,
+          "map50_95": 0.374,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "jpeg_q20": {
+          "map50": 0.816,
+          "map50_95": 0.484,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        }
+      },
+      "threshold_sweep": [
+        {
+          "threshold": 0.05,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.5257,
+          "box_precision": 0.6168,
+          "box_recall": 0.9259
+        },
+        {
+          "threshold": 0.1,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.4261,
+          "box_precision": 0.6728,
+          "box_recall": 0.9191
+        },
+        {
+          "threshold": 0.15,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.3454,
+          "box_precision": 0.7198,
+          "box_recall": 0.9098
+        },
+        {
+          "threshold": 0.2,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.28,
+          "box_precision": 0.7593,
+          "box_recall": 0.8984
+        },
+        {
+          "threshold": 0.25,
+          "defect_recall": 0.9982,
+          "escape_rate": 0.0018,
+          "false_reject_rate": 0.2269,
+          "box_precision": 0.7925,
+          "box_recall": 0.8852
+        },
+        {
+          "threshold": 0.3,
+          "defect_recall": 0.9874,
+          "escape_rate": 0.0126,
+          "false_reject_rate": 0.184,
+          "box_precision": 0.8203,
+          "box_recall": 0.8703
+        },
+        {
+          "threshold": 0.35,
+          "defect_recall": 0.9742,
+          "escape_rate": 0.0258,
+          "false_reject_rate": 0.1491,
+          "box_precision": 0.8437,
+          "box_recall": 0.8539
+        },
+        {
+          "threshold": 0.4,
+          "defect_recall": 0.9586,
+          "escape_rate": 0.0414,
+          "false_reject_rate": 0.1209,
+          "box_precision": 0.8633,
+          "box_recall": 0.8359
+        },
+        {
+          "threshold": 0.45,
+          "defect_recall": 0.9404,
+          "escape_rate": 0.0596,
+          "false_reject_rate": 0.098,
+          "box_precision": 0.8797,
+          "box_recall": 0.8166
+        },
+        {
+          "threshold": 0.5,
+          "defect_recall": 0.9197,
+          "escape_rate": 0.0803,
+          "false_reject_rate": 0.0794,
+          "box_precision": 0.8935,
+          "box_recall": 0.7959
+        },
+        {
+          "threshold": 0.55,
+          "defect_recall": 0.8963,
+          "escape_rate": 0.1037,
+          "false_reject_rate": 0.0644,
+          "box_precision": 0.9051,
+          "box_recall": 0.774
+        },
+        {
+          "threshold": 0.6,
+          "defect_recall": 0.8702,
+          "escape_rate": 0.1298,
+          "false_reject_rate": 0.0522,
+          "box_precision": 0.9149,
+          "box_recall": 0.7508
+        },
+        {
+          "threshold": 0.65,
+          "defect_recall": 0.8413,
+          "escape_rate": 0.1587,
+          "false_reject_rate": 0.0423,
+          "box_precision": 0.9231,
+          "box_recall": 0.7264
+        },
+        {
+          "threshold": 0.7,
+          "defect_recall": 0.8097,
+          "escape_rate": 0.1903,
+          "false_reject_rate": 0.0343,
+          "box_precision": 0.9299,
+          "box_recall": 0.7009
+        },
+        {
+          "threshold": 0.75,
+          "defect_recall": 0.7752,
+          "escape_rate": 0.2248,
+          "false_reject_rate": 0.0278,
+          "box_precision": 0.9357,
+          "box_recall": 0.6742
+        },
+        {
+          "threshold": 0.8,
+          "defect_recall": 0.7379,
+          "escape_rate": 0.2621,
+          "false_reject_rate": 0.0225,
+          "box_precision": 0.9405,
+          "box_recall": 0.6465
+        },
+        {
+          "threshold": 0.85,
+          "defect_recall": 0.6976,
+          "escape_rate": 0.3024,
+          "false_reject_rate": 0.0183,
+          "box_precision": 0.9446,
+          "box_recall": 0.6177
+        },
+        {
+          "threshold": 0.9,
+          "defect_recall": 0.6545,
+          "escape_rate": 0.3455,
+          "false_reject_rate": 0.0148,
+          "box_precision": 0.948,
+          "box_recall": 0.5879
+        },
+        {
+          "threshold": 0.95,
+          "defect_recall": 0.6083,
+          "escape_rate": 0.3917,
+          "false_reject_rate": 0.012,
+          "box_precision": 0.9508,
+          "box_recall": 0.557
+        }
+      ],
+      "failures": [
+        {
+          "file": "example_scratch_0412.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.21
+          ]
+        },
+        {
+          "file": "example_scratch_0587.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": null
+        },
+        {
+          "file": "example_clean_0033.jpg",
+          "ground_truth": "no_defect_annotated",
+          "decision": "REJECT",
+          "top": [
+            "crack",
+            0.67
+          ]
+        }
+      ],
+      "unmatched_model_labels": []
+    },
+    {
+      "name": "example_yolox_s_fp16",
+      "path": "models/example_yolox_s_fp16/model.xml",
+      "sha256_12": "example02036",
+      "size_mb": 18.1,
+      "labels": [
+        "scratch",
+        "crack"
+      ],
+      "wrapper": "YOLOX",
+      "meta": {
+        "architecture": "YOLOX-S",
+        "precision": "FP16",
+        "note": "EXAMPLE DATA, not a real model",
+        "geti_validation_score": {
+          "metric": "F-measure",
+          "value": 0.89,
+          "split": "validation"
+        }
+      },
+      "coco": {
+        "map50": 0.913,
+        "map50_95": 0.584,
+        "per_class": {
+          "scratch": {
+            "ap50": 0.868,
+            "ap50_95": 0.534
+          },
+          "crack": {
+            "ap50": 0.958,
+            "ap50_95": 0.634
+          }
+        }
+      },
+      "pr_at_threshold": {
+        "threshold": 0.6,
+        "overall": {
+          "tp": 185,
+          "fp": 20,
+          "fn": 27,
+          "precision": 0.902,
+          "recall": 0.871,
+          "f1": 0.886
+        },
+        "per_class": {}
+      },
+      "image_level": {
+        "matrix": {
+          "defective": {
+            "PASS": 5,
+            "REVIEW": 10,
+            "REJECT": 125
+          },
+          "no_defect_annotated": {
+            "PASS": 25,
+            "REVIEW": 2,
+            "REJECT": 3
+          }
+        },
+        "defective_images": 140,
+        "no_defect_images": 30,
+        "defect_catch_rate": 0.9643,
+        "defect_escape_rate": 0.0357,
+        "false_reject_rate": 0.1,
+        "review_rate": 0.0706
+      },
+      "latency": {
+        "n": 169,
+        "mean_ms": 41.7,
+        "median_ms": 40.0,
+        "p95_ms": 56.3
+      },
+      "robustness": {
+        "clean": {
+          "map50": 0.913,
+          "map50_95": 0.584,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "blur": {
+          "map50": 0.802,
+          "map50_95": 0.496,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "dark": {
+          "map50": 0.845,
+          "map50_95": 0.53,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "bright": {
+          "map50": 0.871,
+          "map50_95": 0.55,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "low_contrast": {
+          "map50": 0.82,
+          "map50_95": 0.509,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "noise": {
+          "map50": 0.777,
+          "map50_95": 0.475,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "jpeg_q20": {
+          "map50": 0.879,
+          "map50_95": 0.557,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        }
+      },
+      "threshold_sweep": [
+        {
+          "threshold": 0.05,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.4744,
+          "box_precision": 0.6188,
+          "box_recall": 0.998
+        },
+        {
+          "threshold": 0.1,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.3846,
+          "box_precision": 0.6765,
+          "box_recall": 0.9907
+        },
+        {
+          "threshold": 0.15,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.3117,
+          "box_precision": 0.725,
+          "box_recall": 0.9807
+        },
+        {
+          "threshold": 0.2,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.2527,
+          "box_precision": 0.7657,
+          "box_recall": 0.9685
+        },
+        {
+          "threshold": 0.25,
+          "defect_recall": 0.9995,
+          "escape_rate": 0.0005,
+          "false_reject_rate": 0.2048,
+          "box_precision": 0.7998,
+          "box_recall": 0.9543
+        },
+        {
+          "threshold": 0.3,
+          "defect_recall": 0.9894,
+          "escape_rate": 0.0106,
+          "false_reject_rate": 0.166,
+          "box_precision": 0.8285,
+          "box_recall": 0.9382
+        },
+        {
+          "threshold": 0.35,
+          "defect_recall": 0.977,
+          "escape_rate": 0.023,
+          "false_reject_rate": 0.1346,
+          "box_precision": 0.8526,
+          "box_recall": 0.9205
+        },
+        {
+          "threshold": 0.4,
+          "defect_recall": 0.9623,
+          "escape_rate": 0.0377,
+          "false_reject_rate": 0.1091,
+          "box_precision": 0.8728,
+          "box_recall": 0.9011
+        },
+        {
+          "threshold": 0.45,
+          "defect_recall": 0.9453,
+          "escape_rate": 0.0547,
+          "false_reject_rate": 0.0884,
+          "box_precision": 0.8897,
+          "box_recall": 0.8803
+        },
+        {
+          "threshold": 0.5,
+          "defect_recall": 0.9258,
+          "escape_rate": 0.0742,
+          "false_reject_rate": 0.0717,
+          "box_precision": 0.904,
+          "box_recall": 0.858
+        },
+        {
+          "threshold": 0.55,
+          "defect_recall": 0.9038,
+          "escape_rate": 0.0962,
+          "false_reject_rate": 0.0581,
+          "box_precision": 0.9159,
+          "box_recall": 0.8343
+        },
+        {
+          "threshold": 0.6,
+          "defect_recall": 0.8793,
+          "escape_rate": 0.1207,
+          "false_reject_rate": 0.0471,
+          "box_precision": 0.9259,
+          "box_recall": 0.8093
+        },
+        {
+          "threshold": 0.65,
+          "defect_recall": 0.8522,
+          "escape_rate": 0.1478,
+          "false_reject_rate": 0.0382,
+          "box_precision": 0.9344,
+          "box_recall": 0.7831
+        },
+        {
+          "threshold": 0.7,
+          "defect_recall": 0.8225,
+          "escape_rate": 0.1775,
+          "false_reject_rate": 0.0309,
+          "box_precision": 0.9414,
+          "box_recall": 0.7555
+        },
+        {
+          "threshold": 0.75,
+          "defect_recall": 0.7901,
+          "escape_rate": 0.2099,
+          "false_reject_rate": 0.0251,
+          "box_precision": 0.9474,
+          "box_recall": 0.7268
+        },
+        {
+          "threshold": 0.8,
+          "defect_recall": 0.7551,
+          "escape_rate": 0.2449,
+          "false_reject_rate": 0.0203,
+          "box_precision": 0.9523,
+          "box_recall": 0.6969
+        },
+        {
+          "threshold": 0.85,
+          "defect_recall": 0.7173,
+          "escape_rate": 0.2827,
+          "false_reject_rate": 0.0165,
+          "box_precision": 0.9565,
+          "box_recall": 0.6659
+        },
+        {
+          "threshold": 0.9,
+          "defect_recall": 0.6767,
+          "escape_rate": 0.3233,
+          "false_reject_rate": 0.0134,
+          "box_precision": 0.96,
+          "box_recall": 0.6337
+        },
+        {
+          "threshold": 0.95,
+          "defect_recall": 0.6333,
+          "escape_rate": 0.3667,
+          "false_reject_rate": 0.0108,
+          "box_precision": 0.963,
+          "box_recall": 0.6005
+        }
+      ],
+      "failures": [
+        {
+          "file": "example_scratch_0412.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.21
+          ]
+        },
+        {
+          "file": "example_scratch_0587.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": null
+        }
+      ],
+      "unmatched_model_labels": []
+    },
+    {
+      "name": "example_yolox_s_int8",
+      "path": "models/example_yolox_s_int8/model.xml",
+      "sha256_12": "example02106",
+      "size_mb": 9.6,
+      "labels": [
+        "scratch",
+        "crack"
+      ],
+      "wrapper": "YOLOX",
+      "meta": {
+        "architecture": "YOLOX-S",
+        "precision": "INT8",
+        "note": "EXAMPLE DATA, not a real model"
+      },
+      "coco": {
+        "map50": 0.894,
+        "map50_95": 0.556,
+        "per_class": {
+          "scratch": {
+            "ap50": 0.849,
+            "ap50_95": 0.506
+          },
+          "crack": {
+            "ap50": 0.939,
+            "ap50_95": 0.606
+          }
+        }
+      },
+      "pr_at_threshold": {
+        "threshold": 0.6,
+        "overall": {
+          "tp": 181,
+          "fp": 23,
+          "fn": 31,
+          "precision": 0.889,
+          "recall": 0.852,
+          "f1": 0.87
+        },
+        "per_class": {}
+      },
+      "image_level": {
+        "matrix": {
+          "defective": {
+            "PASS": 8,
+            "REVIEW": 10,
+            "REJECT": 122
+          },
+          "no_defect_annotated": {
+            "PASS": 25,
+            "REVIEW": 2,
+            "REJECT": 3
+          }
+        },
+        "defective_images": 140,
+        "no_defect_images": 30,
+        "defect_catch_rate": 0.9429,
+        "defect_escape_rate": 0.0571,
+        "false_reject_rate": 0.1,
+        "review_rate": 0.0706
+      },
+      "latency": {
+        "n": 169,
+        "mean_ms": 17.2,
+        "median_ms": 16.5,
+        "p95_ms": 23.2
+      },
+      "robustness": {
+        "clean": {
+          "map50": 0.894,
+          "map50_95": 0.556,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "blur": {
+          "map50": 0.77,
+          "map50_95": 0.457,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "dark": {
+          "map50": 0.818,
+          "map50_95": 0.495,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "bright": {
+          "map50": 0.847,
+          "map50_95": 0.518,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "low_contrast": {
+          "map50": 0.789,
+          "map50_95": 0.472,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "noise": {
+          "map50": 0.742,
+          "map50_95": 0.434,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        },
+        "jpeg_q20": {
+          "map50": 0.856,
+          "map50_95": 0.526,
+          "precision": null,
+          "recall": null,
+          "defect_escape_rate": null,
+          "false_reject_rate": null
+        }
+      },
+      "threshold_sweep": [
+        {
+          "threshold": 0.05,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.4935,
+          "box_precision": 0.6178,
+          "box_recall": 0.9763
+        },
+        {
+          "threshold": 0.1,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.4,
+          "box_precision": 0.6748,
+          "box_recall": 0.9691
+        },
+        {
+          "threshold": 0.15,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.3243,
+          "box_precision": 0.7226,
+          "box_recall": 0.9593
+        },
+        {
+          "threshold": 0.2,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.2628,
+          "box_precision": 0.7627,
+          "box_recall": 0.9474
+        },
+        {
+          "threshold": 0.25,
+          "defect_recall": 0.999,
+          "escape_rate": 0.001,
+          "false_reject_rate": 0.2131,
+          "box_precision": 0.7964,
+          "box_recall": 0.9334
+        },
+        {
+          "threshold": 0.3,
+          "defect_recall": 0.9886,
+          "escape_rate": 0.0114,
+          "false_reject_rate": 0.1727,
+          "box_precision": 0.8247,
+          "box_recall": 0.9177
+        },
+        {
+          "threshold": 0.35,
+          "defect_recall": 0.976,
+          "escape_rate": 0.024,
+          "false_reject_rate": 0.14,
+          "box_precision": 0.8484,
+          "box_recall": 0.9004
+        },
+        {
+          "threshold": 0.4,
+          "defect_recall": 0.9609,
+          "escape_rate": 0.0391,
+          "false_reject_rate": 0.1135,
+          "box_precision": 0.8684,
+          "box_recall": 0.8815
+        },
+        {
+          "threshold": 0.45,
+          "defect_recall": 0.9435,
+          "escape_rate": 0.0565,
+          "false_reject_rate": 0.092,
+          "box_precision": 0.8851,
+          "box_recall": 0.8611
+        },
+        {
+          "threshold": 0.5,
+          "defect_recall": 0.9235,
+          "escape_rate": 0.0765,
+          "false_reject_rate": 0.0746,
+          "box_precision": 0.8991,
+          "box_recall": 0.8393
+        },
+        {
+          "threshold": 0.55,
+          "defect_recall": 0.901,
+          "escape_rate": 0.099,
+          "false_reject_rate": 0.0604,
+          "box_precision": 0.9109,
+          "box_recall": 0.8161
+        },
+        {
+          "threshold": 0.6,
+          "defect_recall": 0.8759,
+          "escape_rate": 0.1241,
+          "false_reject_rate": 0.049,
+          "box_precision": 0.9208,
+          "box_recall": 0.7917
+        },
+        {
+          "threshold": 0.65,
+          "defect_recall": 0.8482,
+          "escape_rate": 0.1518,
+          "false_reject_rate": 0.0397,
+          "box_precision": 0.9291,
+          "box_recall": 0.766
+        },
+        {
+          "threshold": 0.7,
+          "defect_recall": 0.8177,
+          "escape_rate": 0.1823,
+          "false_reject_rate": 0.0322,
+          "box_precision": 0.9361,
+          "box_recall": 0.739
+        },
+        {
+          "threshold": 0.75,
+          "defect_recall": 0.7846,
+          "escape_rate": 0.2154,
+          "false_reject_rate": 0.0261,
+          "box_precision": 0.9419,
+          "box_recall": 0.711
+        },
+        {
+          "threshold": 0.8,
+          "defect_recall": 0.7487,
+          "escape_rate": 0.2513,
+          "false_reject_rate": 0.0211,
+          "box_precision": 0.9469,
+          "box_recall": 0.6817
+        },
+        {
+          "threshold": 0.85,
+          "defect_recall": 0.71,
+          "escape_rate": 0.29,
+          "false_reject_rate": 0.0171,
+          "box_precision": 0.951,
+          "box_recall": 0.6513
+        },
+        {
+          "threshold": 0.9,
+          "defect_recall": 0.6684,
+          "escape_rate": 0.3316,
+          "false_reject_rate": 0.0139,
+          "box_precision": 0.9544,
+          "box_recall": 0.6199
+        },
+        {
+          "threshold": 0.95,
+          "defect_recall": 0.624,
+          "escape_rate": 0.376,
+          "false_reject_rate": 0.0113,
+          "box_precision": 0.9573,
+          "box_recall": 0.5874
+        }
+      ],
+      "failures": [
+        {
+          "file": "example_scratch_0412.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.21
+          ]
+        },
+        {
+          "file": "example_scratch_0587.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": null
+        },
+        {
+          "file": "example_clean_0033.jpg",
+          "ground_truth": "no_defect_annotated",
+          "decision": "REJECT",
+          "top": [
+            "crack",
+            0.67
+          ]
+        }
+      ],
+      "unmatched_model_labels": []
+    }
+  ]
+}
