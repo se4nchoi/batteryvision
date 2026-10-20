@@ -293,3 +293,67 @@ def by_group(coco_gt: dict, groups: dict[int, str], coco_dets: list[dict], predi
             "box_precision": pr["precision"],
         }
     return out
+
+
+# ---- confusion matrices ---------------------------------------------------------
+
+def detection_confusion(coco_gt: dict, coco_dets: list[dict], threshold: float, iou_thr: float = 0.5) -> dict:
+    """Object-detection confusion matrix at one confidence threshold.
+
+    Rows = annotated class (+ "background" for detections with no matching box = false positives),
+    columns = predicted class (+ "background" for annotated boxes nothing matched = missed).
+    Matching is class-agnostic (IoU >= iou_thr, highest confidence first), so a crack predicted as a
+    scratch lands in the crack row / scratch column.
+    """
+    cats = used_categories(coco_gt)
+    labels = [cats[c] for c in sorted(cats)] + ["background"]
+    idx = {name: i for i, name in enumerate(labels)}
+    bg = idx["background"]
+    m = [[0] * len(labels) for _ in labels]
+    gts = defaultdict(list)
+    for a in coco_gt["annotations"]:
+        if a["category_id"] in cats:
+            gts[a["image_id"]].append((cats[a["category_id"]], a["bbox"]))
+    dets = defaultdict(list)
+    for d in coco_dets:
+        if d["score"] >= threshold and d["category_id"] in cats:
+            dets[d["image_id"]].append(d)
+    for img in coco_gt["images"]:
+        remaining = list(gts.get(img["id"], []))
+        for d in sorted(dets.get(img["id"], []), key=lambda d: -d["score"]):
+            ious = [iou_xywh(d["bbox"], g[1]) for g in remaining]
+            pred = idx[cats[d["category_id"]]]
+            if ious and max(ious) >= iou_thr:
+                gt_cls, _ = remaining.pop(int(np.argmax(ious)))
+                m[idx[gt_cls]][pred] += 1
+            else:
+                m[bg][pred] += 1
+        for gt_cls, _ in remaining:
+            m[idx[gt_cls]][bg] += 1
+    return {"threshold": threshold, "iou": iou_thr, "labels": labels, "matrix": m,
+            "note": "rows = annotated, columns = predicted; background = missed (column) / false box (row)"}
+
+
+def cell_binary(image_level: dict) -> dict:
+    """Per-cell defective-vs-good metrics from the PASS/REVIEW/REJECT matrix, for two definitions of
+    'called defective': flagged (REVIEW or REJECT) and rejected (REJECT only)."""
+    mx = image_level["matrix"]
+    d, c = mx["defective"], mx["no_defect_annotated"]
+
+    def metrics(positive: tuple[str, ...]) -> dict:
+        tp = sum(d[s] for s in positive)
+        fn = sum(v for s, v in d.items() if s not in positive)
+        fp = sum(c[s] for s in positive)
+        tn = sum(v for s, v in c.items() if s not in positive)
+        n = tp + fn + fp + tn
+        prec = tp / (tp + fp) if tp + fp else None
+        rec = tp / (tp + fn) if tp + fn else None
+        return {
+            "tp": tp, "fn": fn, "fp": fp, "tn": tn,
+            "accuracy": (tp + tn) / n if n else None,
+            "precision": prec, "recall": rec,
+            "specificity": tn / (tn + fp) if tn + fp else None,
+            "f1": 2 * prec * rec / (prec + rec) if prec and rec else None,
+        }
+
+    return {"flagged": metrics(("REVIEW", "REJECT")), "rejected": metrics(("REJECT",))}

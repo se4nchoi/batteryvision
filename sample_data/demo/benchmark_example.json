@@ -386,7 +386,145 @@
           ]
         }
       ],
-      "unmatched_model_labels": []
+      "unmatched_model_labels": [],
+      "operating_points": {
+        "review": {
+          "threshold": 0.3,
+          "overall": {
+            "tp": 192,
+            "fp": 50,
+            "fn": 20,
+            "precision": 0.794,
+            "recall": 0.908,
+            "f1": 0.8472
+          },
+          "per_class": {
+            "scratch": {
+              "tp": 111,
+              "fp": 35,
+              "fn": 15,
+              "precision": 0.7603,
+              "recall": 0.881,
+              "f1": 0.8162
+            },
+            "crack": {
+              "tp": 81,
+              "fp": 15,
+              "fn": 5,
+              "precision": 0.8438,
+              "recall": 0.9419,
+              "f1": 0.8902
+            }
+          }
+        },
+        "reject": {
+          "threshold": 0.6,
+          "overall": {
+            "tp": 171,
+            "fp": 25,
+            "fn": 41,
+            "precision": 0.874,
+            "recall": 0.808,
+            "f1": 0.8397
+          },
+          "per_class": {
+            "scratch": {
+              "tp": 99,
+              "fp": 18,
+              "fn": 31,
+              "precision": 0.8462,
+              "recall": 0.7615,
+              "f1": 0.8016
+            },
+            "crack": {
+              "tp": 72,
+              "fp": 7,
+              "fn": 10,
+              "precision": 0.9114,
+              "recall": 0.878,
+              "f1": 0.8944
+            }
+          }
+        }
+      },
+      "confusion": {
+        "review": {
+          "threshold": 0.3,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              79,
+              2,
+              5
+            ],
+            [
+              3,
+              108,
+              15
+            ],
+            [
+              15,
+              35,
+              0
+            ]
+          ]
+        },
+        "reject": {
+          "threshold": 0.6,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              70,
+              2,
+              10
+            ],
+            [
+              3,
+              96,
+              31
+            ],
+            [
+              7,
+              18,
+              0
+            ]
+          ]
+        }
+      },
+      "cell_binary": {
+        "flagged": {
+          "tp": 128,
+          "fn": 12,
+          "fp": 6,
+          "tn": 24,
+          "accuracy": 0.8941176470588236,
+          "precision": 0.9552238805970149,
+          "recall": 0.9142857142857143,
+          "specificity": 0.8,
+          "f1": 0.9343065693430657
+        },
+        "rejected": {
+          "tp": 118,
+          "fn": 22,
+          "fp": 4,
+          "tn": 26,
+          "accuracy": 0.8470588235294118,
+          "precision": 0.9672131147540983,
+          "recall": 0.8428571428571429,
+          "specificity": 0.8666666666666667,
+          "f1": 0.9007633587786259
+        }
+      }
     },
     {
       "name": "example_yolox_s_fp16",
@@ -718,7 +856,145 @@
           "top": null
         }
       ],
-      "unmatched_model_labels": []
+      "unmatched_model_labels": [],
+      "operating_points": {
+        "review": {
+          "threshold": 0.3,
+          "overall": {
+            "tp": 206,
+            "fp": 45,
+            "fn": 6,
+            "precision": 0.822,
+            "recall": 0.97,
+            "f1": 0.8899
+          },
+          "per_class": {
+            "scratch": {
+              "tp": 119,
+              "fp": 31,
+              "fn": 4,
+              "precision": 0.7933,
+              "recall": 0.9675,
+              "f1": 0.8718
+            },
+            "crack": {
+              "tp": 87,
+              "fp": 14,
+              "fn": 2,
+              "precision": 0.8614,
+              "recall": 0.9775,
+              "f1": 0.9158
+            }
+          }
+        },
+        "reject": {
+          "threshold": 0.6,
+          "overall": {
+            "tp": 185,
+            "fp": 20,
+            "fn": 27,
+            "precision": 0.902,
+            "recall": 0.871,
+            "f1": 0.8862
+          },
+          "per_class": {
+            "scratch": {
+              "tp": 107,
+              "fp": 14,
+              "fn": 20,
+              "precision": 0.8843,
+              "recall": 0.8425,
+              "f1": 0.8629
+            },
+            "crack": {
+              "tp": 78,
+              "fp": 6,
+              "fn": 7,
+              "precision": 0.9286,
+              "recall": 0.9176,
+              "f1": 0.9231
+            }
+          }
+        }
+      },
+      "confusion": {
+        "review": {
+          "threshold": 0.3,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              85,
+              2,
+              2
+            ],
+            [
+              3,
+              116,
+              4
+            ],
+            [
+              14,
+              31,
+              0
+            ]
+          ]
+        },
+        "reject": {
+          "threshold": 0.6,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              76,
+              2,
+              7
+            ],
+            [
+              3,
+              104,
+              20
+            ],
+            [
+              6,
+              14,
+              0
+            ]
+          ]
+        }
+      },
+      "cell_binary": {
+        "flagged": {
+          "tp": 135,
+          "fn": 5,
+          "fp": 5,
+          "tn": 25,
+          "accuracy": 0.9411764705882353,
+          "precision": 0.9642857142857143,
+          "recall": 0.9642857142857143,
+          "specificity": 0.8333333333333334,
+          "f1": 0.9642857142857143
+        },
+        "rejected": {
+          "tp": 125,
+          "fn": 15,
+          "fp": 3,
+          "tn": 27,
+          "accuracy": 0.8941176470588236,
+          "precision": 0.9765625,
+          "recall": 0.8928571428571429,
+          "specificity": 0.9,
+          "f1": 0.9328358208955224
+        }
+      }
     },
     {
       "name": "example_yolox_s_int8",
@@ -1054,7 +1330,145 @@
           ]
         }
       ],
-      "unmatched_model_labels": []
+      "unmatched_model_labels": [],
+      "operating_points": {
+        "review": {
+          "threshold": 0.3,
+          "overall": {
+            "tp": 202,
+            "fp": 48,
+            "fn": 10,
+            "precision": 0.809,
+            "recall": 0.952,
+            "f1": 0.8747
+          },
+          "per_class": {
+            "scratch": {
+              "tp": 117,
+              "fp": 34,
+              "fn": 8,
+              "precision": 0.7748,
+              "recall": 0.936,
+              "f1": 0.8478
+            },
+            "crack": {
+              "tp": 85,
+              "fp": 14,
+              "fn": 2,
+              "precision": 0.8586,
+              "recall": 0.977,
+              "f1": 0.914
+            }
+          }
+        },
+        "reject": {
+          "threshold": 0.6,
+          "overall": {
+            "tp": 181,
+            "fp": 23,
+            "fn": 31,
+            "precision": 0.889,
+            "recall": 0.852,
+            "f1": 0.8701
+          },
+          "per_class": {
+            "scratch": {
+              "tp": 105,
+              "fp": 16,
+              "fn": 23,
+              "precision": 0.8678,
+              "recall": 0.8203,
+              "f1": 0.8434
+            },
+            "crack": {
+              "tp": 76,
+              "fp": 7,
+              "fn": 8,
+              "precision": 0.9157,
+              "recall": 0.9048,
+              "f1": 0.9102
+            }
+          }
+        }
+      },
+      "confusion": {
+        "review": {
+          "threshold": 0.3,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              83,
+              2,
+              2
+            ],
+            [
+              3,
+              114,
+              8
+            ],
+            [
+              14,
+              34,
+              0
+            ]
+          ]
+        },
+        "reject": {
+          "threshold": 0.6,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              74,
+              2,
+              8
+            ],
+            [
+              3,
+              102,
+              23
+            ],
+            [
+              7,
+              16,
+              0
+            ]
+          ]
+        }
+      },
+      "cell_binary": {
+        "flagged": {
+          "tp": 132,
+          "fn": 8,
+          "fp": 5,
+          "tn": 25,
+          "accuracy": 0.9235294117647059,
+          "precision": 0.9635036496350365,
+          "recall": 0.9428571428571428,
+          "specificity": 0.8333333333333334,
+          "f1": 0.9530685920577618
+        },
+        "rejected": {
+          "tp": 122,
+          "fn": 18,
+          "fp": 3,
+          "tn": 27,
+          "accuracy": 0.8764705882352941,
+          "precision": 0.976,
+          "recall": 0.8714285714285714,
+          "specificity": 0.9,
+          "f1": 0.920754716981132
+        }
+      }
     }
   ]
 }

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { modelsApi, type BenchModel, type Benchmark, type RegisteredModel, type SweepRow } from "../api/client";
 import { IconRefresh } from "./Icons";
 import { BackgroundBreakdown, LineProjection } from "./ModelInsights";
+import { ModelPerformance } from "./ModelPerformance";
 
 // Fixed-order model colours (validated on white: all-pairs CVD + normal-vision pass; labels always shown).
 const MODEL_COLORS = ["#2a78d6", "#eb6834", "#1baf7a"];
@@ -108,7 +109,8 @@ export function ModelsPage({ activeModel, onUseModel }: Props) {
         </section>
 
         {current && (
-          <ModelDetail m={current} models={models} color={color} reject={bench.policy!.reject_threshold} isExample={isExample}
+          <ModelDetail m={current} models={models} color={color} reject={bench.policy!.reject_threshold}
+            reviewT={bench.policy!.review_threshold} isExample={isExample}
             isActive={current.name === activeModel} canUse={!isExample && loaded.has(current.name)} onUse={() => onUseModel(current.name)} />
         )}
       </div>
@@ -121,8 +123,8 @@ export function ModelsPage({ activeModel, onUseModel }: Props) {
   );
 }
 
-function ModelDetail({ m, models, color, reject, isActive, canUse, onUse, isExample }: {
-  m: BenchModel; models: BenchModel[]; color: (n: string) => string; reject: number;
+function ModelDetail({ m, models, color, reject, reviewT, isActive, canUse, onUse, isExample }: {
+  m: BenchModel; models: BenchModel[]; color: (n: string) => string; reject: number; reviewT: number;
   isActive: boolean; canUse: boolean; onUse: () => void; isExample: boolean;
 }) {
   const pr = m.pr_at_threshold?.overall;
@@ -182,6 +184,8 @@ function ModelDetail({ m, models, color, reject, isActive, canUse, onUse, isExam
           </div>
         </div>
       </section>
+
+      <ModelPerformance m={m} review={reviewT} reject={reject} />
 
       <div className="detail-grid">
         <section className="card">

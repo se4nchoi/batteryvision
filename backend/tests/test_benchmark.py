@@ -65,6 +65,9 @@ def test_benchmark_script(tmp_path: Path):
     assert set(good["robustness"]) == {"clean", "blur", "dark", "bright", "low_contrast", "noise", "jpeg_q20"}
     assert 0.0 <= good["coco"]["map50"] <= 1.0
     assert len(good["threshold_sweep"]) == 19 and good["latency"]["n"] == 5
+    assert set(good["confusion"]) == {"review", "reject"} and good["confusion"]["review"]["labels"][-1] == "background"
+    assert set(good["cell_binary"]) == {"flagged", "rejected"} and "accuracy" in good["cell_binary"]["flagged"]
+    assert set(good["operating_points"]) == {"review", "reject"}
     assert report["test_set"]["n_images"] == 6 and report["test_set"]["images_without_annotations"] == 3
     assert sum(report["test_set"]["backgrounds"].values()) == 6
     bg = good["by_background"]
@@ -103,3 +106,4 @@ def test_evaluate_script(tmp_path: Path):
     assert proc.returncode == 0, proc.stderr
     md = next(out.glob("evaluation_*.md")).read_text(encoding="utf-8")
     assert "## 1. Detection quality" in md and "## 5. Failure examples" in md
+    assert "Detection confusion matrix" in md and "Cell-level classification" in md

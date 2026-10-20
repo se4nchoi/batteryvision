@@ -10,7 +10,11 @@ from __future__ import annotations
 
 import json
 import math
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from app.evaluation import cell_binary  # noqa: E402
 
 OUT = Path(__file__).resolve().parents[2] / "sample_data" / "demo" / "benchmark_example.json"
 
@@ -85,6 +89,31 @@ def model_entry(name, arch, prec, m50, m5095, p, r, lat, size, rob, geti):
     }
 
 
+def add_metrics(m: dict) -> dict:
+    """Example-only operating points, confusion matrices and cell metrics derived from the invented numbers."""
+    p, r = m["pr_at_threshold"]["overall"]["precision"], m["pr_at_threshold"]["overall"]["recall"]
+    def op(prec, rec):
+        tp = round(212 * rec); fp = round(tp / prec - tp); fn = 212 - tp
+        per = {"scratch": {"tp": round(tp * 0.58), "fp": round(fp * 0.7), "fn": round(fn * 0.75)},
+               "crack": {"tp": tp - round(tp * 0.58), "fp": fp - round(fp * 0.7), "fn": fn - round(fn * 0.75)}}
+        for v in per.values():
+            v["precision"] = round(v["tp"] / (v["tp"] + v["fp"]), 4) if v["tp"] + v["fp"] else None
+            v["recall"] = round(v["tp"] / (v["tp"] + v["fn"]), 4)
+            v["f1"] = round(2 * v["precision"] * v["recall"] / (v["precision"] + v["recall"]), 4) if v["precision"] else None
+        return {"threshold": None, "overall": {"tp": tp, "fp": fp, "fn": fn, "precision": prec, "recall": rec,
+                                               "f1": round(2 * prec * rec / (prec + rec), 4)}, "per_class": per}
+    ops = {"review": op(round(p - 0.08, 3), round(min(0.97, r + 0.1), 3)), "reject": op(p, r)}
+    ops["review"]["threshold"], ops["reject"]["threshold"] = 0.3, 0.6
+    def conf(o):
+        s_, c_ = o["per_class"]["scratch"], o["per_class"]["crack"]
+        return {"threshold": o["threshold"], "iou": 0.5, "labels": ["crack", "scratch", "background"],
+                "matrix": [[c_["tp"] - 2, 2, c_["fn"]], [3, s_["tp"] - 3, s_["fn"]], [c_["fp"], s_["fp"], 0]]}
+    m["operating_points"] = ops
+    m["confusion"] = {k: conf(v) for k, v in ops.items()}
+    m["cell_binary"] = cell_binary(m["image_level"])
+    return m
+
+
 def main() -> None:
     report = {
         "example": True,
@@ -99,7 +128,7 @@ def main() -> None:
         "policy": {"reject_threshold": 0.6, "review_threshold": 0.3, "ignore_labels": []},
         "perturbations": list(PERTURB_DROP),
         "leakage": {"checked": True, "count": 0, "test_images": N_DEFECTIVE + N_CLEAN, "method": "dHash 256-bit, Hamming <= 8", "near_duplicates": []},
-        "models": [model_entry(n, *v) for n, v in MODELS.items()],
+        "models": [add_metrics(model_entry(n, *v)) for n, v in MODELS.items()],
     }
     OUT.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"Wrote example (not measured) benchmark to {OUT}")

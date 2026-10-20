@@ -51,3 +51,29 @@ def test_image_level_matrix():
     assert ops["matrix"]["defective"] == {"PASS": 1, "REVIEW": 1, "REJECT": 0}
     assert ops["matrix"]["no_defect_annotated"] == {"PASS": 0, "REVIEW": 0, "REJECT": 1}
     assert ops["defect_escape_rate"] == 0.5 and ops["false_reject_rate"] == 1.0
+
+
+def test_detection_confusion_matrix():
+    from app.evaluation import detection_confusion
+    preds = {1: [det("crack", 0.9, 0.1, 0.1, 0.4, 0.3)],   # scratch box predicted as crack
+             2: [det("crack", 0.8, 0.5, 0.5, 0.7, 0.9)],   # correct crack
+             3: [det("scratch", 0.7, 0, 0, 0.2, 0.2)]}     # false box on a clean image
+    c = detection_confusion(COCO, build(preds), threshold=0.5)
+    assert c["labels"] == ["scratch", "crack", "background"]
+    m = {(c["labels"][i], c["labels"][j]): v for i, row in enumerate(c["matrix"]) for j, v in enumerate(row)}
+    assert m[("scratch", "crack")] == 1 and m[("crack", "crack")] == 1 and m[("background", "scratch")] == 1
+    assert sum(m.values()) == 3
+    # at a higher threshold the low-confidence boxes drop out and become missed / disappear
+    c2 = detection_confusion(COCO, build(preds), threshold=0.85)
+    m2 = {(c2["labels"][i], c2["labels"][j]): v for i, row in enumerate(c2["matrix"]) for j, v in enumerate(row)}
+    assert m2[("crack", "background")] == 1 and m2[("background", "scratch")] == 0
+
+
+def test_cell_binary_metrics():
+    from app.evaluation import cell_binary
+    il = {"matrix": {"defective": {"PASS": 1, "REVIEW": 3, "REJECT": 6},
+                     "no_defect_annotated": {"PASS": 8, "REVIEW": 1, "REJECT": 1}}}
+    b = cell_binary(il)
+    f, r = b["flagged"], b["rejected"]
+    assert (f["tp"], f["fn"], f["fp"], f["tn"]) == (9, 1, 2, 8) and f["accuracy"] == 17 / 20
+    assert (r["tp"], r["fn"], r["fp"], r["tn"]) == (6, 4, 1, 9) and r["specificity"] == 0.9

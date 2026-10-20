@@ -22,8 +22,8 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from app.config import REPO_ROOT, settings  # noqa: E402
-from app.evaluation import (coco_map, image_level_outcomes, latency_summary, pr_at_threshold,  # noqa: E402
-                            to_coco_detections, used_categories)
+from app.evaluation import (cell_binary, coco_map, detection_confusion, image_level_outcomes,  # noqa: E402
+                            latency_summary, pr_at_threshold, to_coco_detections, used_categories)
 from app.inference.openvino_provider import OpenVINOInferenceProvider  # noqa: E402
 from app.policy import DecisionPolicy  # noqa: E402
 
@@ -32,6 +32,17 @@ def fmt(v, pct=False):
     if v is None or v != v:  # None or NaN
         return "n/a"
     return f"{v * 100:.1f}%" if pct else f"{v:.3f}"
+
+
+def confusion_md(conf: dict) -> list[str]:
+    out = []
+    for name, c in conf.items():
+        labels = c["labels"]
+        out += [f"## Detection confusion matrix at confidence >= {c['threshold']} ({name}), IoU >= {c['iou']}", "",
+                "Rows: annotated. Columns: predicted. `background` column = missed box; `background` row = false box.", "",
+                "| annotated \\ predicted | " + " | ".join(labels) + " |", "|---" * (len(labels) + 1) + "|",
+                *[f"| {labels[i]} | " + " | ".join(str(v) for v in row) + " |" for i, row in enumerate(c["matrix"])], ""]
+    return out
 
 
 def main() -> None:
@@ -76,7 +87,11 @@ def main() -> None:
 
     mp = coco_map(coco, coco_dets)
     pr = pr_at_threshold(coco, coco_dets, args.reject)
+    pr_review = pr_at_threshold(coco, coco_dets, args.review)
     ops = image_level_outcomes(coco, preds, policy, ignore)
+    conf = {"review": detection_confusion(coco, coco_dets, args.review),
+            "reject": detection_confusion(coco, coco_dets, args.reject)}
+    binary = cell_binary(ops)
     lat = latency_summary(latencies)
 
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -85,7 +100,8 @@ def main() -> None:
             "n_images": len(coco["images"]), "n_annotations": len(coco["annotations"]),
             "policy": {"reject": args.reject, "review": args.review, "ignore_labels": sorted(ignore)},
             "unmatched_model_labels": sorted(unmatched)}
-    report = {"meta": meta, "coco": mp, "pr_at_threshold": pr,
+    report = {"meta": meta, "coco": mp, "pr_at_threshold": pr, "pr_at_review": pr_review,
+              "confusion": conf, "cell_binary": binary,
               "image_level": {k: v for k, v in ops.items() if k != "per_image"}, "latency": lat}
     (args.out / f"evaluation_{stamp}.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
 
@@ -99,10 +115,18 @@ def main() -> None:
         "| Class | AP@50 | AP@50:95 |", "|---|---|---|",
         *[f"| {n} | {fmt(v['ap50'])} | {fmt(v['ap50_95'])} |" for n, v in mp["per_class"].items()],
         f"| **all (mean)** | **{fmt(mp['map50'])}** | **{fmt(mp['map50_95'])}** |", "",
-        f"## 2. Precision / recall at confidence >= {args.reject}, IoU >= 0.5", "",
-        "| Class | TP | FP | FN | Precision | Recall | F1 |", "|---|---|---|---|---|---|---|",
-        *[f"| {n} | {s['tp']} | {s['fp']} | {s['fn']} | {fmt(s['precision'])} | {fmt(s['recall'])} | {fmt(s['f1'])} |"
-          for n, s in {**pr["per_class"], "**all**": pr["overall"]}.items()], "",
+        "## 2. Precision / recall / F1 per class (IoU >= 0.5)", "",
+        "| Class | Threshold | TP | FP | FN | Precision | Recall | F1 |", "|---|---|---|---|---|---|---|---|",
+        *[f"| {n} | {t} | {s['tp']} | {s['fp']} | {s['fn']} | {fmt(s['precision'])} | {fmt(s['recall'])} | {fmt(s['f1'])} |"
+          for t, src in ((f"{args.review} (review)", pr_review), (f"{args.reject} (reject)", pr))
+          for n, s in {**src["per_class"], "**all**": src["overall"]}.items()], "",
+        *confusion_md(conf),
+        "## Cell-level classification (defective vs. good)", "",
+        "| 'Defective' means | Accuracy | Precision | Recall | Specificity | F1 | TP / FN / FP / TN |",
+        "|---|---|---|---|---|---|---|",
+        *[f"| {label} | {fmt(b['accuracy'], True)} | {fmt(b['precision'], True)} | {fmt(b['recall'], True)} | "
+          f"{fmt(b['specificity'], True)} | {fmt(b['f1'])} | {b['tp']} / {b['fn']} / {b['fp']} / {b['tn']} |"
+          for label, b in (("flagged (REVIEW or REJECT)", binary["flagged"]), ("auto-rejected only", binary["rejected"]))], "",
         "## 3. Image-level operational outcome (policy decision vs. annotation)", "",
         "Rows: whether the image has >= 1 actionable defect annotation. Columns: policy decision.",
         "This measures the PASS/REVIEW/REJECT routing, not detection localization.", "",

@@ -217,6 +217,12 @@ export interface BenchModel {
     box_recall: number | null; box_precision: number | null;
   }>;
   unmatched_model_labels?: string[];
+  operating_points?: Record<"review" | "reject", { threshold: number; overall: PR; per_class: Record<string, PR> }>;
+  confusion?: Record<"review" | "reject", { threshold: number; iou: number; labels: string[]; matrix: number[][] }>;
+  cell_binary?: Record<"flagged" | "rejected", {
+    tp: number; fn: number; fp: number; tn: number;
+    accuracy: number | null; precision: number | null; recall: number | null; specificity: number | null; f1: number | null;
+  }>;
 }
 
 export interface Benchmark {

@@ -57,6 +57,7 @@ export function BatchesPage({ onNotice }: { onNotice: (msg: string | null) => vo
             the machine from those results alone.</>
           : <>Lot genealogy is simulated: every {report?.lot_size ?? 12} cells form a lot, and each lot is assigned a
             winder, tab welder and formation rack. Inject a fault to see whether the analysis can find it.</>}
+        {" "}The process steps are real cell-manufacturing stages; machine IDs and lot assignments are not real records.
       </div>
 
       <div className="stats stats-4">

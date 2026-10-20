@@ -35,7 +35,8 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from app.config import REPO_ROOT, settings  # noqa: E402
-from app.evaluation import (background_group, by_group, coco_map, dataset_summary, dhash,  # noqa: E402
+from app.evaluation import (background_group, by_group, cell_binary, coco_map, dataset_summary,  # noqa: E402
+                            detection_confusion, dhash,
                             image_level_outcomes, latency_summary, near_duplicates, perturbations,
                             pr_at_threshold, threshold_sweep, to_coco_detections, used_categories)
 from app.inference.openvino_provider import OpenVINOInferenceProvider  # noqa: E402
@@ -73,6 +74,11 @@ def evaluate_model(provider, coco, images_dir, policy, ignore, perturbs, sweep_t
             per_image = ops.pop("per_image")
             result.update({
                 "coco": mp, "pr_at_threshold": pr, "image_level": ops,
+                # both operating points of the policy: REVIEW threshold (flag) and REJECT threshold
+                "operating_points": {"review": pr_at_threshold(coco, coco_dets, policy.review_threshold), "reject": pr},
+                "confusion": {"review": detection_confusion(coco, coco_dets, policy.review_threshold),
+                              "reject": detection_confusion(coco, coco_dets, policy.reject_threshold)},
+                "cell_binary": cell_binary(ops),
                 "by_background": by_group(coco, groups, coco_dets, policy_preds, policy, ignore),
                 "latency": latency_summary(latencies),
                 "threshold_sweep": threshold_sweep(coco, coco_dets, preds, ignore, sweep_thresholds),

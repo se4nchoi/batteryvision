@@ -345,3 +345,21 @@ code { font: 12.5px var(--mono); background: var(--subtle); border: 1px solid va
   .machine-row { grid-template-columns: 44px 1fr 48px; }
   .machine-note { grid-column: 2 / -1; }
 }
+
+/* ---- model performance ------------------------------------------------- */
+.perf { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+.perf-table th, .perf-table td { padding: 7px 10px; }
+.row-total td { border-top: 2px solid var(--border-strong); font-weight: 600; }
+.confusion { border-collapse: separate; border-spacing: 3px; width: 100%; font-variant-numeric: tabular-nums; }
+.confusion th { font-size: 12px; font-weight: 600; color: var(--text-3); padding: 4px 6px; text-align: center; }
+.confusion th.corner { text-align: left; font-weight: 500; }
+.confusion tbody th { text-align: left; color: var(--text-2); }
+.confusion td { text-align: center; padding: 10px 6px; border-radius: 6px; font-size: 16px; font-weight: 600; }
+.confusion td.cm-ok { background: rgba(37, 99, 235, var(--a)); color: #0b2a6b; }
+.confusion td.cm-bad { background: rgba(240, 68, 56, var(--a)); color: #7a1a12; }
+.confusion td.cm-zero { background: var(--subtle); color: var(--text-3); font-weight: 400; }
+.cell-metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+.cell-metrics > div { display: flex; flex-direction: column; }
+.cell-metric { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+@media (max-width: 1400px) { .perf { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .perf > div:first-child { grid-column: 1 / -1; } }
+@media (max-width: 1100px) { .perf { grid-template-columns: minmax(0, 1fr); } .cell-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

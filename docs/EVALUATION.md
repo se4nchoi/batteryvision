@@ -82,7 +82,7 @@ then report test results at the chosen values. Trade-off: lower thresholds → f
 
 ## Results: ATSS-MobileNetV2 (measured 2026-10-20)
 
-Source files: `docs/results/benchmark.json` and `docs/results/evaluation_20261020_140841.md`.
+Source files: `docs/results/benchmark.json` and `docs/results/evaluation_20261020_151753.md`.
 Everything below was measured on the 153-image held-out test split on this laptop's CPU.
 
 **Dataset:** Roboflow "Battery Defect Inspection" v8 (CC BY 4.0), classes crack / scratch,
@@ -101,15 +101,36 @@ defect annotations: 37. Test photos come from the same photo sessions as trainin
 | scratch | 0.866 | 0.520 |
 | **mean** | **0.933** | **0.592** |
 
-### 2. Precision / recall at conf ≥ 0.60, IoU ≥ 0.5
-| Class | TP | FP | FN | Precision | Recall | F1 |
-|---|---|---|---|---|---|---|
-| crack | 59 | 0 | 1 | 1.000 | 0.983 | 0.992 |
-| scratch | 29 | 0 | 52 | 1.000 | 0.358 | 0.527 |
-| **all** | 88 | 0 | 53 | 1.000 | 0.624 | 0.769 |
+### 2. Precision / recall / F1 per class (IoU ≥ 0.5), at both operating points
+| Class | Threshold | TP | FP | FN | Precision | Recall | F1 |
+|---|---|---|---|---|---|---|---|
+| crack | 0.30 (flag for review) | 60 | 3 | 0 | 0.952 | 1.000 | 0.976 |
+| scratch | 0.30 (flag for review) | 62 | 13 | 19 | 0.827 | 0.765 | 0.795 |
+| **all** | 0.30 | 122 | 16 | 19 | 0.884 | 0.865 | **0.875** |
+| crack | 0.60 (auto-reject) | 59 | 0 | 1 | 1.000 | 0.983 | 0.992 |
+| scratch | 0.60 (auto-reject) | 29 | 0 | 52 | 1.000 | 0.358 | 0.527 |
+| **all** | 0.60 | 88 | 0 | 53 | 1.000 | 0.624 | **0.769** |
 
-Scratches are found but with lower confidence (most fall between 0.30 and 0.60), so at the 0.60
-reject threshold they go to REVIEW, not REJECT. Cracks are found with high confidence.
+Cracks are detected almost perfectly. Scratches are the weak class: at 0.30, 19 of 81 scratch boxes
+are missed and 13 false scratch boxes appear; at 0.60 most scratches fall below the auto-reject line.
+
+### Detection confusion matrix (boxes, IoU ≥ 0.5)
+At confidence ≥ 0.30. Rows = annotated, columns = predicted; background = missed (column) / false box (row).
+
+| annotated \ predicted | crack | scratch | background |
+|---|---|---|---|
+| crack | 60 | 0 | 0 |
+| scratch | 0 | 62 | 19 |
+| background | 3 | 13 | 0 |
+
+The model never confuses crack and scratch (0 off-diagonal between the classes at either threshold);
+its errors are missed and false scratches.
+
+### Cell-level classification (defective vs. good, 153 test images)
+| 'Defective' means | Accuracy | Precision | Recall | Specificity | F1 | TP / FN / FP / TN |
+|---|---|---|---|---|---|---|
+| flagged (review or reject) | **98.0%** | 97.5% | 100.0% | 91.9% | **0.987** | 116 / 0 / 3 / 34 |
+| auto-rejected only | 81.0% | 100.0% | 75.0% | 100.0% | 0.857 | 87 / 29 / 0 / 37 |
 
 ### 3. Image-level outcomes
 | GT \ Decision | PASS | REVIEW | REJECT |
