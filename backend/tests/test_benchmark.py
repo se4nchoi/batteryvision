@@ -88,3 +88,18 @@ def test_background_group_heuristic():
     assert background_group(Image.new("RGB", (100, 100), (60, 120, 80))) == "green mat"
     assert background_group(Image.new("RGB", (100, 100), (130, 130, 128))) == "grey / neutral"
     assert background_group(Image.new("RGB", (100, 100), (150, 120, 85))) == "wood / brown"
+
+
+def test_evaluate_script(tmp_path: Path):
+    """scripts/evaluate.py runs end to end and writes a Markdown report."""
+    ann, images = make_test_set(tmp_path)
+    xml = tmp_path / "m" / "model.xml"
+    xml.parent.mkdir()
+    build_ssd_like_ir(xml)
+    out = tmp_path / "results"
+    proc = subprocess.run([sys.executable, "scripts/evaluate.py", "--model", str(xml), "--coco", str(ann),
+                           "--images", str(images), "--out", str(out)],
+                          cwd=BACKEND, capture_output=True, text=True, timeout=300)
+    assert proc.returncode == 0, proc.stderr
+    md = next(out.glob("evaluation_*.md")).read_text(encoding="utf-8")
+    assert "## 1. Detection quality" in md and "## 5. Failure examples" in md

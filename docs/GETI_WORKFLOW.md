@@ -73,6 +73,12 @@ CC BY 4.0, classes **crack** and **scratch**. Verified facts and leakage checks 
 
 ## 6. Export / download the model
 
+> Your Geti instance uses the Geti 2.x interface (Models → Model variants → OpenVINO), which is
+> slightly different from the v3 docs. Download **"OpenVINO FP16 with XAI head (Explanation included)"**:
+> the zip holds `model.xml` + `model.bin` with labels and preprocessing embedded, plus a saliency
+> output that the dashboard shows as a heatmap. Unzip it into `models\<name>\` (one folder per model).
+> Geti models expect **RGB** input (BatteryVision's default).
+
 - For each trained model, download the **OpenVINO** format (**FP16**). Also download **INT8** of
   the best model if offered; FP16 vs INT8 makes a quick accuracy-vs-speed comparison.
 - Put each download in its own folder, named after what it is:

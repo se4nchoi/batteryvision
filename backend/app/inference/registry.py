@@ -78,7 +78,7 @@ def load_registry(settings: Settings) -> list[ModelEntry]:
         try:
             entry.provider = OpenVINOInferenceProvider(
                 xml, settings.device, settings.review_threshold, settings.ignore_labels,
-                name=name, explain_dir=settings.explain_dir)
+                name=name, explain_dir=settings.explain_dir, input_order=settings.input_order)
         except Exception as exc:
             entry.error = f"{type(exc).__name__}: {exc}"
             log.warning("Model %s failed to load: %s", name, entry.error)

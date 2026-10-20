@@ -12,6 +12,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# Windows consoles may use a legacy code page (e.g. cp949); never crash on printing.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from app.inference.openvino_provider import OpenVINOInferenceProvider  # noqa: E402
 

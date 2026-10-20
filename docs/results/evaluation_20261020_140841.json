@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "model": "..\\models\\atss_mbv2_fp16_xai\\model.xml",
+    "device": "CPU",
+    "test_annotations": "..\\datasets\\battery\\test\\_annotations.coco.json",
+    "n_images": 153,
+    "n_annotations": 141,
+    "policy": {
+      "reject": 0.6,
+      "review": 0.3,
+      "ignore_labels": []
+    },
+    "unmatched_model_labels": []
+  },
+  "coco": {
+    "map50": 0.9328737901040666,
+    "map50_95": 0.59246764367272,
+    "per_class": {
+      "crack": {
+        "ap50": 1.0,
+        "ap50_95": 0.6645306500373678
+      },
+      "scratch": {
+        "ap50": 0.8657475802081331,
+        "ap50_95": 0.5204046373080723
+      }
+    }
+  },
+  "pr_at_threshold": {
+    "threshold": 0.6,
+    "iou": 0.5,
+    "overall": {
+      "tp": 88,
+      "fp": 0,
+      "fn": 53,
+      "precision": 1.0,
+      "recall": 0.624113475177305,
+      "f1": 0.7685589519650655
+    },
+    "per_class": {
+      "crack": {
+        "tp": 59,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1.0,
+        "recall": 0.9833333333333333,
+        "f1": 0.9915966386554621
+      },
+      "scratch": {
+        "tp": 29,
+        "fp": 0,
+        "fn": 52,
+        "precision": 1.0,
+        "recall": 0.35802469135802467,
+        "f1": 0.5272727272727272
+      }
+    }
+  },
+  "image_level": {
+    "matrix": {
+      "defective": {
+        "PASS": 0,
+        "REVIEW": 29,
+        "REJECT": 87
+      },
+      "no_defect_annotated": {
+        "PASS": 34,
+        "REVIEW": 3,
+        "REJECT": 0
+      }
+    },
+    "defective_images": 116,
+    "no_defect_images": 37,
+    "defect_catch_rate": 1.0,
+    "defect_escape_rate": 0.0,
+    "false_reject_rate": 0.0,
+    "review_rate": 0.20915032679738563
+  },
+  "latency": {
+    "n": 152,
+    "mean_ms": 45.3925,
+    "median_ms": 44.7,
+    "p95_ms": 51.1975,
+    "note": "First call excluded (warm-up)."
+  }
+}

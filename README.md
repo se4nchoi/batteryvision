@@ -81,6 +81,7 @@ Configuration (environment variables, set before `.\start.ps1`):
 | `BV_REVIEW_THRESHOLD` | `0.30` | confidence in [review, reject) → REVIEW |
 | `BV_IGNORE_LABELS` | *(empty)* | comma list of labels shown but never acted on, e.g. `battery` |
 | `BV_TICK_SECONDS` | `1.8` | seconds per line step while running |
+| `BV_INPUT_ORDER` | `rgb` | channel order fed to the model; Geti exports expect RGB |
 | `BV_LIVE_DIR` | `sample_data\live` | images fed to the line in LIVE mode |
 
 Example: `$env:BV_REJECT_THRESHOLD = "0.5"; .\start.ps1`

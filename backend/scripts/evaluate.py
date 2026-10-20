@@ -17,6 +17,9 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# Windows consoles may use a legacy code page (e.g. cp949); never crash on printing.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from app.config import REPO_ROOT, settings  # noqa: E402
 from app.evaluation import (coco_map, image_level_outcomes, latency_summary, pr_at_threshold,  # noqa: E402
@@ -50,7 +53,8 @@ def main() -> None:
     name_to_cat = {n.lower(): c for c, n in cats.items()}
 
     # Low threshold so the precision/recall curve (mAP) sees all candidate boxes.
-    provider = OpenVINOInferenceProvider(args.model, args.device, min_confidence=0.01, ignore_labels=list(ignore))
+    provider = OpenVINOInferenceProvider(args.model, args.device, min_confidence=0.01, ignore_labels=list(ignore),
+                                         input_order=settings.input_order)
     print(f"Model labels: {provider.labels}\nDataset categories with annotations: {sorted(cats.values())}")
 
     coco_dets, preds, latencies, unmatched = [], {}, [], set()
@@ -118,8 +122,8 @@ def main() -> None:
               if lat else "Not enough images to measure.", ""]
     fails = [(img["file_name"], *ops["per_image"][img["id"]]) for img in coco["images"]
              if ops["per_image"][img["id"]] in (("defective", "PASS"), ("no_defect_annotated", "REJECT"))]
-    lines += ["## 5. Failure examples (for the report)", "",
-              *[f"- `{f}` — {gt}, decided {st}" for f, gt, st in fails[:20]] or ["- none"], ""]
+    fail_lines = [f"- `{f}` — {gt}, decided {st}" for f, gt, st in fails[:20]] or ["- none"]
+    lines += ["## 5. Failure examples (for the report)", "", *fail_lines, ""]
     md = args.out / f"evaluation_{stamp}.md"
     md.write_text("\n".join(lines), encoding="utf-8")
     print("\n".join(lines))

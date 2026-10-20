@@ -30,6 +30,9 @@ from pathlib import Path
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# Windows consoles may use a legacy code page (e.g. cp949); never crash on printing.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from app.config import REPO_ROOT, settings  # noqa: E402
 from app.evaluation import (background_group, by_group, coco_map, dataset_summary, dhash,  # noqa: E402
@@ -136,7 +139,8 @@ def main() -> None:
         meta_file = xml.parent / "meta.json"
         meta = json.loads(meta_file.read_text(encoding="utf-8")) if meta_file.is_file() else {}
         try:
-            provider = OpenVINOInferenceProvider(xml, args.device, min_confidence=0.01, ignore_labels=list(ignore), name=name)
+            provider = OpenVINOInferenceProvider(xml, args.device, min_confidence=0.01, ignore_labels=list(ignore), name=name,
+                                                 input_order=settings.input_order)
         except Exception as exc:
             print(f"    failed to load: {exc}")
             models.append({"name": name, "path": str(xml), "error": f"{type(exc).__name__}: {exc}", "meta": meta})

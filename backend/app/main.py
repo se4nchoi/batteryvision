@@ -65,6 +65,12 @@ def create_app(settings: Settings = default_settings) -> FastAPI:
         settings.live_dir = settings.dataset_dir / "test"
     initial = live if (live is not None and settings.mode in ("live", "auto")) else demo
     sim = LineSimulation(initial, policy, store, settings.live_dir, settings.tick_seconds)
+    # Live line on the annotated test split: show the dataset label next to each model decision.
+    test_replay = replay.get("test")
+    if test_replay is not None and settings.live_dir.resolve() == test_replay.split_dir.resolve():
+        sim.live_order = test_replay.order
+        sim.live_truth = {f: test_replay.ground_truth(f) for f in test_replay.images}
+        sim.reset()
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
 
     async def run_line():
@@ -237,7 +243,8 @@ def create_app(settings: Settings = default_settings) -> FastAPI:
             target = (dist / path).resolve()
             if path and target.is_file() and dist.resolve() in target.parents:
                 return FileResponse(target)
-            return FileResponse(dist / "index.html")
+            # no-cache: always pick up the latest build (assets are content-hashed, so they may cache)
+            return FileResponse(dist / "index.html", headers={"Cache-Control": "no-cache"})
 
     return app
 

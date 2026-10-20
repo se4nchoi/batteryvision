@@ -1,7 +1,7 @@
 # Evaluation plan and results template
 
-> **Status:** no model has been evaluated yet. Every `TBD` below must be filled from
-> `scripts/evaluate.py` output or Geti screenshots. Do not estimate or invent numbers.
+> **Status:** ATSS-MobileNetV2 evaluated on 2026-10-20 (results below). YOLOX results pending.
+> Fill remaining `TBD` / ✍️ items only from `scripts/benchmark.py` / `evaluate.py` output or Geti screenshots.
 
 ## What is measured, and what it means
 
@@ -80,41 +80,72 @@ inference error                   → REVIEW (fail-safe: an error never passes a
 The thresholds are placeholders. If you tune them, tune on the validation set or justify the choice,
 then report test results at the chosen values. Trade-off: lower thresholds → fewer escapes, more reviews/false rejects.
 
-## Results (fill in)
+## Results: ATSS-MobileNetV2 (measured 2026-10-20)
+
+Source files: `docs/results/benchmark.json` and `docs/results/evaluation_20261020_140841.md`.
+Everything below was measured on the 153-image held-out test split on this laptop's CPU.
 
 **Dataset:** Roboflow "Battery Defect Inspection" v8 (CC BY 4.0), classes crack / scratch,
 images train/valid/test = 3,214 (1,072 originals ×3 augmented) / 306 / 153, test images without
 defect annotations: 37. Test photos come from the same photo sessions as training (see `docs/DATASET.md`).
-**Model:** YOLOX-TBD, input TBD, trained in Geti vTBD for TBD epochs (TBD min).
+**Model:** ATSS-MobileNetV2 (Geti "Balance" preset), version 1, exported as OpenVINO FP16 with XAI head
+(5.8 MB). YOLOX-S: TBD (training queued). Model input is RGB (verified: RGB mAP@50 0.933 vs BGR 0.891).
 
-### Geti validation score (screenshot)
-TBD
+### Geti validation score
+85.9% (Geti's own score on its validation split; screenshot ✍️).
 
 ### 1. Detection quality: held-out test set
 | Class | AP@50 | AP@50:95 |
 |---|---|---|
-| TBD | TBD | TBD |
-| **mean** | **TBD** | **TBD** |
+| crack | 1.000 | 0.665 |
+| scratch | 0.866 | 0.520 |
+| **mean** | **0.933** | **0.592** |
 
 ### 2. Precision / recall at conf ≥ 0.60, IoU ≥ 0.5
 | Class | TP | FP | FN | Precision | Recall | F1 |
 |---|---|---|---|---|---|---|
-| TBD | | | | | | |
+| crack | 59 | 0 | 1 | 1.000 | 0.983 | 0.992 |
+| scratch | 29 | 0 | 52 | 1.000 | 0.358 | 0.527 |
+| **all** | 88 | 0 | 53 | 1.000 | 0.624 | 0.769 |
+
+Scratches are found but with lower confidence (most fall between 0.30 and 0.60), so at the 0.60
+reject threshold they go to REVIEW, not REJECT. Cracks are found with high confidence.
 
 ### 3. Image-level outcomes
 | GT \ Decision | PASS | REVIEW | REJECT |
 |---|---|---|---|
-| defective | TBD | TBD | TBD |
-| no defect annotated | TBD | TBD | TBD |
+| defective (116) | 0 | 29 | 87 |
+| no defect annotated (37) | 34 | 3 | 0 |
 
-Defect escape rate TBD · False reject rate TBD · Review rate TBD
+Defect escape rate **0%** · False reject rate **0%** · Review rate 20.9% (32 of 153).
+Threshold sweep (reject-only decision): at 0.30, 100% of defective images rejected with 8.1% of clean
+images rejected; at 0.45, 91.4% / 0%; at 0.60, 75.0% / 0%.
 
 ### 4. Latency
-TBD ms mean / TBD p95 on TBD CPU, FP16/FP32 TBD.
+45.4 ms mean / 44.7 ms median / 51.2 ms p95 per image (ModelAPI call incl. pre/post-processing,
+FP16, CPU, n = 152, first call excluded). About 50 ms per cell on the virtual line.
+
+### Robustness (mAP@50 on altered copies of the test images)
+Original 0.933 · blur 0.861 · darker 0.873 · low contrast 0.878 · brighter 0.909 · noise 0.921 · heavy JPEG 0.922.
+Blur and darkness cost the most (≈ 6–7 points).
+
+### By background (border-colour heuristic)
+| Background | Images | Defective caught | Good flagged | Box recall @0.60 |
+|---|---|---|---|---|
+| green mat | 40 | 100% | – (no clean images) | 73% |
+| grey / neutral | 56 | 100% | 0% | 74% |
+| wood / brown | 57 | 100% | 0% | 49% |
+
+Box recall on wood backgrounds is markedly lower: the model is less confident on scratches against
+wood grain. Cell-level catch rate stays 100% because those cells still go to REVIEW.
+
+### Leakage check
+22 of 153 test images are near-identical (dHash, Hamming ≤ 8) to a training image, consistent with
+burst photos from the same sessions. Scores are therefore optimistic for unseen conditions.
 
 ### Failure examples
-Include 2–3 images from `evaluate.py` §5 (escapes and false rejects), with a short explanation each:
-lighting, small defect, annotation error, ambiguous texture, etc.
+No escapes and no false rejects at the current policy. For the report, use REVIEW cases instead
+(scratches at 0.3–0.6 confidence, especially on wood) as the "uncertain" examples ✍️.
 
 ## Limitations (keep in the report)
 

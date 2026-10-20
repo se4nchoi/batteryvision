@@ -31,6 +31,8 @@ class Settings:
     # Model used for LIVE mode at startup (name of a models/ subfolder); default = first found.
     default_model: str = field(default_factory=lambda: _env("DEFAULT_MODEL", ""))
     device: str = field(default_factory=lambda: _env("DEVICE", "CPU"))
+    # Channel order fed to the model. Geti exports expect RGB.
+    input_order: str = field(default_factory=lambda: _env("INPUT_ORDER", "rgb").lower())
 
     # Decision policy (see app/policy.py and docs/EVALUATION.md).
     reject_threshold: float = field(default_factory=lambda: float(_env("REJECT_THRESHOLD", "0.60")))

@@ -90,6 +90,10 @@ class LineSimulation:
         self.store = store
         self.live_dir = live_dir
         self.tick_seconds = tick_seconds
+        # Optional annotations for live images (when the live folder is an annotated dataset split):
+        # file order to use and ground-truth label per file name.
+        self.live_order: list[str] | None = None
+        self.live_truth: dict[str, str] = {}
         self._lock = threading.RLock()
         self.set_provider(provider)
 
@@ -137,7 +141,10 @@ class LineSimulation:
         if not self.live_dir.is_dir():
             return []
         files = sorted(p for p in self.live_dir.iterdir() if p.suffix.lower() in IMAGE_EXTS)
-        return [([View(p, f"/sample-images/live/{p.name}")], None) for p in files]
+        if self.live_order:
+            rank = {n: i for i, n in enumerate(self.live_order)}
+            files.sort(key=lambda p: rank.get(p.name, len(rank)))
+        return [([View(p, f"/sample-images/live/{p.name}")], self.live_truth.get(p.name)) for p in files]
 
     def _new_cell(self, views: list[View], ground_truth: str | None, source: str) -> Cell:
         self.seq += 1
