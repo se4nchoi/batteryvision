@@ -1,13 +1,27 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { api, type InspectionRecord, type Metrics, type SimState, type SystemStatus } from "./api/client";
 import { Conveyor } from "./components/Conveyor";
 import { InspectionPanel } from "./components/InspectionPanel";
 import { InspectionTable, OutcomeBreakdown, StatCards } from "./components/Analytics";
 import { InspectionsPage } from "./components/InspectionsPage";
 import { ModelsPage } from "./components/ModelsPage";
+import { CameraFeed } from "./components/CameraFeed";
 import { IconLine, IconList, IconModels, IconPause, IconPlay, IconReset, IconStep, IconUpload } from "./components/Icons";
 
 const POLL_MS = 400;
+const Line3D = lazy(() => import("./components/Line3D").then((m) => ({ default: m.Line3D })));
+
+function Segmented<T extends string>({ value, onChange, options }: {
+  value: T; onChange: (v: T) => void; options: { value: T; label: string }[];
+}) {
+  return (
+    <div className="segmented" role="group">
+      {options.map((o) => (
+        <button key={o.value} className={value === o.value ? "active" : ""} onClick={() => onChange(o.value)}>{o.label}</button>
+      ))}
+    </div>
+  );
+}
 type View = "overview" | "inspections" | "models";
 
 const NAV: { id: View; label: string; icon: React.ReactNode }[] = [
@@ -24,6 +38,14 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [view, setView] = useState<View>("overview");
+  const [lineView, setLineViewState] = useState<"3d" | "2d">(() => {
+    try { return localStorage.getItem("bv.lineView") === "2d" ? "2d" : "3d"; } catch { return "3d"; }
+  });
+  const setLineView = (v: "3d" | "2d") => {
+    setLineViewState(v);
+    try { localStorage.setItem("bv.lineView", v); } catch { /* storage unavailable */ }
+  };
+  const [camView, setCamView] = useState<"result" | "live">("result");
   const lastKey = useRef("");
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -171,16 +193,34 @@ export default function App() {
             {/* 1. Line + camera (largest) → 2. totals → 3. log → 4. session data */}
             <div className="grid hero">
               <section className="card span-2">
-                <div className="card-header"><h2>Inspection line</h2></div>
-                <div className="card-body conveyor-body">
-                  <Conveyor cells={sim?.cells ?? []} running={!!sim?.running} metrics={metrics} message={sim?.message ?? null} />
+                <div className="card-header">
+                  <h2>Inspection line</h2>
+                  <Segmented value={lineView} onChange={setLineView}
+                    options={[{ value: "3d", label: "3D" }, { value: "2d", label: "2D" }]} />
+                </div>
+                <div className={`card-body conveyor-body ${lineView === "3d" ? "flush" : ""}`}>
+                  {lineView === "3d" ? (
+                    <Suspense fallback={<div className="placeholder">Loading 3D view…</div>}>
+                      <Line3D cells={sim?.cells ?? []} running={!!sim?.running} metrics={metrics} sessionId={sim?.session_id ?? null} />
+                    </Suspense>
+                  ) : (
+                    <Conveyor cells={sim?.cells ?? []} running={!!sim?.running} metrics={metrics} message={sim?.message ?? null} />
+                  )}
                 </div>
               </section>
               <section className="card">
-                <div className="card-header"><h2>Camera</h2></div>
+                <div className="card-header">
+                  <h2>Camera</h2>
+                  <Segmented value={camView} onChange={setCamView}
+                    options={[{ value: "result", label: "Last result" }, { value: "live", label: "Live camera" }]} />
+                </div>
                 <div className="card-body cam-body">
-                  <InspectionPanel result={sim?.current ?? null} rejectThreshold={policy.reject_threshold}
-                    reviewThreshold={policy.review_threshold} />
+                  {camView === "live" ? (
+                    <CameraFeed canInspect={mode === "live"} onNotice={setNotice} />
+                  ) : (
+                    <InspectionPanel result={sim?.current ?? null} rejectThreshold={policy.reject_threshold}
+                      reviewThreshold={policy.review_threshold} />
+                  )}
                 </div>
               </section>
             </div>

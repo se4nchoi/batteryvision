@@ -40,7 +40,8 @@ validate the 'pass' decisions.
 3. "Above 0.6 confidence it's rejected. Between 0.3 and 0.6 it goes to manual review, because
    uncertain cases shouldn't be decided by the model alone. Every decision is logged with this
    model name and hash shown on the camera card, matching the Models page."
-4. **Add image**: "Here's an unseen test image. Watch the line react to the model's prediction."
+4. **Add image** (or **Camera → Live camera → Capture** with a webcam pointed at a battery):
+   "Here's an unseen image. Watch the line react to the model's prediction." Use the **3D** view here.
    Wait for it to reach the camera and the bin.
    *(Demo-mode variant: "These are scripted examples, clearly labelled DEMO, to show each path:
    pass, reject, review, and cell 11, a missed defect, which is why a pass isn't proof of a clean cell.")*

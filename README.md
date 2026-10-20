@@ -78,6 +78,17 @@ Configuration (environment variables, set before `.\start.ps1`):
 
 Example: `$env:BV_REJECT_THRESHOLD = "0.5"; .\start.ps1`
 
+## 3D view and live camera
+
+- **3D view:** the Inspection line card has a 3D/2D switch. The 3D scene (three.js) renders the
+  same backend states as the 2D view: cells move belt → camera → diverter → bin, the diverter arm
+  turns toward the chosen lane, and finished cells pile up in their bin. Drag to orbit, scroll to zoom,
+  and press **Reset view** to go back. It is a simulated view; no physical line is connected.
+- **Live camera:** Camera card → **Live camera** → **Turn on camera** shows any camera the browser can
+  use (USB webcam, laptop camera, phone-as-webcam). **Capture** sends the current frame down the
+  line, where the selected model inspects it. Capture needs a trained model selected under
+  **Data source**. Industrial GigE/USB3 Vision cameras would need the vendor SDK and are not supported.
+
 ## Model comparison (Models page)
 
 ```powershell
