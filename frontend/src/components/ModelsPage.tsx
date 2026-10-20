@@ -17,8 +17,8 @@ const COLUMNS: Col[] = [
   { key: "p", label: "Precision", get: (m) => m.pr_at_threshold?.overall.precision, fmt: (v) => num(v), better: "high", hint: "Boxes at conf ≥ reject threshold, IoU ≥ 0.5" },
   { key: "r", label: "Recall", get: (m) => m.pr_at_threshold?.overall.recall, fmt: (v) => num(v), better: "high", hint: "Annotated defects found at conf ≥ reject threshold" },
   { key: "f1", label: "F1", get: (m) => m.pr_at_threshold?.overall.f1, fmt: (v) => num(v), better: "high", hint: "Harmonic mean of precision and recall" },
-  { key: "esc", label: "Escape", get: (m) => m.image_level?.defect_escape_rate, fmt: pct, better: "low", hint: "Defective test images that the policy PASSED" },
-  { key: "frr", label: "False reject", get: (m) => m.image_level?.false_reject_rate, fmt: pct, better: "low", hint: "Images without defect annotations that were REJECTED" },
+  { key: "esc", label: "Missed", get: (m) => m.image_level?.defect_escape_rate, fmt: pct, better: "low", hint: "Defective test images that the policy PASSED" },
+  { key: "frr", label: "False rej.", get: (m) => m.image_level?.false_reject_rate, fmt: pct, better: "low", hint: "Images without defect annotations that were REJECTED" },
   { key: "lat", label: "Latency", get: (m) => m.latency?.mean_ms, fmt: (v) => (v == null ? "—" : `${v.toFixed(1)} ms`), better: "low", hint: "Mean per image, CPU, first call excluded" },
   { key: "p95", label: "p95", get: (m) => m.latency?.p95_ms, fmt: (v) => (v == null ? "—" : `${v.toFixed(1)}`), better: "low", hint: "95th percentile latency (ms)" },
   { key: "size", label: "Size", get: (m) => m.size_mb, fmt: (v) => (v == null ? "—" : `${v.toFixed(1)} MB`), better: "low", hint: "model.xml + model.bin" },
@@ -52,25 +52,25 @@ export function ModelsPage({ activeModel, mode, onUseModel }: { activeModel: str
   const ts = bench.test_set!;
   const warnings: { tone: string; text: string }[] = [];
   if (ts.images_without_annotations === 0)
-    warnings.push({ tone: "review", text: "Test set has no defect-free images: false-reject rate and PASS correctness cannot be measured." });
+    warnings.push({ tone: "review", text: "No defect-free test images, so false rejects can't be measured." });
   if (bench.leakage?.checked && (bench.leakage.count ?? 0) > 0)
-    warnings.push({ tone: "reject", text: `Possible leakage: ${bench.leakage.count} of ${bench.leakage.test_images} test images look near-identical to a training image (${bench.leakage.near_duplicates?.slice(0, 2).map((d) => `${d.test} ≈ ${d.train}`).join(", ")}${(bench.leakage.count ?? 0) > 2 ? ", …" : ""}). Check these pairs. If they are true duplicates, scores are optimistic.` });
-  if (!bench.leakage?.checked) warnings.push({ tone: "muted", text: "Leakage check not run (pass --train-images to benchmark.py)." });
-  if (ts.n_images < 50) warnings.push({ tone: "review", text: `Small test set (${ts.n_images} images): differences between models may not be meaningful.` });
+    warnings.push({ tone: "reject", text: `${bench.leakage.count} of ${bench.leakage.test_images} test images look like copies of training images (${bench.leakage.near_duplicates?.slice(0, 2).map((d) => `${d.test} ≈ ${d.train}`).join(", ")}${(bench.leakage.count ?? 0) > 2 ? ", …" : ""}). Scores may be inflated.` });
+  if (!bench.leakage?.checked) warnings.push({ tone: "muted", text: "Train/test duplicate check not run (add --train-images)." });
+  if (ts.n_images < 50) warnings.push({ tone: "review", text: `Only ${ts.n_images} test images: small differences between models aren't meaningful.` });
   models.forEach((m) => m.unmatched_model_labels?.length &&
-    warnings.push({ tone: "review", text: `${m.name}: model labels ${m.unmatched_model_labels.join(", ")} have no matching dataset class (ignored in mAP).` }));
+    warnings.push({ tone: "review", text: `${m.name}: labels ${m.unmatched_model_labels.join(", ")} not in the dataset (ignored).` }));
   if (bench.leakage?.checked && (bench.leakage.count ?? 0) === 0)
-    warnings.push({ tone: "pass", text: `No near-duplicates found between test and train (${bench.leakage.method}).` });
+    warnings.push({ tone: "pass", text: "No train/test duplicates found." });
 
   return (
     <div className="models-page">
       <section className="panel prov">
         <div className="prov-grid">
           <Fact label="Test set" value={`${ts.n_images} images · ${ts.n_boxes} boxes`} sub={Object.entries(ts.boxes_per_class).map(([k, v]) => `${k} ${v}`).join(" · ")} />
-          <Fact label="Defect-free images" value={String(ts.images_without_annotations)} sub="no annotations in test set" />
-          <Fact label="Policy" value={`REJECT ≥ ${bench.policy!.reject_threshold} · REVIEW ≥ ${bench.policy!.review_threshold}`} sub={bench.policy!.ignore_labels.length ? `ignored: ${bench.policy!.ignore_labels.join(", ")}` : "no ignored labels"} />
-          <Fact label="Measured on" value={bench.machine?.device ?? "CPU"} sub={bench.machine?.cpu} />
-          <Fact label="Generated" value={new Date(bench.generated_at!).toLocaleString("en-GB")} sub="scripts/benchmark.py" />
+          <Fact label="Defect-free images" value={String(ts.images_without_annotations)} />
+          <Fact label="Policy" value={`REJECT ≥ ${bench.policy!.reject_threshold} · REVIEW ≥ ${bench.policy!.review_threshold}`} />
+          <Fact label="Measured" value={new Date(bench.generated_at!).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}
+            sub={bench.machine?.device ?? "CPU"} title={bench.machine?.cpu} />
           <button className="btn" onClick={load}>↻ Reload</button>
         </div>
         <div className="warnings">
@@ -80,8 +80,8 @@ export function ModelsPage({ activeModel, mode, onUseModel }: { activeModel: str
 
       <section className="panel">
         <div className="panel-head">
-          <h2>Model comparison · held-out test set</h2>
-          <span className="muted small">★ best per column · click a row for details · all values measured by benchmark.py</span>
+          <h2>Models on the held-out test set</h2>
+          <span className="muted small">★ best · click a row for details</span>
         </div>
         <ComparisonTable models={models} color={color} selected={current?.name} onSelect={setSelected}
           activeModel={mode === "live" ? activeModel : null} loaded={loadedNames} onUseModel={onUseModel} />
@@ -89,21 +89,21 @@ export function ModelsPage({ activeModel, mode, onUseModel }: { activeModel: str
       </section>
 
       <div className="chart-row">
-        <section className="panel"><div className="panel-head"><h2>Accuracy vs latency</h2><span className="muted small">y mAP@50 · x ms · up-left is better</span></div>
+        <section className="panel"><div className="panel-head"><h2>Accuracy vs speed</h2><span className="muted small">↖ better</span></div>
           <Scatter models={models} color={color} /></section>
         <section className="panel"><div className="panel-head"><h2>Per-class AP@50</h2></div>
           <PerClass models={models} color={color} /></section>
-        <section className="panel"><div className="panel-head"><h2>Robustness · mAP@50 under image changes</h2></div>
+        <section className="panel"><div className="panel-head"><h2>Robustness</h2><span className="muted small">mAP@50 on altered images</span></div>
           <Robustness models={models} color={color} perturbations={bench.perturbations ?? []} /></section>
       </div>
 
       {current && (
         <div className="chart-row detail-row">
-          <section className="panel"><div className="panel-head"><h2>Threshold trade-off · <span style={{ color: color(current.name) }}>■</span> {current.name}</h2></div>
+          <section className="panel"><div className="panel-head"><h2>Threshold trade-off</h2><span className="muted small"><span style={{ color: color(current.name) }}>■</span> {current.name}</span></div>
             <Sweep rows={current.threshold_sweep ?? []} reject={bench.policy!.reject_threshold} /></section>
-          <section className="panel"><div className="panel-head"><h2>Image-level outcomes · {current.name}</h2></div>
+          <section className="panel"><div className="panel-head"><h2>Decisions per image</h2><span className="muted small">{current.name}</span></div>
             <Outcomes m={current} /></section>
-          <section className="panel"><div className="panel-head"><h2>Traceability · {current.name}</h2></div>
+          <section className="panel"><div className="panel-head"><h2>Model identity & errors</h2><span className="muted small">{current.name}</span></div>
             <Trace m={current} failures={current.failures ?? []} /></section>
         </div>
       )}
@@ -111,12 +111,12 @@ export function ModelsPage({ activeModel, mode, onUseModel }: { activeModel: str
   );
 }
 
-function Fact({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Fact({ label, value, sub, title }: { label: string; value: string; sub?: string; title?: string }) {
   return (
-    <div className="fact">
-      <div className="kpi-label">{label}</div>
+    <div className="fact" title={title}>
+      <div className="fact-label">{label}</div>
       <div className="fact-value">{value}</div>
-      {sub && <div className="kpi-note">{sub}</div>}
+      {sub && <div className="fact-sub">{sub}</div>}
     </div>
   );
 }
@@ -127,7 +127,7 @@ function ComparisonTable({ models, color, selected, onSelect, activeModel, loade
 }) {
   const best = Object.fromEntries(COLUMNS.map((c) => {
     const vals = models.map(c.get).filter((v): v is number => v != null && !Number.isNaN(v));
-    if (vals.length < 2) return [c.key, null];
+    if (vals.length < 2 || vals.every((v) => v === vals[0])) return [c.key, null]; // no star when all tie
     return [c.key, c.better === "high" ? Math.max(...vals) : Math.min(...vals)];
   }));
   return (
@@ -136,10 +136,10 @@ function ComparisonTable({ models, color, selected, onSelect, activeModel, loade
         <thead>
           <tr>
             <th>Model</th>
-            <th title="Copied from Geti into meta.json; not measured here">Architecture ⁽ᴳ⁾</th>
-            <th title="Copied from Geti into meta.json">Geti val. score ⁽ᴳ⁾</th>
+            <th title="From meta.json (copied from Geti)">Type</th>
+            <th title="Geti's own validation score, from meta.json. Not measured here.">Geti score</th>
             {COLUMNS.map((c) => <th key={c.key} className="num" title={c.hint}>{c.label}</th>)}
-            <th>SHA-256</th>
+            <th title="SHA-256 of model.xml + model.bin">Hash</th>
             <th />
           </tr>
         </thead>
@@ -147,8 +147,8 @@ function ComparisonTable({ models, color, selected, onSelect, activeModel, loade
           {models.map((m) => (
             <tr key={m.name} className={m.name === selected ? "row-selected" : ""} onClick={() => onSelect(m.name)}>
               <td><span className="swatch" style={{ background: color(m.name) }} />{m.name}</td>
-              <td className="muted">{[m.meta.architecture, m.meta.precision].filter(Boolean).join(" · ") || "—"}</td>
-              <td className="muted mono">
+              <td className="geti">{[m.meta.architecture, m.meta.precision].filter(Boolean).join(" ") || "—"}</td>
+              <td className="geti mono">
                 {m.meta.geti_validation_score?.value != null
                   ? `${m.meta.geti_validation_score.metric ?? "score"} ${m.meta.geti_validation_score.value}`
                   : "—"}
@@ -158,7 +158,7 @@ function ComparisonTable({ models, color, selected, onSelect, activeModel, loade
                 const isBest = best[c.key] != null && v === best[c.key];
                 return <td key={c.key} className={`num mono ${isBest ? "best" : ""}`}>{c.fmt(v)}{isBest ? " ★" : ""}</td>;
               })}
-              <td className="mono muted">{m.sha256_12}</td>
+              <td className="mono muted">{m.sha256_12?.slice(0, 8)}</td>
               <td>
                 {activeModel === m.name ? <span className="chip chip-live">ON LINE</span>
                   : loaded.has(m.name) ? <button className="btn btn-xs" onClick={(e) => { e.stopPropagation(); onUseModel(m.name); }}>Use on line</button>
@@ -204,7 +204,7 @@ function Scatter({ models, color }: { models: BenchModel[]; color: (n: string) =
   const pts = models.filter((m) => m.latency && m.coco);
   if (!pts.length) return <div className="muted small">No latency data.</div>;
   const lats = pts.map((m) => m.latency!.mean_ms);
-  const lo = 0, hi = Math.max(...lats) * 1.25;
+  const lo = 0, hi = Math.max(...lats) * 1.6; // headroom on the right for the label column
   const xt = [0, hi / 2, hi];
   const xfmt = (v: number) => v.toFixed(hi < 10 ? 1 : 0);
   // Dodge direct labels: walk points top-to-bottom and push a label down if it would overlap the previous one.
@@ -212,20 +212,25 @@ function Scatter({ models, color }: { models: BenchModel[]; color: (n: string) =
     .sort((a, b) => a.y - b.y);
   let lastY = -Infinity;
   const labelY = new Map<string, number>();
-  placed.forEach((p) => { const ly = Math.max(p.y - 8, lastY + 13); labelY.set(p.m.name, ly); lastY = ly; });
+  placed.forEach((p) => { const ly = Math.max(p.y + 4, lastY + 18); labelY.set(p.m.name, ly); lastY = ly; });
+  // All labels in one column beside the point cluster (right if it fits, else left), so no label crosses a dot.
+  const LABEL_W = 100;
+  const right = Math.max(...placed.map((p) => p.x)) + 22;
+  const onRight = right + LABEL_W <= W;
+  const labelX = onRight ? right : Math.min(...placed.map((p) => p.x)) - 22;
   return (
     <>
       <svg viewBox={`0 0 ${W} ${H}`} className="chart">
-        <Axes xLabel="mean latency per image (ms) →" />
+        <Axes xLabel="ms per image →" />
         {xt.map((t) => <text key={t} x={xr(t, lo, hi)} y={H - PAD.b + 14} textAnchor="middle" className="tick-label">{xfmt(t)}</text>)}
         {placed.map(({ m, x, y }) => {
           const ly = labelY.get(m.name)!;
           return (
             <g key={m.name} className="mark">
               <circle cx={x} cy={y} r={14} fill="transparent" />
-              {Math.abs(ly - (y - 8)) > 2 && <line x1={x + 4} y1={y - 3} x2={x + 10} y2={ly - 4} className="leader" />}
+              <line x1={onRight ? x + 6 : x - 6} y1={y} x2={onRight ? labelX - 4 : labelX + 4} y2={ly - 4} className="leader" />
               <circle cx={x} cy={y} r={6} fill={color(m.name)} className="dot-mark" />
-              <text x={x + 12} y={ly} className="direct-label">{m.name}</text>
+              <text x={labelX} y={ly} textAnchor={onRight ? "start" : "end"} className="direct-label">{m.name}</text>
               <title>{`${m.name}\nmAP@50 ${m.coco!.map50.toFixed(3)}\n${m.latency!.mean_ms.toFixed(1)} ms mean`}</title>
             </g>
           );
@@ -310,8 +315,8 @@ function Robustness({ models, color, perturbations }: { models: BenchModel[]; co
 }
 
 const SWEEP_SERIES: { key: keyof SweepRow; label: string; cls: string }[] = [
-  { key: "defect_recall", label: "defective images rejected", cls: "s-solid" },
-  { key: "false_reject_rate", label: "clean images rejected", cls: "s-dash" },
+  { key: "defect_recall", label: "defects caught", cls: "s-solid" },
+  { key: "false_reject_rate", label: "clean rejected", cls: "s-dash" },
   { key: "box_precision", label: "box precision", cls: "s-dot" },
 ];
 
@@ -321,10 +326,10 @@ function Sweep({ rows, reject }: { rows: SweepRow[]; reject: number }) {
   return (
     <>
       <svg viewBox={`0 0 ${W} ${H}`} className="chart">
-        <Axes yFmt={(v) => `${Math.round(v * 100)}%`} xLabel="reject threshold (confidence) →" />
+        <Axes yFmt={(v) => `${Math.round(v * 100)}%`} xLabel="reject threshold →" />
         {[0, 0.25, 0.5, 0.75, 1].map((t) => <text key={t} x={x(t)} y={H - PAD.b + 14} textAnchor="middle" className="tick-label">{t}</text>)}
         <line x1={x(reject)} x2={x(reject)} y1={PAD.t} y2={H - PAD.b} className="policy-line" />
-        <text x={x(reject) + 4} y={PAD.t + 10} className="direct-label">current {reject}</text>
+        <text x={x(reject) + 4} y={PAD.t + 10} className="direct-label">now {reject}</text>
         {SWEEP_SERIES.map((s) => {
           const pts = rows.filter((r) => r[s.key] != null).map((r) => `${x(r.threshold)},${yr(r[s.key] as number)}`);
           return pts.length ? <polyline key={s.key} points={pts.join(" ")} className={`sweep ${s.cls}`} /> : null;
@@ -346,11 +351,11 @@ function Sweep({ rows, reject }: { rows: SweepRow[]; reject: number }) {
 function Outcomes({ m }: { m: BenchModel }) {
   const il = m.image_level;
   if (!il) return null;
-  const rows = [["defective", "Defect annotated"], ["no_defect_annotated", "No defect annotated"]] as const;
+  const rows = [["defective", "Defective"], ["no_defect_annotated", "No defect"]] as const;
   return (
     <div className="outcomes">
       <table className="matrix">
-        <thead><tr><th>Ground truth ↓ / decision →</th><th className="tone-pass">PASS</th><th className="tone-review">REVIEW</th><th className="tone-reject">REJECT</th></tr></thead>
+        <thead><tr><th>Truth ↓ · decision →</th><th className="tone-pass">PASS</th><th className="tone-review">REVIEW</th><th className="tone-reject">REJECT</th></tr></thead>
         <tbody>
           {rows.map(([k, label]) => (
             <tr key={k}><th>{label}</th>{(["PASS", "REVIEW", "REJECT"] as const).map((s) => {
@@ -360,13 +365,13 @@ function Outcomes({ m }: { m: BenchModel }) {
           ))}
         </tbody>
       </table>
-      <dl className="facts facts-2">
-        <div><dt>Defect escape</dt><dd>{pct(il.defect_escape_rate)}</dd></div>
+      <dl className="rates">
+        <div><dt>Caught</dt><dd className="tone-pass">{pct(il.defect_catch_rate)}</dd></div>
+        <div><dt>Missed</dt><dd className="tone-reject">{pct(il.defect_escape_rate)}</dd></div>
         <div><dt>False reject</dt><dd>{pct(il.false_reject_rate)}</dd></div>
-        <div><dt>Sent to review</dt><dd>{pct(il.review_rate)}</dd></div>
-        <div><dt>Defects caught</dt><dd>{pct(il.defect_catch_rate)}</dd></div>
+        <div><dt>To review</dt><dd className="tone-review">{pct(il.review_rate)}</dd></div>
       </dl>
-      <p className="disclaimer">Image-level routing of the whole system (model + policy). This is not a per-class confusion matrix and does not replace mAP.</p>
+      <p className="chart-note" title="Whole system (model + policy) per image. Not a per-class confusion matrix; does not replace mAP.">Whole system, per image. Not a replacement for mAP.</p>
     </div>
   );
 }
@@ -377,18 +382,18 @@ function Trace({ m, failures }: { m: BenchModel; failures: NonNullable<BenchMode
     <div className="trace">
       <dl className="trace-list">
         <div><dt>File</dt><dd className="mono">{m.path}</dd></div>
-        <div><dt>SHA-256</dt><dd className="mono">{m.sha256_12}…</dd></div>
+        <div><dt>Hash</dt><dd className="mono">{m.sha256_12}</dd></div>
         <div><dt>Labels</dt><dd>{(m.labels ?? []).join(", ") || "—"}</dd></div>
-        {meta.length > 0 && <div><dt>From Geti ⁽ᴳ⁾</dt><dd>{meta.map(([k, v]) => `${k}: ${typeof v === "object" ? JSON.stringify(v) : String(v)}`).join(" · ")}</dd></div>}
+        {meta.length > 0 && <div><dt>From Geti</dt><dd>{meta.map(([k, v]) => `${k}: ${typeof v === "object" ? JSON.stringify(v) : String(v)}`).join(" · ")}</dd></div>}
       </dl>
-      <div className="kpi-label">Errors to show in the report ({failures.length})</div>
+      <div className="fact-label">Errors · use in the report ({failures.length})</div>
       <ul className="failures">
-        {failures.length === 0 && <li className="muted">None: no escapes or false rejects on the test set.</li>}
+        {failures.length === 0 && <li className="muted">None</li>}
         {failures.map((f) => (
           <li key={f.file}>
             <span className={`pill pill-${f.decision === "PASS" ? "pass" : "reject"}`}>{f.decision}</span>
             <span className="mono">{f.file}</span>
-            <span className="muted"> {f.ground_truth === "defective" ? "defect missed" : "clean rejected"}{f.top ? ` · top ${f.top[0]} ${f.top[1]}` : ""}</span>
+            <span className="muted"> {f.ground_truth === "defective" ? "missed" : "false reject"}{f.top ? ` · ${f.top[0]} ${f.top[1]}` : ""}</span>
           </li>
         ))}
       </ul>
@@ -400,11 +405,9 @@ function EmptyState({ bench, registry, onReload, failed }: { bench: Benchmark; r
   return (
     <div className="models-page">
       <section className="panel empty-models">
-        <h2>No model comparison yet</h2>
-        <p className="muted">This page shows results produced by <code>scripts/benchmark.py</code> on your held-out test set. Nothing here is estimated.</p>
+        <h2>No benchmark yet</h2>
         <ol>
-          <li>Export each Geti model into its own folder: <code>models\yolox_tiny_fp16\model.xml</code>, <code>models\yolox_s_fp16\model.xml</code>, …</li>
-          <li>Optionally add <code>meta.json</code> next to each with facts copied from Geti (architecture, precision, Geti validation score).</li>
+          <li>Put each Geti model in its own folder, e.g. <code>models\yolox_tiny_fp16\model.xml</code></li>
           <li>Run:
             <pre>{`cd backend
 .\\.venv\\Scripts\\python scripts\\benchmark.py \`
@@ -412,14 +415,13 @@ function EmptyState({ bench, registry, onReload, failed }: { bench: Benchmark; r
   --images ..\\datasets\\battery\\test \`
   --train-images ..\\datasets\\battery\\train`}</pre>
           </li>
-          <li>Press <button className="btn btn-xs" onClick={onReload}>↻ Reload</button></li>
+          <li><button className="btn btn-xs" onClick={onReload}>↻ Reload</button></li>
         </ol>
-        <p className="muted small">Looking for: <code>{bench.path}</code></p>
         {failed.length > 0 && <p className="tone-reject small">Failed: {failed.map((f) => `${f.name}: ${f.error}`).join("; ")}</p>}
       </section>
       <section className="panel">
-        <div className="panel-head"><h2>Models found in models/</h2></div>
-        {registry.length === 0 ? <div className="muted small">None yet.</div> : (
+        <div className="panel-head"><h2>Models found</h2></div>
+        {registry.length === 0 ? <div className="muted">None in models/ yet</div> : (
           <div className="log"><table>
             <thead><tr><th>Name</th><th>Status</th><th>Labels</th><th>SHA-256</th><th>Size</th></tr></thead>
             <tbody>{registry.map((r) => (

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type InspectionRecord, type Metrics, type Mode, type SimState, type SystemStatus } from "./api/client";
 import { Conveyor } from "./components/Conveyor";
 import { InspectionPanel } from "./components/InspectionPanel";
-import { DefectDistribution, EventLog, KpiStrip, StatusHistory } from "./components/Analytics";
+import { EventLog, KpiStrip, SessionSummary } from "./components/Analytics";
 import { ModelsPage } from "./components/ModelsPage";
 
 const POLL_MS = 400;
@@ -102,6 +102,8 @@ export default function App() {
   const mode = sim?.mode ?? status?.mode ?? "demo";
   const policy = status?.policy ?? { reject_threshold: 0.6, review_threshold: 0.3, ignore_labels: [] };
 
+  const runState = error ? "down" : sim?.running ? "running" : "paused";
+
   return (
     <div className="app">
       <header className="topbar">
@@ -111,10 +113,7 @@ export default function App() {
             <rect x="26" y="13" width="3" height="6" rx="1" className="logo-cap" />
             <path d="M8 16h4l2-4 3 8 2-4h3" />
           </svg>
-          <div>
-            <div className="brand-name">BatteryVision</div>
-            <div className="brand-sub">Cell surface defect inspection · virtual line</div>
-          </div>
+          <span className="brand-name">BatteryVision</span>
         </div>
 
         <nav className="tabs" aria-label="View">
@@ -122,47 +121,41 @@ export default function App() {
           <button className={view === "models" ? "on" : ""} onClick={() => setView("models")}>Models</button>
         </nav>
 
-        <div className="status-group">
-          <span className={`mode-badge mode-${mode}`}>
-            {mode === "demo" ? "DEMO · SIMULATED PREDICTIONS" : `LIVE · ${sim?.model ?? "OPENVINO"}`}
-          </span>
-          <span className={`run-state ${error ? "down" : sim?.running ? "running" : "paused"}`}>
-            <i />
-            {error ? "OFFLINE" : sim?.running ? "RUNNING" : "PAUSED"}
-          </span>
-          <span className="session mono">session {sim?.session_id ?? "—"}</span>
-        </div>
-
-        <div className="controls">
+        <div className="mode-group">
           <div className="segmented" role="group" aria-label="Inference mode">
-            <button className={mode === "demo" ? "on" : ""} onClick={() => switchMode("demo")}>Demo</button>
-            <button
-              className={mode === "live" ? "on" : ""}
-              onClick={() => switchMode("live")}
+            <button className={mode === "demo" ? "on demo" : ""} onClick={() => switchMode("demo")}
+              title="Scripted results on synthetic images. No model runs.">Demo</button>
+            <button className={mode === "live" ? "on live" : ""} onClick={() => switchMode("live")}
               disabled={!status?.live_available}
-              title={status?.live_available ? "Use the exported Geti model" : `No model loaded: ${status?.live_error ?? ""}`}
-            >
+              title={status?.live_available ? "Real OpenVINO inference" : `No model loaded. ${status?.live_error ?? ""}`}>
               Live
             </button>
           </div>
-          {(status?.live_models.length ?? 0) > 1 && (
-            <select className="model-select" value={mode === "live" ? sim?.model ?? "" : ""}
-              onChange={(e) => switchMode("live", e.target.value)} aria-label="Live model">
-              <option value="" disabled>model…</option>
+          {mode === "live" && (status?.live_models.length ?? 0) > 1 ? (
+            <select className="model-select" value={sim?.model ?? ""} onChange={(e) => switchMode("live", e.target.value)}
+              aria-label="Live model">
               {status!.live_models.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
-          )}
+          ) : mode === "live" ? <span className="model-name mono">{sim?.model}</span> : null}
+        </div>
+
+        <span className={`run-state ${runState}`} title={`Session ${sim?.session_id ?? "—"}`}>
+          <i />{runState === "down" ? "Offline" : runState === "running" ? "Running" : "Paused"}
+        </span>
+
+        <div className="controls">
           {sim?.running ? (
-            <button className="btn" onClick={() => act(api.pause)}>❚❚ Pause</button>
+            <button className="btn" onClick={() => act(api.pause)} title="Space">❚❚ Pause</button>
           ) : (
-            <button className="btn btn-primary" onClick={() => act(api.start)}>▶ Start</button>
+            <button className="btn btn-primary" onClick={() => act(api.start)} title="Space">▶ Start</button>
           )}
-          <button className="btn" onClick={() => act(api.step)} disabled={sim?.running}>Step ›</button>
-          <button className="btn" onClick={() => act(api.reset)}>↺ Reset</button>
-          <button className="btn" onClick={() => fileInput.current?.click()} disabled={mode !== "live"}
-            title={mode === "live" ? "Send a held-out image down the line" : "Upload inference requires LIVE mode"}>
-            ⇪ Inject image
-          </button>
+          <button className="btn" onClick={() => act(api.step)} disabled={sim?.running} title="→ key">Step</button>
+          <button className="btn" onClick={() => act(api.reset)} title="R key · starts a new session">Reset</button>
+          {mode === "live" && (
+            <button className="btn" onClick={() => fileInput.current?.click()} title="Send a test image down the line next">
+              Inject image
+            </button>
+          )}
           <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/bmp" hidden
             onChange={(e) => onUpload(e.target.files?.[0])} />
         </div>
@@ -174,26 +167,23 @@ export default function App() {
         <ModelsPage activeModel={sim?.model ?? null} mode={mode}
           onUseModel={(m) => { switchMode("live", m); setView("line"); }} />
       ) : (<>
-      <KpiStrip metrics={metrics} mode={mode} />
+      <KpiStrip metrics={metrics} />
 
       <main className="main-grid">
         <section className="panel panel-line">
           <div className="panel-head">
-            <h2>Virtual inspection line</h2>
-            <span className="muted small">Simulated conveyor · states owned by backend · no physical equipment controlled</span>
+            <h2>Inspection line</h2>
+            <span className="policy-chip mono" title="Decision policy: highest defect confidence decides">
+              <b className="tone-reject">REJECT</b> ≥ {policy.reject_threshold.toFixed(2)}
+              <b className="tone-review">REVIEW</b> ≥ {policy.review_threshold.toFixed(2)}
+            </span>
           </div>
           <Conveyor cells={sim?.cells ?? []} running={!!sim?.running} metrics={metrics} message={sim?.message ?? null} />
-          <div className="line-foot">
-            <span className="muted small">
-              Policy: REJECT ≥ {policy.reject_threshold.toFixed(2)} · REVIEW ≥ {policy.review_threshold.toFixed(2)} · else PASS
-            </span>
-            <span className="muted small kbd-hint"><kbd>Space</kbd> start/pause <kbd>→</kbd> step <kbd>R</kbd> reset</span>
-          </div>
         </section>
 
         <section className="panel panel-vision">
           <div className="panel-head">
-            <h2>Vision inspection · CAM-01</h2>
+            <h2>Camera · CAM-01</h2>
             <span className={`chip chip-${mode}`}>{mode === "demo" ? "DEMO DATA" : "MODEL OUTPUT"}</span>
           </div>
           <InspectionPanel result={sim?.current ?? null} rejectThreshold={policy.reject_threshold}
@@ -201,18 +191,13 @@ export default function App() {
         </section>
 
         <section className="panel panel-log">
-          <div className="panel-head"><h2>Inspection log</h2><span className="muted small">SQLite · current session</span></div>
+          <div className="panel-head"><h2>Inspection log</h2></div>
           <EventLog records={records} />
         </section>
 
-        <section className="panel panel-dist">
-          <div className="panel-head"><h2>Defect distribution</h2></div>
-          <DefectDistribution dist={metrics?.defect_distribution ?? {}} />
-        </section>
-
-        <section className="panel panel-hist">
-          <div className="panel-head"><h2>Decision history</h2></div>
-          <StatusHistory history={metrics?.status_history ?? []} />
+        <section className="panel panel-session">
+          <div className="panel-head"><h2>This session</h2></div>
+          <SessionSummary metrics={metrics} />
         </section>
       </main>
       </>)}

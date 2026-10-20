@@ -29,7 +29,7 @@ function CellGlyph({ cell }: { cell: Cell }) {
       <rect x={-26} y={-13} width={52} height={26} rx={7} className="cell-body" />
       <rect x={26} y={-6} width={5} height={12} rx={1.5} className="cell-cap" />
       <rect x={-26} y={-13} width={52} height={7} rx={4} className="cell-shine" />
-      <text y={30} textAnchor="middle" className="cell-id">
+      <text y={33} textAnchor="middle" className="cell-id">
         {cell.cell_id.replace("CELL-", "#")}
         {cell.source === "upload" ? " ↑" : ""}
       </text>
@@ -49,9 +49,9 @@ export function Conveyor({ cells, running, metrics, message }: Props) {
   const placed = cells.map((cell) => ({ cell, pos: position(cell.state, cell.state === "QUEUED" ? q++ : 0) }));
   const inspecting = cells.some((c) => c.state === "INSPECTING");
   const bins = [
-    { key: "PASSED", label: "ACCEPTED", count: metrics?.passed ?? 0, tone: "pass" },
-    { key: "REVIEW", label: "MANUAL REVIEW", count: metrics?.review ?? 0, tone: "review" },
-    { key: "REJECTED", label: "REJECTED", count: metrics?.rejected ?? 0, tone: "reject" },
+    { key: "PASSED", label: "Accepted", count: metrics?.passed ?? 0, tone: "pass" },
+    { key: "REVIEW", label: "Review", count: metrics?.review ?? 0, tone: "review" },
+    { key: "REJECTED", label: "Rejected", count: metrics?.rejected ?? 0, tone: "reject" },
   ] as const;
 
   return (
@@ -66,10 +66,10 @@ export function Conveyor({ cells, running, metrics, message }: Props) {
 
         {/* stage labels */}
         {[
-          { x: 135, t: "INPUT QUEUE" },
-          { x: 360, t: "TRANSFER" },
-          { x: 500, t: "INSPECTION" },
-          { x: 640, t: "ROUTING" },
+          { x: 135, t: "Queue" },
+          { x: 360, t: "Transfer" },
+          { x: 500, t: "Camera" },
+          { x: 640, t: "Diverter" },
         ].map((s) => (
           <text key={s.t} x={s.x} y={24} textAnchor="middle" className="stage-label">
             {s.t}
@@ -95,7 +95,7 @@ export function Conveyor({ cells, running, metrics, message }: Props) {
           <rect x={470} y={40} width={60} height={24} rx={4} className="camera-body" />
           <circle cx={500} cy={64} r={7} className="camera-lens" />
           <polygon points={`488,70 512,70 545,${BELT_Y + 18} 455,${BELT_Y + 18}`} fill="url(#beam)" className="beam" />
-          <text x={540} y={56} className="camera-label">CAM-01</text>
+          
         </g>
 
         {/* diverter */}
