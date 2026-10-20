@@ -1,8 +1,13 @@
 # BatteryVision
 
-AI-assisted **battery cell surface defect inspection**: an object-detection model trained in
-**Intel Geti** (YOLOX), served with **OpenVINO** on CPU, driving a simulated inspection line
-that routes each cell to **PASS / REVIEW / REJECT**.
+AI-assisted **battery cell surface defect inspection**: object-detection models trained in
+**Intel Geti** (ATSS-MobileNetV2, YOLOX-S), served with **OpenVINO** on CPU, driving a simulated
+inspection line that routes each cell to **PASS / REVIEW / REJECT**.
+
+![Overview: 3D inspection line, camera card with 360° views and saliency heatmap, session metrics](docs/screenshots/dashboard.png)
+
+*Overview page in LIVE mode with `atss_mbv2_fp16_xai`. The camera card shows the four sides of the
+current cell, the side with the finding (zoomed), and the model's saliency heatmap.*
 
 The dashboard is a companion demo to the Geti model. It is a *simulated* line, not a
 synchronized digital twin, and it controls no physical equipment.
@@ -105,6 +110,10 @@ rate per machine with a significance test (and a confounding check), and the wor
 defective photos, the model inspects each photo, and the page should name that machine as the suspect.
 See [docs/SMART_FACTORY.md](docs/SMART_FACTORY.md).
 
+![Batches page: defect rate per lot, defect rate per machine, worst lots](docs/screenshots/batch.png)
+
+*Batches page with no injected fault: no lot crosses the control limit and no machine is flagged.*
+
 ## 3D view and live camera
 
 - **3D view:** the Inspection line card has a 3D/2D switch. After the camera, cells pass a reject
@@ -137,6 +146,15 @@ The dashboard's **Models** page then shows (pick a model in the list on the left
 - for the selected model: a **threshold sweep** (defect recall vs false rejects), the image-level
   outcome table, and the specific failure images to show in the report
 - warnings: possible train/test **near-duplicates (leakage)**, no defect-free test images, small test set
+
+![Models page: model list, traits, test-set results, per-class metrics and confusion matrices](docs/screenshots/model_comparison_01.png)
+
+![Models page: line projection, results by background, robustness, threshold trade-off, all models side by side](docs/screenshots/model_comparison_02.png)
+
+*Models page comparing ATSS-MobileNetV2 and YOLOX-S. These screenshots come from an earlier benchmark
+run. Its leakage warning (test images that look like copies of training images) means those scores
+may be inflated, so report numbers from the later-session holdout in
+[docs/EVALUATION.md](docs/EVALUATION.md#later-session-holdout-measured-2026-10-20) instead.*
 
 **Example data:** before you have results, switch the Models page to **Example data** to preview
 the layout. Those numbers are invented (`sample_data/demo/benchmark_example.json`, made by
