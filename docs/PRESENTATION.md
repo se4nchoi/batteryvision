@@ -29,8 +29,10 @@ accurate], so the trade-off is [✍️]." *(point at the accuracy-vs-latency cha
 to [✍️] (*robustness chart*). [✍️ leakage result: 'the leakage check found no near-duplicates' /
 'N test images were near-copies of training images']. And this curve (*threshold sweep*) is why I
 reject at 0.6: lower would catch [✍️] more defects but reject [✍️] more good cells."
-One honest caveat: [if applicable ✍️] the dataset has few defect-free images, so it can't fully
-validate the 'pass' decisions.
+Two honest caveats (show the **On a real line** and **By background** cards): the test set is mostly
+defective, so at a realistic defect rate of [0.5% ✍️] only [N ✍️] of 100 stopped cells would really be
+defective. And the photos come from a few tabletop backgrounds: accuracy on [weakest background ✍️] is
+[✍️], so a factory belt would need re-validation.
 
 ### 2:10–3:40: Live demo (dashboard)
 1. "This is BatteryVision, a *simulated* inspection line. The backend owns every cell's state;

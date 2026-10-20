@@ -17,7 +17,13 @@
       "scratch": 128,
       "crack": 84
     },
-    "images_without_annotations": 30
+    "images_without_annotations": 30,
+    "backgrounds": {
+      "wood / brown": 62,
+      "grey / neutral": 70,
+      "green mat": 38
+    },
+    "background_method": "median border colour (heuristic)"
   },
   "policy": {
     "reject_threshold": 0.6,
@@ -325,6 +331,35 @@
           "box_recall": 0.557
         }
       ],
+      "by_background": {
+        "wood / brown": {
+          "n_images": 62,
+          "n_defective": 50,
+          "n_clean": 12,
+          "defect_catch_rate": 0.9443,
+          "false_reject_rate": 0.1183,
+          "box_recall": 0.838,
+          "box_precision": 0.874
+        },
+        "grey / neutral": {
+          "n_images": 70,
+          "n_defective": 58,
+          "n_clean": 12,
+          "defect_catch_rate": 0.9243,
+          "false_reject_rate": 0.1283,
+          "box_recall": 0.818,
+          "box_precision": 0.874
+        },
+        "green mat": {
+          "n_images": 38,
+          "n_defective": 32,
+          "n_clean": 6,
+          "defect_catch_rate": 0.8108,
+          "false_reject_rate": 0.1851,
+          "box_recall": 0.7045,
+          "box_precision": 0.874
+        }
+      },
       "failures": [
         {
           "file": "example_scratch_0412.jpg",
@@ -637,6 +672,35 @@
           "box_recall": 0.6005
         }
       ],
+      "by_background": {
+        "wood / brown": {
+          "n_images": 62,
+          "n_defective": 50,
+          "n_clean": 12,
+          "defect_catch_rate": 0.9943,
+          "false_reject_rate": 0.085,
+          "box_recall": 0.901,
+          "box_precision": 0.902
+        },
+        "grey / neutral": {
+          "n_images": 70,
+          "n_defective": 58,
+          "n_clean": 12,
+          "defect_catch_rate": 0.9743,
+          "false_reject_rate": 0.095,
+          "box_recall": 0.881,
+          "box_precision": 0.902
+        },
+        "green mat": {
+          "n_images": 38,
+          "n_defective": 32,
+          "n_clean": 6,
+          "defect_catch_rate": 0.8878,
+          "false_reject_rate": 0.1383,
+          "box_recall": 0.7945,
+          "box_precision": 0.902
+        }
+      },
       "failures": [
         {
           "file": "example_scratch_0412.jpg",
@@ -935,6 +999,35 @@
           "box_recall": 0.5874
         }
       ],
+      "by_background": {
+        "wood / brown": {
+          "n_images": 62,
+          "n_defective": 50,
+          "n_clean": 12,
+          "defect_catch_rate": 0.9729,
+          "false_reject_rate": 0.085,
+          "box_recall": 0.882,
+          "box_precision": 0.889
+        },
+        "grey / neutral": {
+          "n_images": 70,
+          "n_defective": 58,
+          "n_clean": 12,
+          "defect_catch_rate": 0.9529,
+          "false_reject_rate": 0.095,
+          "box_recall": 0.862,
+          "box_precision": 0.889
+        },
+        "green mat": {
+          "n_images": 38,
+          "n_defective": 32,
+          "n_clean": 6,
+          "defect_catch_rate": 0.8574,
+          "false_reject_rate": 0.1427,
+          "box_recall": 0.7665,
+          "box_precision": 0.889
+        }
+      },
       "failures": [
         {
           "file": "example_scratch_0412.jpg",

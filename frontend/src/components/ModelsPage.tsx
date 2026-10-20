@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { modelsApi, type BenchModel, type Benchmark, type RegisteredModel, type SweepRow } from "../api/client";
 import { IconRefresh } from "./Icons";
+import { BackgroundBreakdown, LineProjection } from "./ModelInsights";
 
 // Fixed-order model colours (validated on white: all-pairs CVD + normal-vision pass; labels always shown).
 const MODEL_COLORS = ["#2a78d6", "#eb6834", "#1baf7a"];
@@ -183,6 +184,16 @@ function ModelDetail({ m, models, color, reject, isActive, canUse, onUse, isExam
       </section>
 
       <div className="detail-grid">
+        <section className="card">
+          <div className="card-header"><h2>On a real line</h2><span className="badge badge-accent">Projection</span></div>
+          <div className="card-body"><LineProjection m={m} /></div>
+        </section>
+
+        <section className="card">
+          <div className="card-header"><h2>By background</h2></div>
+          <BackgroundBreakdown m={m} />
+        </section>
+
         <section className="card">
           <div className="card-header"><h2>Accuracy by defect type</h2></div>
           <div className="card-body">

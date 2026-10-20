@@ -32,9 +32,9 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.config import REPO_ROOT, settings  # noqa: E402
-from app.evaluation import (coco_map, dataset_summary, dhash, image_level_outcomes, latency_summary,  # noqa: E402
-                            near_duplicates, perturbations, pr_at_threshold, threshold_sweep,
-                            to_coco_detections, used_categories)
+from app.evaluation import (background_group, by_group, coco_map, dataset_summary, dhash,  # noqa: E402
+                            image_level_outcomes, latency_summary, near_duplicates, perturbations,
+                            pr_at_threshold, threshold_sweep, to_coco_detections, used_categories)
 from app.inference.openvino_provider import OpenVINOInferenceProvider  # noqa: E402
 from app.inference.registry import discover  # noqa: E402
 from app.policy import DecisionPolicy  # noqa: E402
@@ -42,7 +42,7 @@ from app.policy import DecisionPolicy  # noqa: E402
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".bmp"}
 
 
-def evaluate_model(provider, coco, images_dir, policy, ignore, perturbs, sweep_thresholds):
+def evaluate_model(provider, coco, images_dir, policy, ignore, perturbs, sweep_thresholds, groups):
     name_to_cat = {n.lower(): c for c, n in used_categories(coco).items()}
     images = {img["id"]: Image.open(images_dir / img["file_name"]).convert("RGB") for img in coco["images"]}
     result, unmatched = {"robustness": {}}, set()
@@ -70,6 +70,7 @@ def evaluate_model(provider, coco, images_dir, policy, ignore, perturbs, sweep_t
             per_image = ops.pop("per_image")
             result.update({
                 "coco": mp, "pr_at_threshold": pr, "image_level": ops,
+                "by_background": by_group(coco, groups, coco_dets, policy_preds, policy, ignore),
                 "latency": latency_summary(latencies),
                 "threshold_sweep": threshold_sweep(coco, coco_dets, preds, ignore, sweep_thresholds),
                 "failures": [
@@ -120,6 +121,9 @@ def main() -> None:
         perturbs = {"clean": perturbs["clean"]}
     sweep = [round(0.05 * i, 2) for i in range(1, 20)]
 
+    # Background groups (heuristic, from border colour) for the per-background breakdown.
+    groups = {img["id"]: background_group(Image.open(args.images / img["file_name"])) for img in coco["images"]}
+
     s = type(settings)()
     s.models_dir, s.model_xml = args.models_dir, None
     found = [(n, x) for n, x in discover(s) if not args.only or n in args.only]
@@ -138,7 +142,7 @@ def main() -> None:
             models.append({"name": name, "path": str(xml), "error": f"{type(exc).__name__}: {exc}", "meta": meta})
             continue
         t0 = time.perf_counter()
-        res = evaluate_model(provider, coco, args.images, policy, ignore, perturbs, sweep)
+        res = evaluate_model(provider, coco, args.images, policy, ignore, perturbs, sweep, groups)
         models.append({
             "name": name, "path": str(xml), "sha256_12": provider.sha, "size_mb": provider.size_mb,
             "labels": provider.labels, "wrapper": provider.model_type, "meta": meta,
@@ -157,7 +161,9 @@ def main() -> None:
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "command": " ".join(sys.argv),
         "machine": {"cpu": platform.processor() or platform.machine(), "os": platform.platform(), "device": args.device},
-        "test_set": {"annotations": str(args.coco), "images": str(args.images), **dataset_summary(coco)},
+        "test_set": {"annotations": str(args.coco), "images": str(args.images), **dataset_summary(coco),
+                     "backgrounds": {g: list(groups.values()).count(g) for g in sorted(set(groups.values()))},
+                     "background_method": "median border colour (heuristic)"},
         "policy": {"reject_threshold": args.reject, "review_threshold": args.review, "ignore_labels": sorted(ignore)},
         "perturbations": list(perturbs),
         "leakage": leakage,

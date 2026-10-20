@@ -248,3 +248,48 @@ def near_duplicates(test: dict[str, int], train: dict[str, int], max_distance: i
         if dist[j] <= max_distance:
             out.append({"test": tname, "train": names[j], "distance": int(dist[j])})
     return out
+
+
+# ---- background subgroups ------------------------------------------------------
+
+def background_group(im) -> str:
+    """Rough background class from the median colour of the image border (heuristic, not a label)."""
+    a = np.asarray(im.convert("RGB").resize((64, 64)), dtype=np.float32)
+    border = np.concatenate([a[:6].reshape(-1, 3), a[-6:].reshape(-1, 3), a[:, :6].reshape(-1, 3), a[:, -6:].reshape(-1, 3)])
+    r, g, b = np.median(border, axis=0)
+    mx, mn = max(r, g, b), min(r, g, b)
+    sat = (mx - mn) / mx * 255 if mx > 0 else 0
+    if g > r + 8 and g > b:
+        return "green mat"
+    if sat < 40:
+        return "grey / neutral"
+    if r > b + 10:
+        return "wood / brown"
+    return "other"
+
+
+def subset_coco(coco_gt: dict, image_ids: set[int]) -> dict:
+    return {**coco_gt,
+            "images": [i for i in coco_gt["images"] if i["id"] in image_ids],
+            "annotations": [a for a in coco_gt["annotations"] if a["image_id"] in image_ids]}
+
+
+def by_group(coco_gt: dict, groups: dict[int, str], coco_dets: list[dict], predictions: dict[int, list[Detection]],
+             policy: DecisionPolicy, ignore_labels: set[str]) -> dict:
+    """Image-level and box-level results per background group."""
+    out = {}
+    for g in sorted(set(groups.values())):
+        ids = {i for i, gg in groups.items() if gg == g}
+        sub = subset_coco(coco_gt, ids)
+        ops = image_level_outcomes(sub, predictions, policy, ignore_labels)
+        pr = pr_at_threshold(sub, [d for d in coco_dets if d["image_id"] in ids], policy.reject_threshold)["overall"]
+        out[g] = {
+            "n_images": len(ids),
+            "n_defective": ops["defective_images"],
+            "n_clean": ops["no_defect_images"],
+            "defect_catch_rate": ops["defect_catch_rate"],
+            "false_reject_rate": ops["false_reject_rate"],
+            "box_recall": pr["recall"],
+            "box_precision": pr["precision"],
+        }
+    return out

@@ -40,6 +40,34 @@ model that was benchmarked.
 Caveats: perturbations are synthetic stand-ins for real camera changes. The leakage check finds
 near-identical images, not semantic duplicates (e.g. the same cell photographed twice from different angles).
 
+## What "good" means on a real line
+
+- **The test set is ~75% defective; a real line might be under 1%.** Raw precision on the test set
+  therefore overstates how clean the reject bin would be. The Models page's **On a real line** card
+  converts the *measured* cell-level rates (defective cells stopped, good cells flagged) into results
+  per 10,000 cells at a chosen defect rate. Example: with 91% caught and 20% of good cells flagged,
+  at a 0.5% defect rate only about 2 of every 100 stopped cells are defective. For a line, the good-cell
+  flag rate matters as much as mAP.
+- **Headline metrics for the project are cell-level:** defective cells missed (escapes) and good cells
+  flagged. mAP and per-class AP stay as the standard model metrics. Crack vs scratch only matters
+  if the two are handled differently downstream.
+- **Background dependence:** the **By background** card reports results per background group (wood,
+  grey, green mat; estimated from border colour). A large gap means the model uses the background. A
+  factory belt is unseen, so add a live-camera test on a new surface.
+- **Rotation:** the dataset has one photo per battery, so it cannot measure 360° inspection. The demo
+  shows the mechanism with synthetic 4-view cells. A real project needs multi-view captures per cell
+  (see "From demo to a real project" below).
+
+## From demo to a real project
+
+1. Capture each cell from 4+ angles (or with a line-scan camera while it rotates) on the real line, with
+   fixed lighting and the real belt as background.
+2. Collect mostly **normal** cells (realistic prevalence) plus every defect you can find. Label defects
+   per view, and record the cell ID so all views of a cell stay in the same split.
+3. Split by **cell and by session/day**, never by photo, to avoid near-duplicate leakage.
+4. Choose thresholds for a target escape rate, then report the good-cell flag rate at that operating
+   point, at the line's real defect rate.
+
 ## Decision policy (assumptions)
 
 ```

@@ -211,6 +211,11 @@ export interface BenchModel {
   robustness?: Record<string, RobustnessRow>;
   threshold_sweep?: SweepRow[];
   failures?: { file: string; ground_truth: string; decision: Status; top: [string, number] | null }[];
+  by_background?: Record<string, {
+    n_images: number; n_defective: number; n_clean: number;
+    defect_catch_rate: number | null; false_reject_rate: number | null;
+    box_recall: number | null; box_precision: number | null;
+  }>;
   unmatched_model_labels?: string[];
 }
 
@@ -227,6 +232,7 @@ export interface Benchmark {
     n_boxes: number;
     boxes_per_class: Record<string, number>;
     images_without_annotations: number;
+    backgrounds?: Record<string, number>;
   };
   policy?: { reject_threshold: number; review_threshold: number; ignore_labels: string[] };
   perturbations?: string[];

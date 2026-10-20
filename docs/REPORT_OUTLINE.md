@@ -46,6 +46,10 @@ Copy tables from `docs/results/evaluation_*.md` ✍️ and explain each, followi
 - Honesty measures: demo data labelled, no synthetic latency, no yield/ROI claims
 
 ## 7. Limitations and next steps (½ page)
+- Prevalence: test set ~75% defective vs. a rare-defect line. Include the projection at 0.5% (Models page).
+- Background: per-background results; tabletop photos ≠ factory belt.
+- Rotation: one photo per battery in the dataset; 360° inspection shown only as a simulated mechanism.
+- Same-session photos in train and test (docs/DATASET.md): scores are for familiar conditions.
 - Limitations from `docs/EVALUATION.md`
 - Next steps: collect clean images from the target line; tune thresholds on validation data;
   more data for weak classes; compare YOLOX-S vs Tiny / INT8; integrate a real camera trigger.

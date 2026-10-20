@@ -69,6 +69,13 @@ def model_entry(name, arch, prec, m50, m5095, p, r, lat, size, rob, geti):
                            "precision": None, "recall": None, "defect_escape_rate": None, "false_reject_rate": None}
                        for k, d in PERTURB_DROP.items()},
         "threshold_sweep": sweep,
+        "by_background": {
+            g: {"n_images": n, "n_defective": nd, "n_clean": n - nd,
+                "defect_catch_rate": round(min(1.0, caught / N_DEFECTIVE + off), 4),
+                "false_reject_rate": round(max(0.0, false_rej / N_CLEAN - off / 2), 4),
+                "box_recall": round(max(0.0, min(1.0, r + off)), 4), "box_precision": round(p, 4)}
+            for g, n, nd, off in (("wood / brown", 62, 50, 0.03), ("grey / neutral", 70, 58, 0.01), ("green mat", 38, 32, -0.09 * rob))
+        },
         "failures": [
             {"file": "example_scratch_0412.jpg", "ground_truth": "defective", "decision": "PASS", "top": ["scratch", 0.21]},
             {"file": "example_scratch_0587.jpg", "ground_truth": "defective", "decision": "PASS", "top": None},
@@ -86,7 +93,9 @@ def main() -> None:
         "command": "scripts/make_example_benchmark.py",
         "machine": {"cpu": "example", "os": "example", "device": "CPU"},
         "test_set": {"annotations": "example", "images": "example", "n_images": N_DEFECTIVE + N_CLEAN, "n_boxes": 212,
-                     "boxes_per_class": {"scratch": 128, "crack": 84}, "images_without_annotations": N_CLEAN},
+                     "boxes_per_class": {"scratch": 128, "crack": 84}, "images_without_annotations": N_CLEAN,
+                     "backgrounds": {"wood / brown": 62, "grey / neutral": 70, "green mat": 38},
+                     "background_method": "median border colour (heuristic)"},
         "policy": {"reject_threshold": 0.6, "review_threshold": 0.3, "ignore_labels": []},
         "perturbations": list(PERTURB_DROP),
         "leakage": {"checked": True, "count": 0, "test_images": N_DEFECTIVE + N_CLEAN, "method": "dHash 256-bit, Hamming <= 8", "near_duplicates": []},

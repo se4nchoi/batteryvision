@@ -66,6 +66,9 @@ def test_benchmark_script(tmp_path: Path):
     assert 0.0 <= good["coco"]["map50"] <= 1.0
     assert len(good["threshold_sweep"]) == 19 and good["latency"]["n"] == 5
     assert report["test_set"]["n_images"] == 6 and report["test_set"]["images_without_annotations"] == 3
+    assert sum(report["test_set"]["backgrounds"].values()) == 6
+    bg = good["by_background"]
+    assert sum(g["n_images"] for g in bg.values()) == 6 and all("defect_catch_rate" in g for g in bg.values())
     assert report["leakage"]["count"] >= 1
     assert "cell_01_v0.png" in [d["test"] for d in report["leakage"]["near_duplicates"]]
 
@@ -78,3 +81,10 @@ def test_near_duplicate_detection():
     b = a.rotate(180)
     assert near_duplicates({"t": dhash(a)}, {"same": dhash(a.copy()), "diff": dhash(b)})[0]["train"] == "same"
     assert near_duplicates({"t": dhash(a)}, {"diff": dhash(b)}) == []
+
+
+def test_background_group_heuristic():
+    from app.evaluation import background_group
+    assert background_group(Image.new("RGB", (100, 100), (60, 120, 80))) == "green mat"
+    assert background_group(Image.new("RGB", (100, 100), (130, 130, 128))) == "grey / neutral"
+    assert background_group(Image.new("RGB", (100, 100), (150, 120, 85))) == "wood / brown"
