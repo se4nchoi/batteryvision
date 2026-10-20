@@ -77,7 +77,8 @@ CC BY 4.0, classes **crack** and **scratch**. Verified facts and leakage checks 
 > slightly different from the v3 docs. Download **"OpenVINO FP16 with XAI head (Explanation included)"**:
 > the zip holds `model.xml` + `model.bin` with labels and preprocessing embedded, plus a saliency
 > output that the dashboard shows as a heatmap. Unzip it into `models\<name>\` (one folder per model).
-> Geti models expect **RGB** input (BatteryVision's default).
+> Geti models expect **RGB** input (BatteryVision's default). This was verified on both exports, even
+> though the YOLOX export sets `reverse_input_channels = True` in its metadata.
 
 - For each trained model, download the **OpenVINO** format (**FP16**). Also download **INT8** of
   the best model if offered; FP16 vs INT8 makes a quick accuracy-vs-speed comparison.

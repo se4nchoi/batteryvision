@@ -1,0 +1,196 @@
+{
+  "meta": {
+    "model": "..\\models\\yolox_s_fp16_xai\\model.xml",
+    "device": "CPU",
+    "test_annotations": "..\\datasets\\battery\\test\\_annotations.coco.json",
+    "n_images": 153,
+    "n_annotations": 141,
+    "policy": {
+      "reject": 0.6,
+      "review": 0.3,
+      "ignore_labels": []
+    },
+    "unmatched_model_labels": []
+  },
+  "coco": {
+    "map50": 0.8973497834962229,
+    "map50_95": 0.5598792064359651,
+    "per_class": {
+      "crack": {
+        "ap50": 1.0,
+        "ap50_95": 0.6551311953752332
+      },
+      "scratch": {
+        "ap50": 0.7946995669924455,
+        "ap50_95": 0.464627217496697
+      }
+    }
+  },
+  "pr_at_threshold": {
+    "threshold": 0.6,
+    "iou": 0.5,
+    "overall": {
+      "tp": 64,
+      "fp": 0,
+      "fn": 77,
+      "precision": 1.0,
+      "recall": 0.45390070921985815,
+      "f1": 0.624390243902439
+    },
+    "per_class": {
+      "crack": {
+        "tp": 44,
+        "fp": 0,
+        "fn": 16,
+        "precision": 1.0,
+        "recall": 0.7333333333333333,
+        "f1": 0.846153846153846
+      },
+      "scratch": {
+        "tp": 20,
+        "fp": 0,
+        "fn": 61,
+        "precision": 1.0,
+        "recall": 0.24691358024691357,
+        "f1": 0.396039603960396
+      }
+    }
+  },
+  "pr_at_review": {
+    "threshold": 0.3,
+    "iou": 0.5,
+    "overall": {
+      "tp": 113,
+      "fp": 10,
+      "fn": 28,
+      "precision": 0.9186991869918699,
+      "recall": 0.8014184397163121,
+      "f1": 0.8560606060606062
+    },
+    "per_class": {
+      "crack": {
+        "tp": 60,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "scratch": {
+        "tp": 53,
+        "fp": 10,
+        "fn": 28,
+        "precision": 0.8412698412698413,
+        "recall": 0.654320987654321,
+        "f1": 0.7361111111111113
+      }
+    }
+  },
+  "confusion": {
+    "review": {
+      "threshold": 0.3,
+      "iou": 0.5,
+      "labels": [
+        "crack",
+        "scratch",
+        "background"
+      ],
+      "matrix": [
+        [
+          60,
+          0,
+          0
+        ],
+        [
+          0,
+          53,
+          28
+        ],
+        [
+          0,
+          10,
+          0
+        ]
+      ],
+      "note": "rows = annotated, columns = predicted; background = missed (column) / false box (row)"
+    },
+    "reject": {
+      "threshold": 0.6,
+      "iou": 0.5,
+      "labels": [
+        "crack",
+        "scratch",
+        "background"
+      ],
+      "matrix": [
+        [
+          44,
+          0,
+          16
+        ],
+        [
+          0,
+          20,
+          61
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "note": "rows = annotated, columns = predicted; background = missed (column) / false box (row)"
+    }
+  },
+  "cell_binary": {
+    "flagged": {
+      "tp": 110,
+      "fn": 6,
+      "fp": 1,
+      "tn": 36,
+      "accuracy": 0.954248366013072,
+      "precision": 0.990990990990991,
+      "recall": 0.9482758620689655,
+      "specificity": 0.972972972972973,
+      "f1": 0.9691629955947136
+    },
+    "rejected": {
+      "tp": 64,
+      "fn": 52,
+      "fp": 0,
+      "tn": 37,
+      "accuracy": 0.6601307189542484,
+      "precision": 1.0,
+      "recall": 0.5517241379310345,
+      "specificity": 1.0,
+      "f1": 0.7111111111111111
+    }
+  },
+  "image_level": {
+    "matrix": {
+      "defective": {
+        "PASS": 6,
+        "REVIEW": 46,
+        "REJECT": 64
+      },
+      "no_defect_annotated": {
+        "PASS": 36,
+        "REVIEW": 1,
+        "REJECT": 0
+      }
+    },
+    "defective_images": 116,
+    "no_defect_images": 37,
+    "defect_catch_rate": 0.9482758620689655,
+    "defect_escape_rate": 0.05172413793103448,
+    "false_reject_rate": 0.0,
+    "review_rate": 0.30718954248366015
+  },
+  "latency": {
+    "n": 152,
+    "mean_ms": 43.53302631578948,
+    "median_ms": 41.58,
+    "p95_ms": 55.37199999999999,
+    "note": "First call excluded (warm-up)."
+  }
+}

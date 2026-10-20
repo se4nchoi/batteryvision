@@ -1,6 +1,6 @@
 # Evaluation plan and results template
 
-> **Status:** ATSS-MobileNetV2 evaluated on 2026-10-20 (results below). YOLOX results pending.
+> **Status:** ATSS-MobileNetV2 and YOLOX-S evaluated on 2026-10-20 (results and comparison below).
 > Fill remaining `TBD` / ✍️ items only from `scripts/benchmark.py` / `evaluate.py` output or Geti screenshots.
 
 ## What is measured, and what it means
@@ -89,7 +89,7 @@ Everything below was measured on the 153-image held-out test split on this lapto
 images train/valid/test = 3,214 (1,072 originals ×3 augmented) / 306 / 153, test images without
 defect annotations: 37. Test photos come from the same photo sessions as training (see `docs/DATASET.md`).
 **Model:** ATSS-MobileNetV2 (Geti "Balance" preset), version 1, exported as OpenVINO FP16 with XAI head
-(5.8 MB). YOLOX-S: TBD (training queued). Model input is RGB (verified: RGB mAP@50 0.933 vs BGR 0.891).
+(5.8 MB). Model input is RGB (verified: RGB mAP@50 0.933 vs BGR 0.891).
 
 ### Geti validation score
 85.9% (Geti's own score on its validation split; screenshot ✍️).
@@ -167,6 +167,38 @@ burst photos from the same sessions. Scores are therefore optimistic for unseen 
 ### Failure examples
 No escapes and no false rejects at the current policy. For the report, use REVIEW cases instead
 (scratches at 0.3–0.6 confidence, especially on wood) as the "uncertain" examples ✍️.
+
+## Model comparison: ATSS-MobileNetV2 vs YOLOX-S (measured 2026-10-20)
+
+Both exported from Geti as OpenVINO FP16 with XAI head, evaluated on the same 153 test images with the
+same policy (review ≥ 0.30, reject ≥ 0.60). YOLOX report: `docs/results/evaluation_20261020_153009.md`;
+both models: `docs/results/benchmark.json`. Both models expect RGB input (YOLOX: RGB 0.897 vs BGR 0.732
+mAP@50, although its metadata sets `reverse_input_channels = True`).
+
+| | ATSS-MobileNetV2 | YOLOX-S |
+|---|---|---|
+| mAP@50 / mAP@50:95 | **0.933** / **0.592** | 0.897 / 0.560 |
+| AP@50 crack / scratch | 1.000 / **0.866** | 1.000 / 0.795 |
+| Box P / R / F1 at 0.30 | 0.884 / **0.865** / **0.875** | **0.919** / 0.801 / 0.856 |
+| Box P / R / F1 at 0.60 | 1.000 / **0.624** / **0.769** | 1.000 / 0.454 / 0.624 |
+| Crack / scratch confusion | none | none |
+| Cell accuracy / F1 (flagged at 0.30) | **98.0%** / **0.987** | 95.4% / 0.969 |
+| Defective cells passed (of 116) | **0** | 6 |
+| Good cells flagged (of 37) | 3 | **1** |
+| Cell accuracy (auto-reject only) | **81.0%** | 66.0% |
+| Robustness: largest mAP@50 drop | −7.2 pts (blur) | **−2.6 pts** (blur) |
+| Latency mean / p95 (CPU) | **44.9** / **47.9** ms | 48.1 / 72.5 ms |
+| Size | **5.8 MB** | 18.4 MB |
+| Box recall @0.60 by background (green / grey / wood) | 0.72 / 0.74 / 0.49 | 0.35 / 0.53 / 0.48 |
+
+**Reading the comparison**
+- ATSS is more accurate overall, mainly on scratches, and smaller.
+- YOLOX outputs lower confidence scores, so a shared 0.30 / 0.60 policy disadvantages it. On the test-set
+  sweep YOLOX at 0.20 stops 100% of defective cells while flagging 2.7% of good cells; ATSS needs 0.30 for
+  100% and then flags 8.1%. Choosing per-model thresholds from the **test** set would bias the comparison,
+  so thresholds should be selected on the **validation** split (next step).
+- YOLOX is more robust to blur, darkness and noise.
+- Neither model ever mistakes a crack for a scratch or vice versa; all errors are missed or false scratches.
 
 ## Limitations (keep in the report)
 
