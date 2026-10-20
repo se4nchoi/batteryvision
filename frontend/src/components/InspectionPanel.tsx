@@ -54,8 +54,10 @@ function ZoomInset({ view, det, reject }: { view: ViewResult; det: Detection; re
   const x0 = Math.min(Math.max(cx - side / 2, 0), Math.max(w - side, 0));
   const y0 = Math.min(Math.max(cy - side / 2, 0), Math.max(h - side, 0));
   const tone = !det.actionable ? "ignored" : det.confidence >= reject ? "reject" : "review";
+  // sit in the corner opposite the finding, so the inset never covers the box or its confidence tag
+  const corner = `${cy > h / 2 ? "top" : "bottom"}-${cx > w / 2 ? "left" : "right"}`;
   return (
-    <div className="zoom-inset" aria-label="Zoomed view of the finding">
+    <div className={`zoom-inset zoom-${corner}`} aria-label="Zoomed view of the finding">
       <svg viewBox={`${x0} ${y0} ${side} ${side}`} preserveAspectRatio="xMidYMid slice">
         <image href={view.image_url} x={0} y={0} width={w} height={h} />
         <g className={`box box-${tone}`}>

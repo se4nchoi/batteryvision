@@ -1,0 +1,1113 @@
+{
+  "generated_at": "2026-10-20T06:41:04+00:00",
+  "command": "scripts/benchmark.py --coco ../datasets/battery_later/clean.coco.json --images ../datasets/battery_later/images --no-robustness --out ../docs/results/later_session_clean",
+  "machine": {
+    "cpu": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+    "os": "Windows-11-10.0.26200-SP0",
+    "device": "CPU"
+  },
+  "test_set": {
+    "annotations": "..\\datasets\\battery_later\\clean.coco.json",
+    "images": "..\\datasets\\battery_later\\images",
+    "n_images": 54,
+    "n_boxes": 39,
+    "boxes_per_class": {
+      "scratch": 15,
+      "crack": 24
+    },
+    "images_without_annotations": 15,
+    "backgrounds": {
+      "green mat": 15,
+      "grey / neutral": 27,
+      "wood / brown": 12
+    },
+    "background_method": "median border colour (heuristic)"
+  },
+  "policy": {
+    "reject_threshold": 0.6,
+    "review_threshold": 0.3,
+    "ignore_labels": []
+  },
+  "perturbations": [
+    "clean"
+  ],
+  "leakage": {
+    "checked": false
+  },
+  "models": [
+    {
+      "name": "atss_mbv2_fp16_xai",
+      "path": "C:\\Users\\user\\_se4nchoi\\intel7-battery-ai-project\\models\\atss_mbv2_fp16_xai\\model.xml",
+      "sha256_12": "dbbce99151c0",
+      "size_mb": 5.81,
+      "labels": [
+        "scratch",
+        "crack"
+      ],
+      "wrapper": "SSD",
+      "meta": {
+        "architecture": "ATSS-MobileNetV2",
+        "precision": "FP16",
+        "geti_preset": "Balance",
+        "geti_validation_score": {
+          "metric": "Geti score",
+          "value": 0.859,
+          "split": "validation"
+        },
+        "notes": "Geti 'OpenVINO FP16 with XAI head (Explanation included)', version 1, 20 Oct 2026"
+      },
+      "eval_seconds": 5.1,
+      "robustness": {
+        "clean": {
+          "map50": 0.7498838770176477,
+          "map50_95": 0.34792512810206616,
+          "precision": 1.0,
+          "recall": 0.23076923076923078,
+          "defect_escape_rate": 0.41025641025641024,
+          "false_reject_rate": 0.0
+        }
+      },
+      "coco": {
+        "map50": 0.7498838770176477,
+        "map50_95": 0.34792512810206616,
+        "per_class": {
+          "crack": {
+            "ap50": 0.8924675324675324,
+            "ap50_95": 0.469713906470428
+          },
+          "scratch": {
+            "ap50": 0.6073002215677626,
+            "ap50_95": 0.22613634973370433
+          }
+        }
+      },
+      "pr_at_threshold": {
+        "threshold": 0.6,
+        "iou": 0.5,
+        "overall": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 30,
+          "precision": 1.0,
+          "recall": 0.23076923076923078,
+          "f1": 0.375
+        },
+        "per_class": {
+          "crack": {
+            "tp": 9,
+            "fp": 0,
+            "fn": 15,
+            "precision": 1.0,
+            "recall": 0.375,
+            "f1": 0.5454545454545454
+          },
+          "scratch": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 15,
+            "precision": null,
+            "recall": 0.0,
+            "f1": null
+          }
+        }
+      },
+      "image_level": {
+        "matrix": {
+          "defective": {
+            "PASS": 16,
+            "REVIEW": 14,
+            "REJECT": 9
+          },
+          "no_defect_annotated": {
+            "PASS": 13,
+            "REVIEW": 2,
+            "REJECT": 0
+          }
+        },
+        "defective_images": 39,
+        "no_defect_images": 15,
+        "defect_catch_rate": 0.5897435897435898,
+        "defect_escape_rate": 0.41025641025641024,
+        "false_reject_rate": 0.0,
+        "review_rate": 0.2962962962962963
+      },
+      "operating_points": {
+        "review": {
+          "threshold": 0.3,
+          "iou": 0.5,
+          "overall": {
+            "tp": 18,
+            "fp": 7,
+            "fn": 21,
+            "precision": 0.72,
+            "recall": 0.46153846153846156,
+            "f1": 0.5625
+          },
+          "per_class": {
+            "crack": {
+              "tp": 10,
+              "fp": 0,
+              "fn": 14,
+              "precision": 1.0,
+              "recall": 0.4166666666666667,
+              "f1": 0.5882352941176471
+            },
+            "scratch": {
+              "tp": 8,
+              "fp": 7,
+              "fn": 7,
+              "precision": 0.5333333333333333,
+              "recall": 0.5333333333333333,
+              "f1": 0.5333333333333333
+            }
+          }
+        },
+        "reject": {
+          "threshold": 0.6,
+          "iou": 0.5,
+          "overall": {
+            "tp": 9,
+            "fp": 0,
+            "fn": 30,
+            "precision": 1.0,
+            "recall": 0.23076923076923078,
+            "f1": 0.375
+          },
+          "per_class": {
+            "crack": {
+              "tp": 9,
+              "fp": 0,
+              "fn": 15,
+              "precision": 1.0,
+              "recall": 0.375,
+              "f1": 0.5454545454545454
+            },
+            "scratch": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 15,
+              "precision": null,
+              "recall": 0.0,
+              "f1": null
+            }
+          }
+        }
+      },
+      "confusion": {
+        "review": {
+          "threshold": 0.3,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              10,
+              0,
+              14
+            ],
+            [
+              0,
+              8,
+              7
+            ],
+            [
+              0,
+              7,
+              0
+            ]
+          ],
+          "note": "rows = annotated, columns = predicted; background = missed (column) / false box (row)"
+        },
+        "reject": {
+          "threshold": 0.6,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              9,
+              0,
+              15
+            ],
+            [
+              0,
+              0,
+              15
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "note": "rows = annotated, columns = predicted; background = missed (column) / false box (row)"
+        }
+      },
+      "cell_binary": {
+        "flagged": {
+          "tp": 23,
+          "fn": 16,
+          "fp": 2,
+          "tn": 13,
+          "accuracy": 0.6666666666666666,
+          "precision": 0.92,
+          "recall": 0.5897435897435898,
+          "specificity": 0.8666666666666667,
+          "f1": 0.71875
+        },
+        "rejected": {
+          "tp": 9,
+          "fn": 30,
+          "fp": 0,
+          "tn": 15,
+          "accuracy": 0.4444444444444444,
+          "precision": 1.0,
+          "recall": 0.23076923076923078,
+          "specificity": 1.0,
+          "f1": 0.375
+        }
+      },
+      "by_background": {
+        "green mat": {
+          "n_images": 15,
+          "n_defective": 15,
+          "n_clean": 0,
+          "defect_catch_rate": 0.5333333333333333,
+          "false_reject_rate": null,
+          "box_recall": 0.0,
+          "box_precision": null
+        },
+        "grey / neutral": {
+          "n_images": 27,
+          "n_defective": 12,
+          "n_clean": 15,
+          "defect_catch_rate": 0.3333333333333333,
+          "false_reject_rate": 0.0,
+          "box_recall": 0.0,
+          "box_precision": null
+        },
+        "wood / brown": {
+          "n_images": 12,
+          "n_defective": 12,
+          "n_clean": 0,
+          "defect_catch_rate": 0.9166666666666666,
+          "false_reject_rate": null,
+          "box_recall": 0.75,
+          "box_precision": 1.0
+        }
+      },
+      "latency": {
+        "n": 53,
+        "mean_ms": 89.34075471698111,
+        "median_ms": 85.64,
+        "p95_ms": 107.606,
+        "note": "First call excluded (warm-up)."
+      },
+      "threshold_sweep": [
+        {
+          "threshold": 0.05,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 1.0,
+          "box_precision": 0.18781725888324874,
+          "box_recall": 0.9487179487179487
+        },
+        {
+          "threshold": 0.1,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 1.0,
+          "box_precision": 0.47692307692307695,
+          "box_recall": 0.7948717948717948
+        },
+        {
+          "threshold": 0.15,
+          "defect_recall": 0.9743589743589743,
+          "escape_rate": 0.02564102564102566,
+          "false_reject_rate": 0.8666666666666667,
+          "box_precision": 0.5,
+          "box_recall": 0.7435897435897436
+        },
+        {
+          "threshold": 0.2,
+          "defect_recall": 0.8974358974358975,
+          "escape_rate": 0.10256410256410253,
+          "false_reject_rate": 0.7333333333333333,
+          "box_precision": 0.4897959183673469,
+          "box_recall": 0.6153846153846154
+        },
+        {
+          "threshold": 0.25,
+          "defect_recall": 0.6666666666666666,
+          "escape_rate": 0.33333333333333337,
+          "false_reject_rate": 0.4666666666666667,
+          "box_precision": 0.5454545454545454,
+          "box_recall": 0.46153846153846156
+        },
+        {
+          "threshold": 0.3,
+          "defect_recall": 0.5897435897435898,
+          "escape_rate": 0.41025641025641024,
+          "false_reject_rate": 0.13333333333333333,
+          "box_precision": 0.72,
+          "box_recall": 0.46153846153846156
+        },
+        {
+          "threshold": 0.35,
+          "defect_recall": 0.358974358974359,
+          "escape_rate": 0.641025641025641,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.358974358974359
+        },
+        {
+          "threshold": 0.4,
+          "defect_recall": 0.2564102564102564,
+          "escape_rate": 0.7435897435897436,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.2564102564102564
+        },
+        {
+          "threshold": 0.45,
+          "defect_recall": 0.23076923076923078,
+          "escape_rate": 0.7692307692307692,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.23076923076923078
+        },
+        {
+          "threshold": 0.5,
+          "defect_recall": 0.23076923076923078,
+          "escape_rate": 0.7692307692307692,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.23076923076923078
+        },
+        {
+          "threshold": 0.55,
+          "defect_recall": 0.23076923076923078,
+          "escape_rate": 0.7692307692307692,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.23076923076923078
+        },
+        {
+          "threshold": 0.6,
+          "defect_recall": 0.23076923076923078,
+          "escape_rate": 0.7692307692307692,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.23076923076923078
+        },
+        {
+          "threshold": 0.65,
+          "defect_recall": 0.23076923076923078,
+          "escape_rate": 0.7692307692307692,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.23076923076923078
+        },
+        {
+          "threshold": 0.7,
+          "defect_recall": 0.23076923076923078,
+          "escape_rate": 0.7692307692307692,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.23076923076923078
+        },
+        {
+          "threshold": 0.75,
+          "defect_recall": 0.1794871794871795,
+          "escape_rate": 0.8205128205128205,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.1794871794871795
+        },
+        {
+          "threshold": 0.8,
+          "defect_recall": 0.07692307692307693,
+          "escape_rate": 0.9230769230769231,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.07692307692307693
+        },
+        {
+          "threshold": 0.85,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        },
+        {
+          "threshold": 0.9,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        },
+        {
+          "threshold": 0.95,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        }
+      ],
+      "failures": [
+        {
+          "file": "IMG_7194_jpg.rf.f3905cdb96516cd3519c8e38c24d0ec1.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.172
+          ]
+        },
+        {
+          "file": "IMG_7197_jpg.rf.c2e89ff7bff5a31e7d85e521567aeee2.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.213
+          ]
+        },
+        {
+          "file": "IMG_7199_jpg.rf.e5a1aa1fec7b8722c1066b0da905796f.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.202
+          ]
+        },
+        {
+          "file": "IMG_7217_jpg.rf.d578447fb957f8235278c3f2748b478b.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.237
+          ]
+        },
+        {
+          "file": "IMG_7230_jpg.rf.f3ec6045ff894f025bcd0dedc2488581.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.243
+          ]
+        },
+        {
+          "file": "IMG_7239_jpg.rf.41be6bea594d5d1c5f26c8357961b36f.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.188
+          ]
+        },
+        {
+          "file": "IMG_7240_jpg.rf.31796ce5923a5b7c35d98ac290bee2d7.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.208
+          ]
+        },
+        {
+          "file": "IMG_7258_jpg.rf.d293d99ea231461c03c1faac762c6acc.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.28
+          ]
+        },
+        {
+          "file": "IMG_7267_jpg.rf.3b31131c08cfcadd06971e59d231d4ea.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.176
+          ]
+        },
+        {
+          "file": "IMG_7174_jpg.rf.4183fe351df1f88f42ef6648863544cb.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.234
+          ]
+        },
+        {
+          "file": "IMG_7188_jpg.rf.f23d731560c58096198f5abb050bcdd9.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.23
+          ]
+        },
+        {
+          "file": "IMG_7220_jpg.rf.83cf951e1f429949a9f93eef0f08dc41.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.137
+          ]
+        }
+      ],
+      "unmatched_model_labels": []
+    },
+    {
+      "name": "yolox_s_fp16_xai",
+      "path": "C:\\Users\\user\\_se4nchoi\\intel7-battery-ai-project\\models\\yolox_s_fp16_xai\\model.xml",
+      "sha256_12": "feecce66fe7a",
+      "size_mb": 18.45,
+      "labels": [
+        "scratch",
+        "crack"
+      ],
+      "wrapper": "SSD",
+      "meta": {
+        "architecture": "YOLOX-S",
+        "precision": "FP16",
+        "notes": "Geti OpenVINO FP16 export with XAI head, 20 Oct 2026. Geti validation score not recorded yet."
+      },
+      "eval_seconds": 4.5,
+      "robustness": {
+        "clean": {
+          "map50": 0.9554455445544554,
+          "map50_95": 0.3498411965256676,
+          "precision": 1.0,
+          "recall": 0.23076923076923078,
+          "defect_escape_rate": 0.7435897435897436,
+          "false_reject_rate": 0.0
+        }
+      },
+      "coco": {
+        "map50": 0.9554455445544554,
+        "map50_95": 0.3498411965256676,
+        "per_class": {
+          "crack": {
+            "ap50": 0.9108910891089109,
+            "ap50_95": 0.529402079305675
+          },
+          "scratch": {
+            "ap50": 1.0,
+            "ap50_95": 0.17028031374566027
+          }
+        }
+      },
+      "pr_at_threshold": {
+        "threshold": 0.6,
+        "iou": 0.5,
+        "overall": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 30,
+          "precision": 1.0,
+          "recall": 0.23076923076923078,
+          "f1": 0.375
+        },
+        "per_class": {
+          "crack": {
+            "tp": 9,
+            "fp": 0,
+            "fn": 15,
+            "precision": 1.0,
+            "recall": 0.375,
+            "f1": 0.5454545454545454
+          },
+          "scratch": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 15,
+            "precision": null,
+            "recall": 0.0,
+            "f1": null
+          }
+        }
+      },
+      "image_level": {
+        "matrix": {
+          "defective": {
+            "PASS": 29,
+            "REVIEW": 1,
+            "REJECT": 9
+          },
+          "no_defect_annotated": {
+            "PASS": 15,
+            "REVIEW": 0,
+            "REJECT": 0
+          }
+        },
+        "defective_images": 39,
+        "no_defect_images": 15,
+        "defect_catch_rate": 0.2564102564102564,
+        "defect_escape_rate": 0.7435897435897436,
+        "false_reject_rate": 0.0,
+        "review_rate": 0.018518518518518517
+      },
+      "operating_points": {
+        "review": {
+          "threshold": 0.3,
+          "iou": 0.5,
+          "overall": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 29,
+            "precision": 1.0,
+            "recall": 0.2564102564102564,
+            "f1": 0.4081632653061224
+          },
+          "per_class": {
+            "crack": {
+              "tp": 9,
+              "fp": 0,
+              "fn": 15,
+              "precision": 1.0,
+              "recall": 0.375,
+              "f1": 0.5454545454545454
+            },
+            "scratch": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 14,
+              "precision": 1.0,
+              "recall": 0.06666666666666667,
+              "f1": 0.125
+            }
+          }
+        },
+        "reject": {
+          "threshold": 0.6,
+          "iou": 0.5,
+          "overall": {
+            "tp": 9,
+            "fp": 0,
+            "fn": 30,
+            "precision": 1.0,
+            "recall": 0.23076923076923078,
+            "f1": 0.375
+          },
+          "per_class": {
+            "crack": {
+              "tp": 9,
+              "fp": 0,
+              "fn": 15,
+              "precision": 1.0,
+              "recall": 0.375,
+              "f1": 0.5454545454545454
+            },
+            "scratch": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 15,
+              "precision": null,
+              "recall": 0.0,
+              "f1": null
+            }
+          }
+        }
+      },
+      "confusion": {
+        "review": {
+          "threshold": 0.3,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              9,
+              0,
+              15
+            ],
+            [
+              0,
+              1,
+              14
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "note": "rows = annotated, columns = predicted; background = missed (column) / false box (row)"
+        },
+        "reject": {
+          "threshold": 0.6,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              9,
+              0,
+              15
+            ],
+            [
+              0,
+              0,
+              15
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "note": "rows = annotated, columns = predicted; background = missed (column) / false box (row)"
+        }
+      },
+      "cell_binary": {
+        "flagged": {
+          "tp": 10,
+          "fn": 29,
+          "fp": 0,
+          "tn": 15,
+          "accuracy": 0.46296296296296297,
+          "precision": 1.0,
+          "recall": 0.2564102564102564,
+          "specificity": 1.0,
+          "f1": 0.4081632653061224
+        },
+        "rejected": {
+          "tp": 9,
+          "fn": 30,
+          "fp": 0,
+          "tn": 15,
+          "accuracy": 0.4444444444444444,
+          "precision": 1.0,
+          "recall": 0.23076923076923078,
+          "specificity": 1.0,
+          "f1": 0.375
+        }
+      },
+      "by_background": {
+        "green mat": {
+          "n_images": 15,
+          "n_defective": 15,
+          "n_clean": 0,
+          "defect_catch_rate": 0.06666666666666667,
+          "false_reject_rate": null,
+          "box_recall": 0.0,
+          "box_precision": null
+        },
+        "grey / neutral": {
+          "n_images": 27,
+          "n_defective": 12,
+          "n_clean": 15,
+          "defect_catch_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_recall": 0.0,
+          "box_precision": null
+        },
+        "wood / brown": {
+          "n_images": 12,
+          "n_defective": 12,
+          "n_clean": 0,
+          "defect_catch_rate": 0.75,
+          "false_reject_rate": null,
+          "box_recall": 0.75,
+          "box_precision": 1.0
+        }
+      },
+      "latency": {
+        "n": 53,
+        "mean_ms": 78.62301886792454,
+        "median_ms": 77.8,
+        "p95_ms": 87.624,
+        "note": "First call excluded (warm-up)."
+      },
+      "threshold_sweep": [
+        {
+          "threshold": 0.05,
+          "defect_recall": 0.6666666666666666,
+          "escape_rate": 0.33333333333333337,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.6666666666666666
+        },
+        {
+          "threshold": 0.1,
+          "defect_recall": 0.46153846153846156,
+          "escape_rate": 0.5384615384615384,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.46153846153846156
+        },
+        {
+          "threshold": 0.15,
+          "defect_recall": 0.358974358974359,
+          "escape_rate": 0.641025641025641,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.358974358974359
+        },
+        {
+          "threshold": 0.2,
+          "defect_recall": 0.3333333333333333,
+          "escape_rate": 0.6666666666666667,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.3333333333333333
+        },
+        {
+          "threshold": 0.25,
+          "defect_recall": 0.28205128205128205,
+          "escape_rate": 0.717948717948718,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.28205128205128205
+        },
+        {
+          "threshold": 0.3,
+          "defect_recall": 0.2564102564102564,
+          "escape_rate": 0.7435897435897436,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.2564102564102564
+        },
+        {
+          "threshold": 0.35,
+          "defect_recall": 0.23076923076923078,
+          "escape_rate": 0.7692307692307692,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.23076923076923078
+        },
+        {
+          "threshold": 0.4,
+          "defect_recall": 0.23076923076923078,
+          "escape_rate": 0.7692307692307692,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.23076923076923078
+        },
+        {
+          "threshold": 0.45,
+          "defect_recall": 0.23076923076923078,
+          "escape_rate": 0.7692307692307692,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.23076923076923078
+        },
+        {
+          "threshold": 0.5,
+          "defect_recall": 0.23076923076923078,
+          "escape_rate": 0.7692307692307692,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.23076923076923078
+        },
+        {
+          "threshold": 0.55,
+          "defect_recall": 0.23076923076923078,
+          "escape_rate": 0.7692307692307692,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.23076923076923078
+        },
+        {
+          "threshold": 0.6,
+          "defect_recall": 0.23076923076923078,
+          "escape_rate": 0.7692307692307692,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.23076923076923078
+        },
+        {
+          "threshold": 0.65,
+          "defect_recall": 0.15384615384615385,
+          "escape_rate": 0.8461538461538461,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.15384615384615385
+        },
+        {
+          "threshold": 0.7,
+          "defect_recall": 0.02564102564102564,
+          "escape_rate": 0.9743589743589743,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.02564102564102564
+        },
+        {
+          "threshold": 0.75,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        },
+        {
+          "threshold": 0.8,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        },
+        {
+          "threshold": 0.85,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        },
+        {
+          "threshold": 0.9,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        },
+        {
+          "threshold": 0.95,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        }
+      ],
+      "failures": [
+        {
+          "file": "IMG_7179_jpg.rf.01cd180c0bf275125e276d484c6e7050.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.261
+          ]
+        },
+        {
+          "file": "IMG_7184_jpg.rf.97353ac40f5c6304ff86e15ca1fe06b7.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.245
+          ]
+        },
+        {
+          "file": "IMG_7194_jpg.rf.f3905cdb96516cd3519c8e38c24d0ec1.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.139
+          ]
+        },
+        {
+          "file": "IMG_7197_jpg.rf.c2e89ff7bff5a31e7d85e521567aeee2.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.063
+          ]
+        },
+        {
+          "file": "IMG_7199_jpg.rf.e5a1aa1fec7b8722c1066b0da905796f.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.079
+          ]
+        },
+        {
+          "file": "IMG_7202_jpg.rf.6f2bf7ecb9393af330cb3bc519aa4eed.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.097
+          ]
+        },
+        {
+          "file": "IMG_7212_jpg.rf.e586b58581cfd73e3e82ad9ccfc995f4.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.121
+          ]
+        },
+        {
+          "file": "IMG_7216_jpg.rf.c360d3836b2a2f128f36fe42e671eb92.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.178
+          ]
+        },
+        {
+          "file": "IMG_7217_jpg.rf.d578447fb957f8235278c3f2748b478b.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.094
+          ]
+        },
+        {
+          "file": "IMG_7229_jpg.rf.091b00eab461155336574ad209b10c8b.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "crack",
+            0.05
+          ]
+        },
+        {
+          "file": "IMG_7230_jpg.rf.f3ec6045ff894f025bcd0dedc2488581.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "crack",
+            0.03
+          ]
+        },
+        {
+          "file": "IMG_7236_jpg.rf.2687f363621c598e4601f7bd2f352c08.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "crack",
+            0.048
+          ]
+        }
+      ],
+      "unmatched_model_labels": []
+    }
+  ]
+}

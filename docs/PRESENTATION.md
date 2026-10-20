@@ -1,66 +1,69 @@
 # Presentation script (target 4:00, hard limit 5:00)
 
-**Before you present:** `.\start.ps1`, open http://localhost:8000 full-screen (F11) at 1080p, press `R`.
-If the model is ready, select it under **Data source** and have one held-out test image ready for **Add image**.
-Fallback if anything fails: switch to **Demo**; the whole talk still works.
+**Before you present:** run `.\start.ps1`, open http://localhost:8000 full-screen (F11) at 1080p, and set
+**Data source → atss_mbv2_fp16_xai**. Press `R`. Keep one test photo ready for **Add image**.
+Fallback if anything fails: **Data source → Demo (synthetic)**; the whole talk still works.
 
-Bracketed numbers ✍️ must come from your actual results. If you have no result yet, drop the sentence. Don't guess.
+All numbers below are measured (`docs/EVALUATION.md`, `docs/results/`). ✍️ = only you can fill it in.
+
+**Suggested slides:** 1 Problem · 2 Data & approach · 3 Results · 4 What it gets wrong, and why ·
+(live demo) · 5 Limits & next steps.
 
 ---
 
-### 0:00–0:35: Problem (slide 1)
-"Battery cells with surface damage, like scratches or cracked casings, are a quality and safety
-risk. Visual inspection by people is slow and inconsistent at line speed. My goal: a vision model
-that finds and *localizes* these defects, and turns each detection into a clear decision:
-pass, reject, or send to a human for review."
+### 0:00–0:30: Problem (slide 1)
+"Lithium-ion cells with surface damage, such as scratches or cracked casings, are a quality and safety risk,
+and visual checks by people are slow and inconsistent at line speed. My goal: a vision model that finds
+and *localizes* these defects, and turns every detection into a clear decision: pass, reject, or send
+to a person for review."
 
-### 0:35–1:20: Data and model (slide 2)
-"I used a public, pre-annotated battery defect dataset from Roboflow: [N ✍️] images with classes
-[✍️], licensed [✍️]. Instead of hand-labelling a thousand images, I imported the COCO annotations
-into Intel Geti and spot-checked them there. I kept the test split out of Geti entirely, so it
-stays unseen. Then I trained YOLOX-[Tiny/S ✍️], an anchor-free one-stage detector, and exported it
-to OpenVINO for CPU inference."
+### 0:30–1:05: Data and approach (slide 2)
+"I used a public Roboflow dataset, licensed CC BY 4.0: 1,531 original photos of two defect types, crack
+and scratch. The annotations already existed, so instead of labelling a thousand photos I imported them into
+Intel Geti and spot-checked them there ✍️. I kept the 153-image test split out of Geti entirely. I trained
+two detectors in Geti, ATSS-MobileNetV2 and YOLOX-S, and exported both to OpenVINO for CPU inference."
 
-### 1:20–2:10: Results (dashboard **Models** tab)
-"I trained [YOLOX-Tiny and YOLOX-S ✍️] and evaluated both on the same held-out test set. [Best
-model ✍️] reaches mAP@50 of [✍️] at [✍️] ms per image. [Other model ✍️] is [✍️ faster / more
-accurate], so the trade-off is [✍️]." *(point at the accuracy-vs-latency chart)*
-"A public dataset can look easy, so I tested where it breaks. With blur or darker lighting, mAP drops
-to [✍️] (*robustness chart*). [✍️ leakage result: 'the leakage check found no near-duplicates' /
-'N test images were near-copies of training images']. And this curve (*threshold sweep*) is why I
-reject at 0.6: lower would catch [✍️] more defects but reject [✍️] more good cells."
-Two honest caveats (show the **On a real line** and **By background** cards): the test set is mostly
-defective, so at a realistic defect rate of [0.5% ✍️] only [N ✍️] of 100 stopped cells would really be
-defective. And the photos come from a few tabletop backgrounds: accuracy on [weakest background ✍️] is
-[✍️], so a factory belt would need re-validation.
+### 1:05–1:55: Results (slide 3 / Models page → Model performance)
+"On the unseen test set, ATSS reaches a **mAP@50 of 0.93**; YOLOX-S reaches 0.90. Per cell, ATSS is
+**98% accurate with an F1 of 0.99**: it caught **all 116 defective cells**, and only 3 of 37 good cells
+were sent to review. Inference takes about **45 milliseconds** per image on a laptop CPU."
+*(point at the confusion matrix)* "And it never confuses a crack with a scratch: every error is a
+scratch that was missed or a false scratch."
 
-### 2:10–3:40: Live demo (dashboard)
-1. "This is BatteryVision, a *simulated* inspection line. The backend owns every cell's state;
-   the screen only renders it." Press **Space**.
-2. "Each cell goes from the queue to the camera, where the real model runs" (point at the
-   inspection panel) "and here are its boxes and confidences, with measured latency."
-3. "Above 0.6 confidence it's rejected. Between 0.3 and 0.6 it goes to manual review, because
-   uncertain cases shouldn't be decided by the model alone. Every decision is logged with this
-   model name and hash shown on the camera card, matching the Models page."
-4. **Add image** (or **Camera → Live camera → Capture** with a webcam pointed at a battery):
-   "Here's an unseen image. Watch the line react to the model's prediction." Use the **3D** view here.
-   Wait for it to reach the camera and the bin.
-   *(Demo-mode variant: "These are scripted examples, clearly labelled DEMO, to show each path:
-   pass, reject, review. Cell 3's scratch is only on the back: watch the camera turn it and catch it at 180°.
-   Cell 11 is a missed defect, which is why a pass isn't proof of a clean cell.")*
+### 1:55–2:35: What it gets wrong, and why (slide 4)
+"Cracks are almost perfect, with an F1 of 0.98. Scratches are the weak class at 0.80: they're thin,
+and on wood backgrounds box recall drops to 49%. The likely reason ATSS beats YOLOX is resolution:
+Geti trains ATSS at 992 by 800 pixels by default, so small scratches get about 1.5 times more pixels than
+YOLOX's 640 by 640. YOLOX, on the other hand, is more robust to blur and noise, and its heatmap points at
+the defect 98% of the time, versus 48% for ATSS."
 
-*(Optional, 20 s, Batches page)* "Because every cell is logged with its lot and machines, the same
-detections point back to the process. Here I inject a fault in winder W2 and run 240 cells: the page
-flags W2 at [72% ✍️] defect rate vs [31% ✍️] on W1, and explains why formation rack R2 also looks high."
+### 2:35–3:30: Live demo (Overview page)
+1. "This is a *simulated* inspection line running the real model." Press **Space**. "Each cell is turned
+   once under the camera, then sorted: the reject pusher, the review pusher, or on to the accept bin."
+2. *(Camera card)* "Here are the model's boxes and confidence, with the dataset's own label next to it,
+   and the heatmap from Geti's explainability output. Above 0.6 it's rejected; between 0.3 and 0.6 it goes
+   to a person."
+3. **Add image**: "An unseen photo. Watch the line react to the prediction."
+4. *(Optional, Batches page, 20 s)* "Because every cell is logged with its lot, detections point back to the
+   process. I inject a simulated fault in winder W2 and run 240 cells: the page flags W2 at **72%** defects vs
+   **31%** on W1, and recognizes that formation rack R2 only looks bad because its lots shared W2. The machine
+   assignments are simulated; the detections are real."
 
-### 3:40–4:10: Limitations and close (slide 4)
-"Limitations: public images aren't my target line's camera, so this would need re-validation on
-site, and thresholds should be tuned with real data. Next steps: collect clean samples, compare
-YOLOX-S vs Tiny, and connect a real camera trigger. Thank you."
+### 3:30–4:00: Limits and next steps (slide 5)
+"Three honest limits. First, this test set is 75% defective; on a real line with 0.5% defects, ATSS would
+miss none, but only about **6 of every 100** stopped cells would really be defective. YOLOX would miss about
+3 per 10,000 cells but stop far fewer good ones, so the right choice depends on what a missed defect costs.
+Second, the photos come from a few tabletop sessions, and 22 test images are near-copies of training images,
+so a factory camera would need re-validation. Third, the dataset has one photo per battery, so the 360°
+inspection is shown in simulation only. Next: photos from the real line, thresholds tuned on validation
+data, and a higher input size for scratches. Thank you."
 
 ---
 
 **Likely questions**
-- *Why detection, not classification?* It localizes the defect for the reviewer and handles multiple defects per cell.
-- *Why a REVIEW band?* Errors cost differently: an escaped defect is worse than a manual check, so uncertain cases go to people.
-- *Is the dashboard a digital twin?* No. It is a simulated line driven by real model outputs, with no physical synchronization.
+- *Why detection, not classification?* It shows the reviewer where the defect is and handles several defects per cell.
+- *Why a review band?* A missed defect costs more than a manual check, so uncertain cases go to people.
+- *Is accuracy inflated?* Possibly: test photos share sessions with training (152 of 153), and 22 are near-duplicates. That's why I also report robustness and per-background results.
+- *Why did ATSS win?* Most likely input resolution (992×800 vs 640×640, both Geti defaults). Not proven: each model was trained once.
+- *Is the dashboard a digital twin?* No. It's a simulated line driven by real model outputs, with no physical synchronization.
+- *Are the machine names real?* The process steps are real cell-manufacturing stages; machine IDs and lot assignments are simulated.
