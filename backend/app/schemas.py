@@ -69,3 +69,6 @@ class InspectionResult(BaseModel):
     # describe views[primary_view]: the view with the strongest finding.
     views: list[ViewResult] = []
     primary_view: int = 0
+    # Batch traceability (simulated genealogy): production lot and upstream machines.
+    lot_id: str | None = None
+    genealogy: dict[str, str] | None = None

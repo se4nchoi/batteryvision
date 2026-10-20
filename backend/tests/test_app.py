@@ -265,3 +265,52 @@ def test_dataset_replay(settings):
         img = c.get(recs[0]["image_url"])
         assert img.status_code == 200
         assert c.post("/api/mode", json={"mode": "replay", "model": "nope"}).status_code == 404
+
+
+def test_lots_and_genealogy_on_records(client):
+    step(client, 15)
+    recs = client.get("/api/inspections?limit=500").json()
+    assert all(r["lot_id"].startswith("LOT-") and set(r["genealogy"]) == {"Winding", "Tab welding", "Formation"} for r in recs)
+    assert {r["lot_id"] for r in recs} == {"LOT-001"}  # 12 cells per lot
+    b = client.get("/api/batches").json()
+    assert b["cells"] == 12 and b["lots"][0]["cells"] == 12 and b["lots"][0]["complete"]
+    assert b["fault"] is None and b["fault_supported"] is True
+
+
+def test_fault_scenario_is_found_by_batch_analytics(client):
+    r = client.post("/api/simulation/fault", json={"step": "Winding", "machine": "W2"})
+    assert r.status_code == 200 and r.json()["fault"] == {"step": "Winding", "machine": "W2"}
+    client.post("/api/simulation/run", json={"cells": 400})
+    b = client.get("/api/batches").json()
+    assert b["cells"] >= 390
+    winding = {m["machine"]: m for m in b["steps"]["Winding"]}
+    assert winding["W2"]["rate"] > winding["W1"]["rate"] + 0.2
+    assert b["suspects"][0]["step"] == "Winding" and b["suspects"][0]["machine"] == "W2"
+    # machines that only look bad because their lots also went through W2 are explained, not flagged
+    assert all(s["step"] == "Winding" for s in b["suspects"])
+    explained = [m for ms in b["steps"].values() for m in ms if m.get("explained_by")]
+    assert all(m["explained_by"] == "Winding W2" and not m["suspect"] for m in explained)
+    # clearing the fault starts a fresh session with no data
+    b2 = client.post("/api/simulation/fault", json={}).json()
+    assert b2["fault"] is None and client.get("/api/batches").json()["cells"] == 0
+
+
+def test_fault_validation(client):
+    assert client.post("/api/simulation/fault", json={"step": "Winding", "machine": "W9"}).status_code == 409
+    assert client.post("/api/simulation/run", json={"cells": 0}).status_code == 422
+
+
+def test_batch_report_statistics():
+    from app.analytics import batch_report
+    rows = []
+    for i in range(96):
+        lot = f"LOT-{i // 12 + 1:03d}"
+        machine = "W2" if (i // 12) % 2 else "W1"
+        bad = (i % 4 == 0) if machine == "W1" else (i % 4 != 3)
+        rows.append({"lot_id": lot, "genealogy": {"Winding": machine}, "status": "REJECT" if bad else "PASS", "defect": "scratch" if bad else None})
+    r = batch_report(rows, 12)
+    assert r["cells"] == 96 and len(r["lots"]) == 8
+    w = {m["machine"]: m for m in r["steps"]["Winding"]}
+    assert w["W1"]["rate"] == 0.25 and w["W2"]["rate"] == 0.75
+    assert w["W2"]["suspect"] and not w["W1"]["suspect"]
+    assert all(l["ucl"] is not None for l in r["lots"])

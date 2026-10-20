@@ -19,6 +19,9 @@ export const IconList = (p: P) => (
 export const IconModels = (p: P) => (
   <Svg {...p}><path d="M3 3v18h18" /><path d="M7 15l4-4 3 3 5-6" /></Svg>
 );
+export const IconBatches = (p: P) => (
+  <Svg {...p}><path d="M3 7l9-4 9 4-9 4-9-4z" /><path d="M3 12l9 4 9-4" /><path d="M3 17l9 4 9-4" /></Svg>
+);
 export const IconPlay = (p: P) => (
   <Svg {...p}><path d="M7 4l13 8-13 8z" /></Svg>
 );

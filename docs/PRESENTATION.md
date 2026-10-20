@@ -49,6 +49,10 @@ defective. And the photos come from a few tabletop backgrounds: accuracy on [wea
    pass, reject, review. Cell 3's scratch is only on the back: watch the camera turn it and catch it at 180°.
    Cell 11 is a missed defect, which is why a pass isn't proof of a clean cell.")*
 
+*(Optional, 20 s, Batches page)* "Because every cell is logged with its lot and machines, the same
+detections point back to the process. Here I inject a fault in winder W2 and run 240 cells: the page
+flags W2 at [72% ✍️] defect rate vs [31% ✍️] on W1, and explains why formation rack R2 also looks high."
+
 ### 3:40–4:10: Limitations and close (slide 4)
 "Limitations: public images aren't my target line's camera, so this would need re-validation on
 site, and thresholds should be tuned with real data. Next steps: collect clean samples, compare

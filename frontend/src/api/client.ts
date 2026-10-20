@@ -245,3 +245,54 @@ export const modelsApi = {
   benchmark: (example = false) => request<Benchmark>(`/api/benchmark${example ? "?example=true" : ""}`),
   useModel: (model: string) => post<SimState>("/api/mode", { mode: "live", model }),
 };
+
+// ---- batch traceability (/api/batches) ----------------------------------------
+
+export interface LotRow {
+  lot_id: string;
+  cells: number;
+  complete: boolean;
+  flagged: number;
+  rejected: number;
+  review: number;
+  rate: number;
+  ucl: number | null;
+  lcl: number | null;
+  out_of_control: boolean;
+  defects: Record<string, number>;
+  genealogy: Record<string, string>;
+}
+
+export interface MachineRow {
+  machine: string;
+  cells: number;
+  lots: number;
+  flagged: number;
+  rate: number | null;
+  rest_rate: number | null;
+  lift: number | null;
+  p_value: number | null;
+  suspect: boolean;
+  explained_by?: string;
+  defects: Record<string, number>;
+}
+
+export interface BatchReport {
+  session_id: string;
+  process: Record<string, string[]>;
+  fault: { step: string; machine: string } | null;
+  fault_supported: boolean;
+  cells: number;
+  flagged: number;
+  rate: number | null;
+  lot_size: number;
+  lots: LotRow[];
+  steps: Record<string, MachineRow[]>;
+  suspects: (MachineRow & { step: string })[];
+}
+
+export const batchApi = {
+  report: () => request<BatchReport>("/api/batches"),
+  setFault: (step: string | null, machine: string | null) => post<SimState>("/api/simulation/fault", { step, machine }),
+  run: (cells: number) => post<SimState>("/api/simulation/run", { cells }),
+};

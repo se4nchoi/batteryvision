@@ -94,6 +94,15 @@ photos and shows their **annotated** boxes (ground truth, not predictions): anno
 rejected, the rest pass. Small defects get a zoom inset in the Camera card. Live mode uses the
 same test photos automatically when `sample_data/live/` is empty.
 
+## Batches: tracing defects back to the process
+
+The **Batches** page groups inspected cells into lots of 12 and assigns each lot a winder, tab welder
+and formation rack (simulated genealogy). It shows a control chart of defect rate per lot, the defect
+rate per machine with a significance test (and a confounding check), and the worst lots. Pick
+**Fault: Winding W2** (or any machine) and press **Run 240 cells**: lots through that machine get more
+defective photos, the model inspects each photo, and the page should name that machine as the suspect.
+See [docs/SMART_FACTORY.md](docs/SMART_FACTORY.md).
+
 ## 3D view and live camera
 
 - **3D view:** the Inspection line card has a 3D/2D switch. After the camera, cells pass a reject

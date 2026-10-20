@@ -45,6 +45,11 @@ Copy tables from `docs/results/evaluation_*.md` ✍️ and explain each, followi
 - Screenshot of the dashboard in LIVE mode ✍️ (and DEMO, labelled as such)
 - Honesty measures: demo data labelled, no synthetic latency, no yield/ROI claims
 
+## 6b. From inspection to process insight (¼ page)
+- Batches page: lot control chart, per-machine defect rates with significance and confounding check
+- Simulated fault in Winder W2 is recovered from the model's detections (numbers from docs/SMART_FACTORY.md)
+- Roadmap for data acquisition / fault detection / digital twin: docs/SMART_FACTORY.md
+
 ## 7. Limitations and next steps (½ page)
 - Prevalence: test set ~75% defective vs. a rare-defect line. Include the projection at 0.5% (Models page).
 - Background: per-background results; tabletop photos ≠ factory belt.

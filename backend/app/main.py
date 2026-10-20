@@ -20,7 +20,8 @@ from .database.db import InspectionStore
 from .inference import DemoInferenceProvider, load_registry
 from .inference.annotations import AnnotationReplayProvider
 from .policy import DecisionPolicy
-from .simulation.engine import LineSimulation, View, inspect_cell
+from .analytics import batch_report
+from .simulation.engine import LOT_SIZE, PROCESS, LineSimulation, View, inspect_cell
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("batteryvision")
@@ -32,6 +33,15 @@ MAX_VIEWS = 8
 class ModeRequest(BaseModel):
     mode: str
     model: str | None = None  # LIVE only: which registered model; default = current or first loaded
+
+
+class FaultRequest(BaseModel):
+    step: str | None = None     # e.g. "Winding"; null clears the scenario
+    machine: str | None = None  # e.g. "W2"
+
+
+class RunRequest(BaseModel):
+    cells: int = 120
 
 
 def create_app(settings: Settings = default_settings) -> FastAPI:
@@ -187,6 +197,33 @@ def create_app(settings: Settings = default_settings) -> FastAPI:
     def sim_reset():
         sim.reset()
         return sim.snapshot()
+
+    @app.post("/api/simulation/run")
+    def sim_run(req: RunRequest):
+        """Fast-forward: inspect up to 600 cells immediately (for batch analytics)."""
+        if not 1 <= req.cells <= 600:
+            raise HTTPException(422, "cells must be between 1 and 600")
+        sim.run(req.cells)
+        return sim.snapshot()
+
+    # ---- batch traceability --------------------------------------------------
+    @app.post("/api/simulation/fault")
+    def sim_fault(req: FaultRequest):
+        try:
+            sim.set_fault((req.step, req.machine) if req.step and req.machine else None)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc))
+        return sim.snapshot()
+
+    @app.get("/api/batches")
+    def batches():
+        return {
+            "session_id": sim.session_id,
+            "process": PROCESS,
+            "fault": sim.snapshot()["fault"],
+            "fault_supported": sim.fault_supported(),
+            **batch_report(store.lot_rows(sim.session_id), LOT_SIZE),
+        }
 
     # ---- upload inference -----------------------------------------------
     async def save_upload(file: UploadFile) -> str:

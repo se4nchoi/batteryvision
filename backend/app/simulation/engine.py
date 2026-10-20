@@ -7,9 +7,15 @@ Each tick moves every cell one stage forward:
 Inference runs when a cell enters INSPECTING; the decision is recorded in SQLite
 when the cell reaches its destination bin. The frontend only renders this state.
 No conveyor physics are simulated and no physical equipment is controlled.
+
+Batch traceability (simulated): line cells are grouped into lots of LOT_SIZE, and each lot is
+assigned upstream machines (PROCESS). With a fault scenario active, lots that went through the
+faulty machine draw defective photos more often. Detection is still done by the provider on the
+real image; only the photo-to-lot assignment is simulated.
 """
 from __future__ import annotations
 
+import random
 import threading
 import uuid
 from dataclasses import dataclass
@@ -23,6 +29,25 @@ from ..policy import DecisionPolicy
 from ..schemas import InspectionResult, ViewResult
 
 QUEUE_LEN = 3
+LOT_SIZE = 12
+# Upstream process steps and the machines that can run each one (simulated genealogy).
+PROCESS: dict[str, list[str]] = {
+    "Winding": ["W1", "W2"],
+    "Tab welding": ["L1", "L2"],
+    "Formation": ["R1", "R2", "R3"],
+}
+FAULT_DEFECT_SHARE = 0.75   # share of defective photos drawn for lots through the faulty machine
+BASE_DEFECT_SHARE = 0.25    # share for all other lots while a fault scenario is active
+
+
+def lot_plan(lot_no: int) -> dict[str, str]:
+    """Machines a lot went through. Deterministic per lot number."""
+    rng = random.Random(lot_no * 7919)
+    return {step: rng.choice(machines) for step, machines in PROCESS.items()}
+
+
+def is_defective(ground_truth: str | None) -> bool:
+    return bool(ground_truth) and ground_truth.lower() not in ("clean", "no defect annotated")
 FINAL_STATE = {"PASS": "PASSED", "REJECT": "REJECTED", "REVIEW": "REVIEW"}
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".bmp"}
 
@@ -42,10 +67,13 @@ class Cell:
     source: str = "line"
     state: str = "QUEUED"
     result: InspectionResult | None = None
+    lot_id: str | None = None
+    genealogy: dict[str, str] | None = None
 
     def to_dict(self) -> dict:
         return {
             "cell_id": self.cell_id,
+            "lot_id": self.lot_id,
             "state": self.state,
             "image_url": self.views[0].url,
             "n_views": len(self.views),
@@ -94,6 +122,7 @@ class LineSimulation:
         # file order to use and ground-truth label per file name.
         self.live_order: list[str] | None = None
         self.live_truth: dict[str, str] = {}
+        self.fault: tuple[str, str] | None = None  # (process step, machine) injected as faulty
         self._lock = threading.RLock()
         self.set_provider(provider)
 
@@ -109,7 +138,9 @@ class LineSimulation:
             self.running = False
             self.tick_count = 0
             self.seq = 0
+            self.line_count = 0
             self.source_index = 0
+            self.pool_index = {True: 0, False: 0}
             self.cells: list[Cell] = []
             self.last_result: InspectionResult | None = None
             self.sources = self._load_sources()
@@ -148,12 +179,47 @@ class LineSimulation:
 
     def _new_cell(self, views: list[View], ground_truth: str | None, source: str) -> Cell:
         self.seq += 1
-        return Cell(f"CELL-{self.seq:04d}", views, ground_truth, source)
+        cell = Cell(f"CELL-{self.seq:04d}", views, ground_truth, source)
+        if source == "line":
+            lot_no = self.line_count // LOT_SIZE + 1
+            self.line_count += 1
+            cell.lot_id, cell.genealogy = f"LOT-{lot_no:03d}", lot_plan(lot_no)
+        return cell
+
+    def fault_supported(self) -> bool:
+        """Fault scenarios need known labels to choose defective vs good photos."""
+        labels = [is_defective(gt) for _, gt in self.sources]
+        return any(labels) and not all(labels) and all(gt is not None for _, gt in self.sources)
+
+    def set_fault(self, fault: tuple[str, str] | None) -> None:
+        if fault is not None:
+            step, machine = fault
+            if machine not in PROCESS.get(step, []):
+                raise ValueError(f"Unknown machine {machine!r} for step {step!r}")
+            if not self.fault_supported():
+                raise ValueError("This data source has no ground-truth labels to simulate a fault with")
+        with self._lock:
+            self.fault = fault
+            self.reset()
+
+    def _next_source(self) -> tuple[list[View], str | None]:
+        if self.fault is None:
+            src = self.sources[self.source_index % len(self.sources)]
+            self.source_index += 1
+            return src
+        # Fault scenario: lots through the faulty machine draw defective photos more often.
+        lot_no = self.line_count // LOT_SIZE + 1
+        step, machine = self.fault
+        share = FAULT_DEFECT_SHARE if lot_plan(lot_no)[step] == machine else BASE_DEFECT_SHARE
+        want_defective = random.Random(self.line_count * 104729 + 17).random() < share
+        pool = [s for s in self.sources if is_defective(s[1]) == want_defective]
+        src = pool[self.pool_index[want_defective] % len(pool)]
+        self.pool_index[want_defective] += 1
+        return src
 
     def _fill_queue(self) -> None:
         while self.sources and sum(c.state == "QUEUED" for c in self.cells) < QUEUE_LEN:
-            views, gt = self.sources[self.source_index % len(self.sources)]
-            self.source_index += 1
+            views, gt = self._next_source()
             self.cells.append(self._new_cell(views, gt, "line"))
 
     def enqueue_upload(self, views: list[View]) -> Cell:
@@ -171,6 +237,11 @@ class LineSimulation:
 
     # ---- stepping --------------------------------------------------------
     def _inspect(self, cell: Cell) -> InspectionResult:
+        result = self._run_inspection(cell)
+        result.lot_id, result.genealogy = cell.lot_id, cell.genealogy
+        return result
+
+    def _run_inspection(self, cell: Cell) -> InspectionResult:
         try:
             return inspect_cell(self.provider, self.policy, cell.cell_id, cell.views, cell.ground_truth, cell.source)
         except Exception as exc:
@@ -204,6 +275,12 @@ class LineSimulation:
                 head.state = "MOVING_TO_INSPECTION"
             self._fill_queue()
 
+    def run(self, n_cells: int) -> None:
+        """Fast-forward: inspect about n_cells more cells immediately (no animation)."""
+        with self._lock:
+            for _ in range(n_cells):
+                self.tick()
+
     def snapshot(self) -> dict:
         with self._lock:
             return {
@@ -216,4 +293,6 @@ class LineSimulation:
                 "cells": [c.to_dict() for c in self.cells],
                 "current": self.last_result.model_dump() if self.last_result else None,
                 "message": self.message,
+                "fault": {"step": self.fault[0], "machine": self.fault[1]} if self.fault else None,
+                "lot_size": LOT_SIZE,
             }

@@ -36,6 +36,8 @@ TRACE_COLUMNS = {
     "reject_threshold": "REAL",
     "review_threshold": "REAL",
     "explain_url": "TEXT",
+    "lot_id": "TEXT",
+    "genealogy": "TEXT",
 }
 
 
@@ -71,6 +73,7 @@ class InspectionStore:
             "ground_truth": r.ground_truth,
             "detections": json.dumps([d.model_dump() for d in r.detections]),
             **{c: getattr(r, c) for c in TRACE_COLUMNS},
+            "genealogy": json.dumps(r.genealogy) if r.genealogy else None,
         }
         cols = ", ".join(row)
         with self._lock:
@@ -88,8 +91,19 @@ class InspectionStore:
         for row in rows:
             d = dict(row)
             d["detections"] = json.loads(d["detections"])
+            d["genealogy"] = json.loads(d["genealogy"]) if d.get("genealogy") else None
             out.append(d)
         return out
+
+    def lot_rows(self, session_id: str) -> list[dict]:
+        """Minimal per-cell rows for batch analytics (cells that belong to a lot)."""
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT lot_id, genealogy, status, primary_defect FROM inspections "
+                "WHERE session_id = ? AND lot_id IS NOT NULL ORDER BY id", (session_id,)
+            ).fetchall()
+        return [{"lot_id": r[0], "genealogy": json.loads(r[1]) if r[1] else {}, "status": r[2], "defect": r[3]}
+                for r in rows]
 
     def metrics(self, session_id: str) -> dict:
         with self._lock:

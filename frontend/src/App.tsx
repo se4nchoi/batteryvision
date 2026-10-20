@@ -6,7 +6,8 @@ import { InspectionTable, OutcomeBreakdown, StatCards } from "./components/Analy
 import { InspectionsPage } from "./components/InspectionsPage";
 import { ModelsPage } from "./components/ModelsPage";
 import { CameraFeed } from "./components/CameraFeed";
-import { IconLine, IconList, IconModels, IconPause, IconPlay, IconReset, IconStep, IconUpload } from "./components/Icons";
+import { IconBatches, IconLine, IconList, IconModels, IconPause, IconPlay, IconReset, IconStep, IconUpload } from "./components/Icons";
+import { BatchesPage } from "./components/BatchesPage";
 
 const POLL_MS = 400;
 const Line3D = lazy(() => import("./components/Line3D").then((m) => ({ default: m.Line3D })));
@@ -23,11 +24,12 @@ function Segmented<T extends string>({ value, onChange, options }: {
     </div>
   );
 }
-type View = "overview" | "inspections" | "models";
+type View = "overview" | "inspections" | "batches" | "models";
 
 const NAV: { id: View; label: string; icon: React.ReactNode }[] = [
   { id: "overview", label: "Overview", icon: <IconLine /> },
   { id: "inspections", label: "Inspections", icon: <IconList /> },
+  { id: "batches", label: "Batches", icon: <IconBatches /> },
   { id: "models", label: "Models", icon: <IconModels /> },
 ];
 
@@ -261,6 +263,8 @@ export default function App() {
         )}
 
         {view === "inspections" && <InspectionsPage />}
+
+        {view === "batches" && <BatchesPage onNotice={setNotice} />}
 
         {view === "models" && (
           <ModelsPage activeModel={mode === "live" ? sim?.model ?? null : null} mode={mode}
