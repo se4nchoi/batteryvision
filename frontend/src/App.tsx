@@ -1,11 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api, type InspectionRecord, type Metrics, type Mode, type SimState, type SystemStatus } from "./api/client";
+import { api, type InspectionRecord, type Metrics, type SimState, type SystemStatus } from "./api/client";
 import { Conveyor } from "./components/Conveyor";
 import { InspectionPanel } from "./components/InspectionPanel";
-import { EventLog, KpiStrip, SessionSummary } from "./components/Analytics";
+import { InspectionTable, OutcomeBreakdown, StatCards } from "./components/Analytics";
+import { InspectionsPage } from "./components/InspectionsPage";
 import { ModelsPage } from "./components/ModelsPage";
+import { IconLine, IconList, IconModels, IconPause, IconPlay, IconReset, IconStep, IconUpload } from "./components/Icons";
 
 const POLL_MS = 400;
+type View = "overview" | "inspections" | "models";
+
+const NAV: { id: View; label: string; icon: React.ReactNode }[] = [
+  { id: "overview", label: "Overview", icon: <IconLine /> },
+  { id: "inspections", label: "Inspections", icon: <IconList /> },
+  { id: "models", label: "Models", icon: <IconModels /> },
+];
 
 export default function App() {
   const [sim, setSim] = useState<SimState | null>(null);
@@ -14,12 +23,12 @@ export default function App() {
   const [records, setRecords] = useState<InspectionRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [view, setView] = useState<View>("overview");
   const lastKey = useRef("");
   const fileInput = useRef<HTMLInputElement>(null);
-  const [view, setView] = useState<"line" | "models">("line");
 
   const refreshRecords = useCallback(async () => {
-    const [m, r] = await Promise.all([api.metrics(), api.inspections(30)]);
+    const [m, r] = await Promise.all([api.metrics(), api.inspections(12)]);
     setMetrics(m);
     setRecords(r);
   }, []);
@@ -48,7 +57,7 @@ export default function App() {
           setError(null);
         }
       } catch {
-        if (alive) setError("Backend unreachable on :8000. Is the API running?");
+        if (alive) setError("Can't reach the backend on port 8000.");
       }
     };
     poll();
@@ -68,8 +77,8 @@ export default function App() {
     }
   };
 
-  const switchMode = async (mode: Mode, model?: string) => {
-    await act(() => api.setMode(mode, model));
+  const setSource = async (value: string) => {
+    await act(() => (value === "demo" ? api.setMode("demo") : api.setMode("live", value)));
     api.status().then(setStatus).catch(() => {});
   };
 
@@ -77,7 +86,7 @@ export default function App() {
     if (!file) return;
     try {
       await api.upload(file, true);
-      setNotice(`${file.name} queued: it is next into the inspection station.`);
+      setNotice(`${file.name} added to the front of the queue.`);
     } catch (e) {
       setNotice((e as Error).message);
     } finally {
@@ -85,10 +94,10 @@ export default function App() {
     }
   };
 
-  // Keyboard shortcuts for the live presentation: Space start/pause, → step, R reset.
+  // Presentation shortcuts on the overview: Space start/pause, → step, R reset.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement || view !== "line") return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement || view !== "overview") return;
       if (e.code === "Space") {
         e.preventDefault();
         act(sim?.running ? api.pause : api.start);
@@ -101,106 +110,106 @@ export default function App() {
 
   const mode = sim?.mode ?? status?.mode ?? "demo";
   const policy = status?.policy ?? { reject_threshold: 0.6, review_threshold: 0.3, ignore_labels: [] };
-
-  const runState = error ? "down" : sim?.running ? "running" : "paused";
+  const runState = error ? "offline" : sim?.running ? "running" : "paused";
+  const source = mode === "demo" ? "demo" : sim?.model ?? "";
 
   return (
-    <div className="app">
-      <header className="topbar">
-        <div className="brand">
-          <svg viewBox="0 0 32 32" className="logo" aria-hidden>
-            <rect x="3" y="9" width="23" height="14" rx="3" />
-            <rect x="26" y="13" width="3" height="6" rx="1" className="logo-cap" />
-            <path d="M8 16h4l2-4 3 8 2-4h3" />
-          </svg>
-          <span className="brand-name">BatteryVision</span>
-        </div>
-
-        <nav className="tabs" aria-label="View">
-          <button className={view === "line" ? "on" : ""} onClick={() => setView("line")}>Line</button>
-          <button className={view === "models" ? "on" : ""} onClick={() => setView("models")}>Models</button>
+    <div className="shell">
+      <aside className="sidebar">
+        <div className="logo">BatteryVision</div>
+        <nav className="nav">
+          {NAV.map((n) => (
+            <button key={n.id} className={view === n.id ? "active" : ""} onClick={() => setView(n.id)}>
+              {n.icon}{n.label}
+            </button>
+          ))}
         </nav>
-
-        <div className="mode-group">
-          <div className="segmented" role="group" aria-label="Inference mode">
-            <button className={mode === "demo" ? "on demo" : ""} onClick={() => switchMode("demo")}
-              title="Scripted results on synthetic images. No model runs.">Demo</button>
-            <button className={mode === "live" ? "on live" : ""} onClick={() => switchMode("live")}
-              disabled={!status?.live_available}
-              title={status?.live_available ? "Real OpenVINO inference" : `No model loaded. ${status?.live_error ?? ""}`}>
-              Live
-            </button>
+        <div className="sidebar-foot">
+          <label className="field-label" htmlFor="source">Data source</label>
+          <select id="source" className="select" value={source} onChange={(e) => setSource(e.target.value)}>
+            <option value="demo">Demo (scripted)</option>
+            {(status?.live_models ?? []).map((m) => <option key={m} value={m}>{m}</option>)}
+          </select>
+          {!status?.live_available && <p className="hint">No model in <code>models/</code> yet.</p>}
+          <div className={`status status-${runState}`}>
+            <span className="status-dot" />
+            {runState === "offline" ? "Offline" : runState === "running" ? "Line running" : "Line paused"}
           </div>
-          {mode === "live" && (status?.live_models.length ?? 0) > 1 ? (
-            <select className="model-select" value={sim?.model ?? ""} onChange={(e) => switchMode("live", e.target.value)}
-              aria-label="Live model">
-              {status!.live_models.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-          ) : mode === "live" ? <span className="model-name mono">{sim?.model}</span> : null}
         </div>
+      </aside>
 
-        <span className={`run-state ${runState}`} title={`Session ${sim?.session_id ?? "—"}`}>
-          <i />{runState === "down" ? "Offline" : runState === "running" ? "Running" : "Paused"}
-        </span>
+      <div className="content">
+        {view === "overview" && (
+          <>
+            <header className="page-header">
+              <div>
+                <h1>Inspection line</h1>
+                <p className="page-sub">Session {sim?.session_id ?? "–"} · Policy: reject ≥ {policy.reject_threshold.toFixed(2)}, review ≥ {policy.review_threshold.toFixed(2)}</p>
+              </div>
+              <div className="actions">
+                {mode === "live" && (
+                  <button className="btn" onClick={() => fileInput.current?.click()}><IconUpload />Add image</button>
+                )}
+                <button className="btn" onClick={() => act(api.reset)} title="R"><IconReset />Reset</button>
+                <button className="btn" onClick={() => act(api.step)} disabled={sim?.running} title="→"><IconStep />Step</button>
+                {sim?.running ? (
+                  <button className="btn btn-primary" onClick={() => act(api.pause)} title="Space"><IconPause />Pause</button>
+                ) : (
+                  <button className="btn btn-primary" onClick={() => act(api.start)} title="Space"><IconPlay />Start</button>
+                )}
+                <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/bmp" hidden
+                  onChange={(e) => onUpload(e.target.files?.[0])} />
+              </div>
+            </header>
 
-        <div className="controls">
-          {sim?.running ? (
-            <button className="btn" onClick={() => act(api.pause)} title="Space">❚❚ Pause</button>
-          ) : (
-            <button className="btn btn-primary" onClick={() => act(api.start)} title="Space">▶ Start</button>
-          )}
-          <button className="btn" onClick={() => act(api.step)} disabled={sim?.running} title="→ key">Step</button>
-          <button className="btn" onClick={() => act(api.reset)} title="R key · starts a new session">Reset</button>
-          {mode === "live" && (
-            <button className="btn" onClick={() => fileInput.current?.click()} title="Send a test image down the line next">
-              Inject image
-            </button>
-          )}
-          <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/bmp" hidden
-            onChange={(e) => onUpload(e.target.files?.[0])} />
-        </div>
-      </header>
+            {error && <div className="alert alert-error">{error}</div>}
+            {!error && notice && <div className="alert">{notice}</div>}
+            {!error && mode === "demo" && (
+              <div className="alert alert-warning">Demo mode: synthetic images with scripted results. No model is running.</div>
+            )}
 
-      {(error || notice) && <div className={`banner ${error ? "banner-error" : ""}`}>{error ?? notice}</div>}
+            {/* 1. Line + camera (largest) → 2. totals → 3. log → 4. session data */}
+            <div className="grid hero">
+              <section className="card span-2">
+                <div className="card-header"><h2>Inspection line</h2></div>
+                <div className="card-body conveyor-body">
+                  <Conveyor cells={sim?.cells ?? []} running={!!sim?.running} metrics={metrics} message={sim?.message ?? null} />
+                </div>
+              </section>
+              <section className="card">
+                <div className="card-header"><h2>Camera</h2></div>
+                <div className="card-body cam-body">
+                  <InspectionPanel result={sim?.current ?? null} rejectThreshold={policy.reject_threshold}
+                    reviewThreshold={policy.review_threshold} />
+                </div>
+              </section>
+            </div>
 
-      {view === "models" ? (
-        <ModelsPage activeModel={sim?.model ?? null} mode={mode}
-          onUseModel={(m) => { switchMode("live", m); setView("line"); }} />
-      ) : (<>
-      <KpiStrip metrics={metrics} />
+            <StatCards metrics={metrics} />
 
-      <main className="main-grid">
-        <section className="panel panel-line">
-          <div className="panel-head">
-            <h2>Inspection line</h2>
-            <span className="policy-chip mono" title="Decision policy: highest defect confidence decides">
-              <b className="tone-reject">REJECT</b> ≥ {policy.reject_threshold.toFixed(2)}
-              <b className="tone-review">REVIEW</b> ≥ {policy.review_threshold.toFixed(2)}
-            </span>
-          </div>
-          <Conveyor cells={sim?.cells ?? []} running={!!sim?.running} metrics={metrics} message={sim?.message ?? null} />
-        </section>
+            <div className="grid">
+              <section className="card span-2">
+                <div className="card-header">
+                  <h2>Recent inspections</h2>
+                  <button className="link" onClick={() => setView("inspections")}>View all</button>
+                </div>
+                <InspectionTable records={records} />
+              </section>
+              <section className="card">
+                <div className="card-header"><h2>This session</h2></div>
+                <div className="card-body"><OutcomeBreakdown metrics={metrics} /></div>
+              </section>
+            </div>
+          </>
+        )}
 
-        <section className="panel panel-vision">
-          <div className="panel-head">
-            <h2>Camera · CAM-01</h2>
-            <span className={`chip chip-${mode}`}>{mode === "demo" ? "DEMO DATA" : "MODEL OUTPUT"}</span>
-          </div>
-          <InspectionPanel result={sim?.current ?? null} rejectThreshold={policy.reject_threshold}
-            reviewThreshold={policy.review_threshold} />
-        </section>
+        {view === "inspections" && <InspectionsPage />}
 
-        <section className="panel panel-log">
-          <div className="panel-head"><h2>Inspection log</h2></div>
-          <EventLog records={records} />
-        </section>
-
-        <section className="panel panel-session">
-          <div className="panel-head"><h2>This session</h2></div>
-          <SessionSummary metrics={metrics} />
-        </section>
-      </main>
-      </>)}
+        {view === "models" && (
+          <ModelsPage activeModel={mode === "live" ? sim?.model ?? null : null} mode={mode}
+            onUseModel={(m) => { setSource(m); setView("overview"); }} />
+        )}
+      </div>
     </div>
   );
 }

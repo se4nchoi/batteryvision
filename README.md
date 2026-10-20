@@ -55,11 +55,11 @@ cd frontend; npm run dev        # http://localhost:5173 (proxies /api to :8000)
    cd backend; .\.venv\Scripts\python scripts\check_model.py ..\models\yolox_tiny_fp16\model.xml ..\sample_data\live\<some_test_image>.jpg
    ```
 4. Copy a few **held-out test** images into `sample_data\live\`.
-5. Restart with `.\start.ps1`. The header shows `LIVE · <model name>`. Use the Demo/Live toggle, and the model picker when there are several models.
-6. In LIVE mode, use **Inject image** to send any image down the line as the next cell.
+5. Restart with `.\start.ps1` and pick the model under **Data source** in the sidebar (Demo is always available).
+6. With a model selected, **Add image** (Overview header) sends any image down the line as the next cell.
 
 Every inspection record stores the model name, a SHA-256 of its files, and the thresholds used. The
-inspection panel shows this as a one-line **TRACE**. If the export includes a saliency (XAI) output,
+Camera card shows the model and hash, and the Inspections page lists them per record. If the export includes a saliency (XAI) output,
 the panel overlays it as a heatmap; otherwise none is shown.
 
 Configuration (environment variables, set before `.\start.ps1`):
@@ -78,7 +78,7 @@ Configuration (environment variables, set before `.\start.ps1`):
 
 Example: `$env:BV_REJECT_THRESHOLD = "0.5"; .\start.ps1`
 
-## Model comparison (Models tab)
+## Model comparison (Models page)
 
 ```powershell
 cd backend
@@ -89,7 +89,7 @@ cd backend
 ```
 
 This runs **every model in `models\`** on the same held-out test set and writes `docs/results/benchmark.json`.
-The dashboard's **Models** tab then shows:
+The dashboard's **Models** page then shows (pick a model in the list on the left):
 
 - a comparison table (mAP@50, mAP@50:95, precision/recall/F1 at the reject threshold, defect escape and
   false-reject rates, latency mean/p95, size, SHA-256), with the best value in each column starred

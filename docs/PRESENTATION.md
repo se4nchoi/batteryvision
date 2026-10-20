@@ -1,7 +1,7 @@
 # Presentation script (target 4:00, hard limit 5:00)
 
 **Before you present:** `.\start.ps1`, open http://localhost:8000 full-screen (F11) at 1080p, press `R`.
-If the model is ready, start in **Live** and have one held-out test image ready on the desktop for *Inject image*.
+If the model is ready, select it under **Data source** and have one held-out test image ready for **Add image**.
 Fallback if anything fails: switch to **Demo**; the whole talk still works.
 
 Bracketed numbers ✍️ must come from your actual results. If you have no result yet, drop the sentence. Don't guess.
@@ -39,8 +39,8 @@ validate the 'pass' decisions.
    inspection panel) "and here are its boxes and confidences, with measured latency."
 3. "Above 0.6 confidence it's rejected. Between 0.3 and 0.6 it goes to manual review, because
    uncertain cases shouldn't be decided by the model alone. Every decision is logged with this
-   trace line: the exact model hash and the rule that fired, matching the hash on the Models page."
-4. **Inject image**: "Here's an unseen test image. Watch the line react to the model's prediction."
+   model name and hash shown on the camera card, matching the Models page."
+4. **Add image**: "Here's an unseen test image. Watch the line react to the model's prediction."
    Wait for it to reach the camera and the bin.
    *(Demo-mode variant: "These are scripted examples, clearly labelled DEMO, to show each path:
    pass, reject, review, and cell 11, a missed defect, which is why a pass isn't proof of a clean cell.")*

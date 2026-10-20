@@ -77,7 +77,7 @@ Candidate: <https://universe.roboflow.com/battery-oqphu/battery-defect-inspectio
 - Put each download in its own folder, named after what it is:
   `models\yolox_tiny_fp16\`, `models\yolox_s_fp16\`, `models\yolox_s_int8\`.
 - Copy `models\meta.example.json` into each folder as `meta.json` and fill in the values from Geti
-  (architecture, precision, Geti's validation score). The dashboard shows them marked ⁽ᴳ⁾ as
+  (architecture, precision, Geti's validation score). The dashboard labels them
   "reported by Geti".
 
 ## 7. Compare and load into BatteryVision
@@ -94,7 +94,7 @@ Copy-Item datasets\battery\test\*.jpg sample_data\live\ -ErrorAction SilentlyCon
 .\start.ps1
 ```
 
-Open the **Models** tab for the side-by-side comparison, and click **Use on line** to run any model on the virtual line.
+Open the **Models** page to compare models, and click **Use on line** (or pick it under **Data source**) to run a model on the virtual line.
 
 If `check_model.py` fails to load the model, the export likely lacks ModelAPI metadata. Note the
 error, then check the Geti version's export options for an "OpenVINO / deployment" variant. Do not
@@ -104,7 +104,7 @@ hand-write a tensor parser without inspecting the actual outputs (`/api/model/in
 
 | Symptom | Likely cause |
 |---|---|
-| Live toggle disabled | `models\model.xml` missing or failed to load; hover the button or open `/api/status` |
+| Model missing from **Data source** | its `model.xml` is missing or failed to load; see **Models → Models found** or `/api/models` |
 | All detections ignored | label is listed in `BV_IGNORE_LABELS` |
 | Boxes shifted | report it. ModelAPI rescales boxes to the original image; check `check_model.py` output |
 | Everything REVIEW | confidences fall between thresholds; tune on the test set and document the choice |

@@ -15,12 +15,12 @@ models/
     meta.json
 ```
 
-The folder name is the model's name everywhere: the Live model picker, the Models page, and each
+The folder name is the model's name everywhere: the **Data source** picker, the Models page, and each
 inspection record (stored with a SHA-256 of the files). A single `models/model.xml` also works and is
 registered as `default`.
 
 `meta.json` values (architecture, precision, Geti's own validation score, training time) are shown
-with a ⁽ᴳ⁾ mark as *reported by Geti*. They are never mixed into the measured columns.
+as *reported by Geti*, separate from the measured results.
 
 Check each model before presenting:
 
