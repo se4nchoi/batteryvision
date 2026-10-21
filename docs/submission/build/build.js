@@ -43,6 +43,16 @@ pres.defineSlideMaster({
   ],
 });
 pres.defineSlideMaster({
+  title: "CONTENT_T",
+  background: { color: BG },
+  margin: [0.4, M, 0.5, M],
+  objects: [
+    { placeholder: { options: { name: "title", type: "title", x: M, y: 0.38, w: CW, h: 0.75, fontSize: 32, bold: true, color: TEXT, align: "left", valign: "middle", margin: 0 }, text: "" } },
+    { text: { text: "BatteryVision · Intel Geti 실습", options: { x: M, y: 7.02, w: 6, h: 0.3, fontSize: 10, color: MUTED, margin: 0 } } },
+  ],
+  slideNumber: { x: W - M - 0.6, y: 7.02, w: 0.6, h: 0.3, fontSize: 10, color: MUTED, align: "right" },
+});
+pres.defineSlideMaster({
   title: "CONTENT",
   background: { color: BG },
   margin: [0.4, M, 0.5, M],
@@ -61,7 +71,7 @@ const txt = (s, text, o) => s.addText(text, { isTextBox: true, margin: 0, color:
 const dot = (s, x, y, color, name) => s.addShape(pres.shapes.OVAL, { x, y, w: 0.16, h: 0.16, fill: { color }, line: { type: "none" }, objectName: name });
 const img = (s, file, x, y, w, h, name) => s.addImage({ path: IMG(file), x, y, w, h, objectName: name, rounding: false });
 const content = (sectionTitle, title, sub, behind) => {
-  const s = pres.addSlide({ masterName: "CONTENT", sectionTitle });
+  const s = pres.addSlide({ masterName: sub ? "CONTENT" : "CONTENT_T", sectionTitle });
   if (behind) behind(s); // drawn first, so it sits behind the title
   s.addText(title, { placeholder: "title" });
   if (sub) s.addText(sub, { placeholder: "sub" });
@@ -124,20 +134,25 @@ pres.addSection({ title: "도입" });
 pres.addSection({ title: "실험" });
 {
   const s = content("실험", "실험 설계", null);
-  card(s, M, 1.8, 5.9, 5.0, "dataset-card");
-  txt(s, "데이터셋", { x: M + 0.3, y: 1.95, w: 5, h: 0.35, fontSize: 16, bold: true, objectName: "ds-h" });
-  txt(s, [
-    { text: "Roboflow 공개 데이터셋 · 라벨 포함 그대로 import", options: { bullet: true, breakLine: true } },
-    { text: "crack · scratch · 원본 1,531장", options: { bullet: true, breakLine: true } },
-    { text: "목적: 모델별 성능 비교 · INT8 효과", options: { bullet: true } },
-  ], { x: M + 0.3, y: 2.4, w: 5.35, h: 1.45, fontSize: 14, paraSpaceAfter: 6, objectName: "ds-b" });
-  txt(s, "한계", { x: M + 0.3, y: 3.95, w: 5, h: 0.35, fontSize: 16, bold: true, color: AMBER, objectName: "limit-h" });
-  [["bg_green.jpg", "초록 매트"], ["bg_grey.jpg", "회색"], ["bg_wood.jpg", "나무 탁상"]].forEach(([f, l], i) => {
-    const x = M + 0.3 + i * 1.8;
-    img(s, f, x, 4.4, 1.65, 1.65, `bg-${i}`);
-    txt(s, l, { x, y: 6.1, w: 1.65, h: 0.3, fontSize: 12, color: MUTED, objectName: `bg-l-${i}` });
+  card(s, M, 1.8, 5.9, 2.15, "dataset-card");
+  txt(s, "데이터셋", { x: M + 0.3, y: 1.92, w: 5, h: 0.35, fontSize: 16, bold: true, objectName: "ds-h" });
+  [["출처", "Roboflow 공개 데이터셋 · 라벨 포함 그대로 import", ACC],
+   ["구성", "crack · scratch · 원본 1,531장", AMBER],
+   ["목적", "모델별 성능 비교 · INT8 효과", TINY]].forEach(([k, v, col], i) => {
+    const y = 2.42 + i * 0.48;
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: M + 0.3, y, w: 0.72, h: 0.36, rectRadius: 0.05, fill: { color: col, transparency: 78 }, line: { color: col, width: 1 }, objectName: `ds-k-bg-${i}` });
+    txt(s, k, { x: M + 0.3, y, w: 0.72, h: 0.36, fontSize: 13, bold: true, color: col, align: "center", valign: "middle", objectName: `ds-k-${i}` });
+    txt(s, v, { x: M + 1.18, y, w: 4.6, h: 0.36, fontSize: 14, valign: "middle", objectName: `ds-v-${i}` });
   });
-  txt(s, "탁상 촬영 · 셀당 사진 1장 · 같은 촬영 세션 반복", { x: M + 0.3, y: 6.4, w: 5.4, h: 0.3, fontSize: 13, bold: true, objectName: "limit-t" });
+
+  card(s, M, 4.15, 5.9, 2.65, "limit-card");
+  txt(s, "한계", { x: M + 0.3, y: 4.27, w: 5, h: 0.35, fontSize: 16, bold: true, color: AMBER, objectName: "limit-h" });
+  [["bg_green.jpg", "초록 매트"], ["bg_grey.jpg", "회색"], ["bg_wood.jpg", "나무 탁상"]].forEach(([f, l], i) => {
+    const x = M + 0.3 + i * 1.85;
+    img(s, f, x, 4.7, 1.45, 1.45, `bg-${i}`);
+    txt(s, l, { x, y: 6.17, w: 1.45, h: 0.26, fontSize: 12, color: MUTED, objectName: `bg-l-${i}` });
+  });
+  txt(s, "탁상 촬영 · 셀당 사진 1장 · 같은 촬영 세션 반복", { x: M + 0.3, y: 6.45, w: 5.4, h: 0.3, fontSize: 13, bold: true, objectName: "limit-t" });
 
   txt(s, "모델별 EXPORT", { x: 6.75, y: 1.8, w: 6, h: 0.35, fontSize: 16, bold: true, objectName: "grid-h" });
   const H = { bold: true, color: MUTED, fill: { color: HEX.lt1 }, align: "center" };
