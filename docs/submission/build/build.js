@@ -191,8 +191,11 @@ pres.addSection({ title: "실험" });
 // ---------- 5. small model ----------
 {
   const s = content("실험", "작은 모델이 더 맵다", "FP16 기준 · Geti 화면 vs 직접 측정");
-  const gw = 5.05 * 689 / 743;
-  img(s, "geti_models.png", M, 1.75, gw, 5.05, "geti-models");
+  const gw = 4.4 * 689 / 743;
+  img(s, "geti_models.png", M, 1.75, gw, 4.4, "geti-models");
+  txt(s, [{ text: "Geti 점수도 낙관적  ", options: { bold: true, color: AMBER, breakLine: true } },
+    { text: "같은 원본의 ×3 증강 사본이 Geti 학습·테스트에 함께 분할됐을 가능성", options: { color: MUTED } }],
+    { x: M, y: 6.22, w: gw, h: 0.6, fontSize: 11, objectName: "geti-caveat" });
   const X = M + gw + 0.35, RW = W - M - X;
   txt(s, "직접 측정 · 1차 테스트 131장", { x: X, y: 1.75, w: RW, h: 0.35, fontSize: 16, bold: true, objectName: "own-h" });
   const cols = [["mAP@50", X + 2.75, 1.75], ["scratch AP", X + 4.55, 1.2], ["2차 세트 검출", X + 5.5, 1.4]];
@@ -213,11 +216,11 @@ pres.addSection({ title: "실험" });
     txt(s, ho, { x: X + 5.8, y: y + 0.12, w: 1.1, h: 0.9, fontSize: 18, bold: true, color: RED, align: "right", valign: "middle", objectName: `own-h2-${i}` });
     if (best) {
       s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: X + 2.1, y: y + 0.62, w: 0.55, h: 0.26, rectRadius: 0.04, fill: { color: ACC }, line: { type: "none" }, objectName: "best-badge" });
-      txt(s, "최고", { x: X + 2.1, y: y + 0.62, w: 0.55, h: 0.26, fontSize: 10, bold: true, color: BG, align: "center", valign: "middle", objectName: "best-t" });
+      txt(s, "best", { x: X + 2.1, y: y + 0.62, w: 0.55, h: 0.26, fontSize: 10, bold: true, color: BG, align: "center", valign: "middle", objectName: "best-t" });
     }
   });
   txt(s, "Geti 점수와 같은 순서 · 작은 = 파라미터 기준 (연산량은 Tiny 최소)", { x: X, y: 6.5, w: RW, h: 0.3, fontSize: 12, color: MUTED, objectName: "own-note" });
-  s.addNotes("왼쪽은 Geti 화면입니다. 세 모델 모두 같은 2,800장으로 학습했고, Geti 점수는 ATSS 86%, 나머지 81%입니다. 오른쪽은 직접 만든 벤치마크로 잰 값인데 순서가 같습니다. 파라미터가 가장 적은 ATSS가 가장 정확했고, 학습에 안 쓴 2차 세트에서도 ATSS가 YOLOX-S보다 훨씬 많이 잡았습니다. 다만 '작다'는 파라미터 기준이고, 연산량은 Tiny가 가장 적습니다.");
+  s.addNotes("왼쪽은 Geti 화면입니다. 세 모델 모두 같은 2,800장으로 학습했고, Geti 점수는 ATSS 86%, 나머지 81%입니다. 다만 Roboflow가 원본마다 증강 사본 3장을 만들어 두었고 Geti가 이를 무작위로 나눴기 때문에, 같은 원본의 사본이 Geti 학습과 테스트에 함께 들어갔을 가능성이 높아 Geti 점수도 낙관적입니다. 오른쪽은 직접 만든 벤치마크로 잰 값인데 순서가 같습니다. 파라미터가 가장 적은 ATSS가 가장 정확했고, 학습에 안 쓴 2차 세트에서도 ATSS가 YOLOX-S보다 훨씬 많이 잡았습니다. 다만 '작다'는 파라미터 기준이고, 연산량은 Tiny가 가장 적습니다.");
 }
 
 // ---------- 6. error analysis ----------
@@ -296,39 +299,43 @@ pres.addSection({ title: "최적화" });
 pres.addSection({ title: "검증" });
 {
   const s = content("검증", "2차 데이터셋", "학습 미사용 · 같은 업로더의 v2 세트 45장 (결함 30 · 정상 15)");
-  card(s, M, 1.8, 6.6, 3.3, "holdout-card");
-  txt(s, "결함 셀 검출률 (검토 또는 불합격)", { x: M + 0.3, y: 1.95, w: 6, h: 0.35, fontSize: 16, bold: true, objectName: "ho-h" });
-  txt(s, "1차 테스트", { x: M + 2.6, y: 2.4, w: 1.6, h: 0.3, fontSize: 12, color: MUTED, align: "right", objectName: "ho-c1" });
-  txt(s, "2차 세트", { x: M + 4.6, y: 2.4, w: 1.6, h: 0.3, fontSize: 12, color: MUTED, align: "right", objectName: "ho-c2" });
+  card(s, M, 1.8, 6.6, 2.75, "holdout-card");
+  txt(s, "결함 셀 검출률 (검토 또는 불합격)", { x: M + 0.3, y: 1.92, w: 6, h: 0.35, fontSize: 16, bold: true, objectName: "ho-h" });
+  txt(s, "1차 테스트", { x: M + 2.6, y: 2.3, w: 1.6, h: 0.3, fontSize: 12, color: MUTED, align: "right", objectName: "ho-c1" });
+  txt(s, "2차 세트", { x: M + 4.6, y: 2.3, w: 1.6, h: 0.3, fontSize: 12, color: MUTED, align: "right", objectName: "ho-c2" });
   [["ATSS", "100%", "47%", ATSS], ["YOLOX-S", "94%", "3%", YS], ["YOLOX-Tiny", "99%", "47%", TINY]].forEach(([n, a, b, col], i) => {
-    const y = 2.78 + i * 0.72;
+    const y = 2.65 + i * 0.6;
     dot(s, M + 0.3, y + 0.19, col, `ho-dot-${i}`);
     txt(s, n, { x: M + 0.56, y, w: 2.0, h: 0.55, fontSize: 16, bold: true, valign: "middle", objectName: `ho-n-${i}` });
     txt(s, a, { x: M + 2.6, y, w: 1.6, h: 0.55, fontSize: 26, bold: true, color: MUTED, align: "right", valign: "middle", objectName: `ho-a-${i}` });
     txt(s, b, { x: M + 4.6, y, w: 1.6, h: 0.55, fontSize: 26, bold: true, color: RED, align: "right", valign: "middle", objectName: `ho-b-${i}` });
   });
-  card(s, M, 5.3, 6.6, 1.5, "finding-card");
+  img(s, "holdout_miss.jpg", M, 4.75, 2.05, 2.05, "miss-img");
   txt(s, [
-    { text: "클래스 착각 0건 · 점수 미달로 놓침 · 정상 불합격 0건", options: { bullet: true, breakLine: true } },
+    { text: "놓친 예: scratch · ATSS 최고 점수 0.21", options: { bold: true, breakLine: true } },
+    { text: "클래스 착각 0건 · 정상 불합격 0건", options: { bullet: true, breakLine: true } },
     { text: "1차: 학습 사진 포함 가능 + 같은 촬영 환경", options: { bullet: true, bold: true, color: AMBER } },
-  ], { x: M + 0.3, y: 5.42, w: 6.1, h: 1.25, fontSize: 14, paraSpaceAfter: 4, objectName: "finding-b" });
+  ], { x: M + 2.3, y: 4.8, w: 4.3, h: 1.95, fontSize: 14, paraSpaceAfter: 6, valign: "middle", objectName: "miss-cap" });
 
-  txt(s, "기준값을 낮추면? (ATSS · 2차 세트)", { x: 7.45, y: 1.8, w: 5.3, h: 0.35, fontSize: 16, bold: true, objectName: "th-h" });
+  txt(s, "기준값을 바꾸면? (2차 세트)", { x: 7.45, y: 1.8, w: 5.3, h: 0.35, fontSize: 16, bold: true, objectName: "th-h" });
   const H = { bold: true, color: MUTED, fill: { color: HEX.lt1 }, align: "center" };
   const c = (t, o = {}) => ({ text: t, options: { align: "center", ...o } });
+  const m = (t, col) => c(t, { bold: true, color: col, align: "left" });
   s.addTable([
-    [c("기준값", H), c("결함 검출", H), c("정상 오검출", H)],
-    [c("0.30 (현재)"), c("47%", { color: RED, bold: true }), c("13%")],
-    [c("0.20"), c("87%"), c("73%", { color: AMBER, bold: true })],
-    [c("0.15"), c("97%"), c("87%", { color: RED, bold: true })],
-  ], { x: 7.45, y: 2.3, w: 5.28, colW: [1.76, 1.76, 1.76], rowH: 0.5, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
+    [c("모델", { ...H, align: "left" }), c("기준값", H), c("결함 검출", H), c("정상 오검출", H)],
+    [m("ATSS", ATSS), c("0.30 (현재)"), c("47%", { color: RED, bold: true }), c("13%")],
+    [m("ATSS", ATSS), c("0.20"), c("87%"), c("73%", { color: AMBER, bold: true })],
+    [m("ATSS", ATSS), c("0.15"), c("97%"), c("87%", { color: RED, bold: true })],
+    [m("YOLOX-S", YS), c("0.30 (현재)"), c("3%", { color: RED, bold: true }), c("0%")],
+    [m("YOLOX-S", YS), c("0.05"), c("57%", { bold: true }), c("0%", { color: ACC, bold: true })],
+  ], { x: 7.45, y: 2.25, w: 5.28, colW: [1.4, 1.3, 1.24, 1.34], rowH: 0.44, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
     fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "th-table" });
-  txt(s, [{ text: "검출 ↑ = 정상 오검출 ↑  ", options: { bold: true } }, { text: "→ 재학습 필요", options: { bold: true, color: ACC } }],
-    { x: 7.45, y: 4.35, w: 5.28, h: 0.4, fontSize: 15, objectName: "th-cap" });
-  img(s, "holdout_miss.jpg", 7.45, 4.85, 2.0, 2.0, "miss-img");
-  txt(s, [{ text: "놓친 예: scratch", options: { bold: true, breakLine: true } }, { text: "ATSS 최고 점수 0.21", options: { color: MUTED } }],
-    { x: 9.65, y: 5.4, w: 3.0, h: 0.9, fontSize: 14, valign: "middle", objectName: "miss-cap" });
-  s.addNotes("같은 업로더가 올린 다른 세트에서, 학습에 한 번도 쓰지 않은 45장으로 제 앱에서 다시 테스트했습니다. 1차 테스트에서 결함 셀을 거의 다 잡던 모델이 ATSS 47%, YOLOX-S 3%까지 떨어집니다. 결함을 착각한 게 아니라 점수가 낮아서 통과시킨 것이고, 정상 셀을 불합격시킨 경우는 없었습니다. 1차 테스트에는 학습 때 본 사진이 섞여 있었고 촬영 환경도 같았기 때문입니다. 그럼 기준값을 낮추면 될까요? 0.15까지 낮추면 결함은 97% 잡지만 정상 셀도 87%가 걸립니다. 두 점수 분포가 겹치기 때문에 기준값으로는 해결되지 않고, 새 환경의 사진으로 재학습해야 합니다.");
+  txt(s, [
+    { text: "ATSS  ", options: { bold: true, color: ATSS } }, { text: "검출 ↑ = 정상 오검출 ↑", options: { breakLine: true } },
+    { text: "YOLOX-S  ", options: { bold: true, color: YS } }, { text: "순위는 정확 (mAP@50 0.93), 점수만 낮음", options: { breakLine: true } },
+    { text: "→ 기준값은 모델별로 · 그래도 부족 → 재학습", options: { bold: true, color: ACC } },
+  ], { x: 7.45, y: 5.1, w: 5.28, h: 1.6, fontSize: 14, paraSpaceAfter: 6, valign: "top", objectName: "th-cap" });
+  s.addNotes("같은 업로더가 올린 다른 세트에서, 학습에 한 번도 쓰지 않은 45장으로 제 앱에서 다시 테스트했습니다. 1차 테스트에서 결함 셀을 거의 다 잡던 모델이 ATSS 47%, YOLOX-S 3%까지 떨어집니다. 결함을 착각한 게 아니라 점수가 낮아서 통과시킨 것이고, 정상 셀을 불합격시킨 경우는 없었습니다. 기준값을 바꿔 보면, ATSS는 0.15까지 낮추면 결함 97%를 잡지만 정상 셀도 87%가 걸립니다. YOLOX-S는 다릅니다. 2차 세트 mAP@50이 0.93으로 결함을 정상보다 높게 순위 매기는 건 정확한데, 점수 자체가 낮습니다. 0.05로 낮추면 정상 오검출 없이 57%를 잡습니다. 즉 기준값은 모델마다 따로 정해야 하고, 그래도 부족하기 때문에 새 환경 사진으로 재학습이 필요합니다.");
 }
 
 // ---------- 9. logs ----------
