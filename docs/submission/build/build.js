@@ -241,26 +241,38 @@ pres.addSection({ title: "실험" });
     [cell("crack", { align: "left", bold: true }), cell(45, { bold: true, color: ACC }), cell(0), cell(0)],
     [cell("scratch", { align: "left", bold: true }), cell(0), cell(59, { bold: true, color: ACC }), cell(19, { bold: true, color: RED })],
     [cell("배경 (오검출)", { align: "left", bold: true }), cell(3, { color: AMBER }), cell(13, { bold: true, color: AMBER }), cell("–", { color: MUTED })],
-  ], { x: M, y: T0 + 1.15, w: 6.0, colW: [1.95, 1.35, 1.35, 1.35], rowH: 0.5, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
+  ], { x: M, y: T0 + 1.15, w: 6.6, colW: [2.1, 1.5, 1.5, 1.5], rowH: 0.62, fontSize: 16, color: TEXT, fontFace: "Malgun Gothic",
     fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "confusion" });
-  card(s, M, T0 + 3.4, 6.0, 1.95, "bg-recall-card");
-  txt(s, "배경별 재현율", { x: M + 0.3, y: T0 + 3.52, w: 5.4, h: 0.32, fontSize: 14, bold: true, objectName: "bgr-h" });
+  chip(s, M, T0 + 4.0, CW, "세 모델 모두 같은 패턴 · 놓친 scratch: ATSS 19 · YOLOX-S 28 · Tiny 30", MUTED, "all-models", 0.5);
+  card(s, 7.45, T0 + 1.15, 5.28, 2.48, "bg-recall-card");
+  txt(s, "배경별 재현율", { x: 7.75, y: T0 + 1.3, w: 4.7, h: 0.35, fontSize: 16, bold: true, objectName: "bgr-h" });
   [["초록 매트", 0.72], ["회색", 0.75], ["나무 탁상", 0.33]].forEach(([l, v], i) => {
-    const y = T0 + 3.95 + i * 0.42;
-    txt(s, l, { x: M + 0.3, y, w: 1.3, h: 0.32, fontSize: 13, color: MUTED, valign: "middle", objectName: `bgr-l-${i}` });
-    s.addShape(pres.shapes.RECTANGLE, { x: M + 1.7, y: y + 0.08, w: 3.3, h: 0.18, fill: { color: "3A3F48" }, line: { type: "none" }, objectName: `bgr-track-${i}` });
-    s.addShape(pres.shapes.RECTANGLE, { x: M + 1.7, y: y + 0.08, w: 3.3 * v, h: 0.18, fill: { color: v < 0.5 ? RED : ACC }, line: { type: "none" }, objectName: `bgr-fill-${i}` });
-    txt(s, `${Math.round(v * 100)}%`, { x: M + 5.1, y, w: 0.6, h: 0.32, fontSize: 13, bold: true, align: "right", valign: "middle", objectName: `bgr-v-${i}` });
+    const y = T0 + 1.85 + i * 0.52;
+    txt(s, l, { x: 7.75, y, w: 1.3, h: 0.36, fontSize: 14, color: MUTED, valign: "middle", objectName: `bgr-l-${i}` });
+    s.addShape(pres.shapes.RECTANGLE, { x: 9.1, y: y + 0.08, w: 2.7, h: 0.2, fill: { color: "3A3F48" }, line: { type: "none" }, objectName: `bgr-track-${i}` });
+    s.addShape(pres.shapes.RECTANGLE, { x: 9.1, y: y + 0.08, w: 2.7 * v, h: 0.2, fill: { color: v < 0.5 ? RED : ACC }, line: { type: "none" }, objectName: `bgr-fill-${i}` });
+    txt(s, `${Math.round(v * 100)}%`, { x: 11.85, y, w: 0.65, h: 0.36, fontSize: 13, bold: true, align: "right", valign: "middle", objectName: `bgr-v-${i}` });
   });
-  [["heat_atss.jpg", "ATSS", "48%", ATSS], ["heat_yolox.jpg", "YOLOX-S", "98%", YS]].forEach(([f, n, v, col], i) => {
-    const x = 6.85 + i * 3.0;
-    img(s, f, x, T0 + 1.15, 2.88, 2.88, `heat-${i}`);
-    dot(s, x, T0 + 4.22, col, `heat-dot-${i}`);
-    txt(s, [{ text: n + "  ", options: { bold: true } }, { text: "위치 ", options: { color: MUTED } }, { text: v, options: { bold: true, color: col } }],
-      { x: x + 0.26, y: T0 + 4.14, w: 2.6, h: 0.32, fontSize: 14, objectName: `heat-l-${i}` });
+  s.addNotes("결론부터 말하면, crack과 scratch를 서로 헷갈린 경우는 한 번도 없고, 오류는 전부 놓친 scratch나 배경 오검출입니다. 특히 나무 탁상 배경에서 재현율이 33%로 가장 약합니다. 나무결이 scratch처럼 가는 선 모양이라 놓치기도 하고 잘못 보기도 합니다. 세 모델 모두 같은 패턴입니다. YOLOX-S는 scratch를 28개, Tiny는 30개 놓쳐서 ATSS보다 더 많이 놓칩니다.");
+}
+
+// ---------- 6a. XAI heatmap ----------
+{
+  const s = content("실험", "XAI heatmap", null);
+  const panels = [
+    ["xai_tp.jpg", "맞힘", "결함 주변에 반응", TINY],
+    ["xai_fp.jpg", "오검출", "정상 셀에 반응", AMBER],
+    ["xai_fn.jpg", "놓침", "결함 대신 벨트를 봄", RED],
+  ];
+  panels.forEach(([f, tag, d, col], i) => {
+    const x = M + i * 4.1;
+    img(s, f, x, T0 + 0.2, 3.75, 3.75, `xai-${i}`);
+    chip(s, x, T0 + 4.1, 1.1, tag, col, `xai-tag-${i}`, 0.42);
+    txt(s, d, { x: x + 1.25, y: T0 + 4.1, w: 2.65, h: 0.42, fontSize: 15, valign: "middle", objectName: `xai-d-${i}` });
   });
-  chip(s, 6.85, T0 + 4.6, 5.88, "heatmap 위치 ≠ 탐지 정확도 · 놓친 scratch: ATSS 19 · YOLOX-S 28", AMBER, "heat-vs-acc", 0.5);
-  s.addNotes("결론부터 말하면, crack과 scratch를 서로 헷갈린 경우는 한 번도 없고, 오류는 전부 놓친 scratch나 배경 오검출입니다. 특히 나무 탁상 배경에서 재현율이 33%로 가장 약합니다. 나무결이 scratch처럼 가는 선 모양이라 놓치기도 하고 잘못 보기도 합니다. heatmap은 YOLOX-S가 98%의 사진에서 결함을 짚지만 ATSS는 48%로, 정확도와 설명력은 별개였습니다.");
+  chip(s, M, 6.3, 5.6, "heatmap = 판단 근거가 아닌 위치 힌트", ACC, "xai-what", 0.46);
+  txt(s, "YOLOX-S FP16+XAI · scratch 채널 · 흰 박스 = 정답, 주황 박스 = 모델", { x: 6.45, y: 6.3, w: 6.28, h: 0.46, fontSize: 11, color: MUTED, align: "right", valign: "middle", objectName: "xai-legend" });
+  s.addNotes("XAI 버전으로 내보낸 모델은 결함 위치를 heatmap으로 함께 출력합니다. 왼쪽은 맞힌 경우로, 결함이 있는 셀 주변에 반응합니다. 가운데는 정상 셀을 scratch로 잘못 본 경우인데, heatmap도 셀 표면에 반응해 왜 그렇게 판단했는지 짐작할 수 있습니다. 오른쪽은 놓친 경우로, 모델이 scratch가 아니라 벨트 쪽을 보고 있습니다. 다만 heatmap은 꽤 흐릿해서, 결함 안에 들어간 비중이 면적 대비 1.5배 정도입니다. 그래서 판단의 근거라기보다는 검사원이 어디를 볼지 알려주는 위치 힌트로 쓰는 게 맞습니다. 모델끼리 heatmap 점수를 비교하는 건 heatmap 격자 크기 차이를 재는 셈이라 비교 지표로는 쓰지 않았습니다.");
 }
 
 // ---------- 6b. benchmark ----------
@@ -402,10 +414,10 @@ pres.addSection({ title: "정리" });
     row("5", "낙관적인 Geti score", "증강본이 학습·테스트에 섞임", "추정"),
     row("5", "ATSS 최고평가", "입력 해상도 992×800 vs 640×640", "추정"),
     row("6", "나무 배경 취약 (33%)", "나무결 = 가는 선", "추정"),
-    row("8", "INT8 놓침 증가", "양자화로 점수 소폭 하락", "추정"),
-    row("10", "2차 세트 검출 47%", "작아진 crack (30×26px) · 새 환경", "확인"),
-    row("10", "YOLOX-S 낮은 점수", "점수 = 두 확률의 곱", "추정"),
-    row("10", "기준값 조정으로 해결 불가", "결함·정상 점수 겹침", "확인"),
+    row("9", "INT8 놓침 증가", "양자화로 점수 소폭 하락", "추정"),
+    row("11", "2차 세트 검출 47%", "작아진 crack (30×26px) · 새 환경", "확인"),
+    row("11", "YOLOX-S 낮은 점수", "점수 = 두 확률의 곱", "추정"),
+    row("11", "기준값 조정으로 해결 불가", "결함·정상 점수 겹침", "확인"),
   ], { x: M, y: T0 + 0.25, w: CW, colW: [0.55, 3.4, 7.23, 0.95], rowH: 0.46, fontSize: 15, color: TEXT, fontFace: "Malgun Gothic",
     fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "causes-table" });
   chip(s, M, 6.5, 1.6, "확인 = 데이터", TINY, "lg-1", 0.34);

@@ -1,0 +1,17 @@
+{
+ "tp": {
+  "file": "IMG_4130_jpg.rf.0bbd05fd685e9ad95d5ff292a0f8d4f0.jpg",
+  "score": 1.497,
+  "candidates": 39
+ },
+ "fp": {
+  "file": "IMG_6670_jpg.rf.da4652899fa0b4dee726be5a4574b5dc.jpg",
+  "score": 0.304,
+  "candidates": 1
+ },
+ "fn": {
+  "file": "20250518_174251-0-_jpg.rf.3fb0f73b7ccb99d41910af16a4bdfb23.jpg",
+  "score": 0.0,
+  "candidates": 28
+ }
+}
