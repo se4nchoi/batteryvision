@@ -37,3 +37,6 @@ sample_data/live/*
 # Submission build scratch (rendered previews, candidate sheets)
 docs/submission/build/render/
 docs/submission/build/cand/
+
+# Office lock files
+~$*
