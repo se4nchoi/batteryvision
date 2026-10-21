@@ -84,6 +84,7 @@ pres.addSection({ title: "도입" });
   txt(s, "Intel Geti · OpenVINO 실습", { x: M, y: 2.35, w: 4.6, h: 0.35, fontSize: 14, color: ACC, bold: true, objectName: "kicker" });
   s.addText("배터리 표면 식별\nVision AI", { placeholder: "title" });
   s.addText("ATSS · YOLOX-S · YOLOX-Tiny 모델 비교 및 INT8 경량화 분석", { placeholder: "sub" });
+  txt(s, "최예현", { x: M, y: 5.85, w: 4.6, h: 0.4, fontSize: 16, bold: true, objectName: "presenter" });
   const items = [["cover_crack.jpg", "crack", RED], ["cover_scratch.jpg", "scratch", AMBER], ["cover_good.jpg", "정상", TINY]];
   items.forEach(([f, label, col], i) => {
     const x = 5.55 + i * 2.5;
@@ -159,7 +160,7 @@ pres.addSection({ title: "실험" });
 
 // ---------- 4. hidden trap ----------
 {
-  const s = content("실험", "높은 결과에 숨은 함정", "1차 테스트 93%, 그런데 테스트 사진이 학습 데이터에 섞여 있었다");
+  const s = content("실험", "높은 수치, 숨은 함정", "1차 테스트 93%, but 테스트 사진이 학습 데이터에 섞여 있었다");
   card(s, M, 1.8, 4.85, 2.9, "upload-card");
   txt(s, "테스트셋까지 Geti에 업로드", { x: M + 0.3, y: 1.95, w: 4.3, h: 0.35, fontSize: 16, bold: true, color: AMBER, objectName: "up-h" });
   txt(s, "3,673장", { x: M + 0.3, y: 2.45, w: 4.3, h: 0.8, fontSize: 44, bold: true, objectName: "up-n" });
@@ -334,7 +335,9 @@ pres.addSection({ title: "검증" });
   txt(s, [
     { text: "ATSS  ", options: { bold: true, color: ATSS } }, { text: "검출 ↑ = 정상 오검출 ↑", options: { breakLine: true } },
     { text: "YOLOX-S  ", options: { bold: true, color: YS } }, { text: "순위는 정확 (mAP@50 0.93), 점수만 낮음", options: { breakLine: true } },
-    { text: "→ 기준값은 모델별로 · 그래도 부족 → 재학습", options: { bold: true, color: ACC } },
+    { text: "→ 모델별로 다른 기준값 적용", options: { bold: true, color: ACC, breakLine: true } },
+    { text: "→ 결과치 불충분", options: { bold: true, color: ACC, breakLine: true } },
+    { text: "→ 재학습", options: { bold: true, color: ACC } },
   ], { x: 7.45, y: 4.85, w: 5.28, h: 1.95, fontSize: 14, paraSpaceAfter: 6, valign: "top", objectName: "th-cap" });
   s.addNotes("같은 업로더가 올린 다른 세트에서, 학습에 한 번도 쓰지 않은 45장으로 제 앱에서 다시 테스트했습니다. 1차 테스트에서 결함 셀을 거의 다 잡던 모델이 ATSS 47%, YOLOX-S 3%까지 떨어집니다. 결함을 착각한 게 아니라 점수가 낮아서 통과시킨 것이고, 정상 셀을 불합격시킨 경우는 없었습니다. 가장 큰 원인은 crack입니다. 2차 세트의 crack은 약 30×26픽셀로 1차의 절반 면적이고, ATSS는 15개 중 1개만 잡았습니다. 학습 때 본 크기의 crack만 쉬웠던 겁니다. 기준값을 바꿔 보면, ATSS는 0.15까지 낮추면 결함 97%를 잡지만 정상 셀도 87%가 걸립니다. YOLOX-S는 다릅니다. 2차 세트 mAP@50이 0.93으로 결함을 정상보다 높게 순위 매기는 건 정확한데, 점수 자체가 낮습니다. YOLOX 점수는 물체일 확률과 클래스 확률을 곱한 값이라 원래 낮게 나오고, 처음 보는 사진에서는 더 낮아집니다. 0.05로 낮추면 정상 오검출 없이 57%를 잡습니다. 즉 기준값은 모델마다 따로 정해야 하고, 그래도 부족하기 때문에 새 환경 사진으로 재학습이 필요합니다.");
 }
@@ -342,9 +345,9 @@ pres.addSection({ title: "검증" });
 // ---------- 9. causes ----------
 pres.addSection({ title: "정리" });
 {
-  const s = content("정리", "원인", "슬라이드 2–8의 결과는 왜 나왔나");
+  const s = content("정리", "WHY ?", null);
   const H = { bold: true, color: MUTED, fill: { color: HEX.lt1 } };
-  const tag = { 측정: TINY, 추정: AMBER, 가설: MUTED };
+  const tag = { 확인: TINY, 추정: AMBER, 가설: MUTED };
   const row = (n, finding, cause, ev) => [
     { text: n, options: { align: "center", color: MUTED } },
     { text: finding, options: { bold: true } },
@@ -352,24 +355,24 @@ pres.addSection({ title: "정리" });
     { text: ev, options: { align: "center", bold: true, color: tag[ev] } },
   ];
   s.addTable([
-    [{ text: "", options: H }, { text: "결과", options: H }, { text: "원인", options: H }, { text: "근거", options: { ...H, align: "center" } }],
-    row("2", "scratch가 어렵다", "반사·나무결 같은 가는 선 (배경 오검출 16건 중 13건이 scratch)", "측정"),
-    row("4", "1차 93%는 과대평가", "테스트까지 업로드 · 복사본 22장 · 같은 촬영 세션 → 암기를 측정", "측정"),
-    row("5", "Geti 점수도 낙관적", "같은 원본의 ×3 증강 사본이 Geti 학습·테스트에 함께 분할", "추정"),
-    row("5", "작은 ATSS가 최고", "입력 992×800 vs 640×640 · 적은 데이터엔 작은 모델 (학습 1회)", "가설"),
-    row("6", "나무 배경 33%", "나무결 = scratch와 같은 가는 선 패턴", "추정"),
-    row("7", "INT8 놓침 증가", "양자화로 점수 소폭 하락 → 0.30 근처 결함이 기준 아래로", "추정"),
-    row("8", "2차 세트 47%", "crack이 30×26px로 작아짐 (검출 1/15) + 새 촬영 환경", "측정"),
-    row("8", "YOLOX-S 점수가 낮음", "점수 = objectness × class 확률의 곱", "추정"),
-    row("8", "기준값으로 해결 안 됨", "새 환경에서 결함·정상 점수 분포가 겹침", "측정"),
-  ], { x: M, y: 1.75, w: CW, colW: [0.55, 2.75, 7.88, 0.95], rowH: 0.47, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
+    [{ text: "장", options: { ...H, align: "center" } }, { text: "결과", options: H }, { text: "원인", options: H }, { text: "근거", options: { ...H, align: "center" } }],
+    row("2", "Scratch 식별 어려움", "반사·나무결과 비슷한 가는 선. 배경 오검출 16건 중 13건이 scratch", "확인"),
+    row("4", "과대평가 수치 (93%)", "테스트 사진도 학습에 포함. 복사본 22장, 같은 촬영 세션", "확인"),
+    row("5", "낙관적인 Geti score", "원본 1장당 증강본 3장이 Geti 학습·테스트에 나뉘어 들어갔을 가능성", "추정"),
+    row("5", "ATSS 최고평가", "입력 해상도 차이 (992×800 vs 640×640), 적은 데이터엔 작은 모델. 학습 1회라 미확인", "가설"),
+    row("6", "나무 배경 취약 (33%)", "나무결도 scratch처럼 가는 선", "추정"),
+    row("7", "INT8 놓침 증가", "양자화 후 점수 소폭 하락, 0.30 근처 결함이 기준 미달", "추정"),
+    row("8", "2차 세트 검출 47%", "crack이 30×26px로 작아짐 (15개 중 1개 검출), 촬영 환경도 바뀜", "확인"),
+    row("8", "YOLOX-S 낮은 점수", "점수 = 물체일 확률 × 클래스 확률. 두 확률의 곱이라 낮게 나옴", "추정"),
+    row("8", "기준값 조정으로 해결 불가", "새 환경에서 결함과 정상의 점수 구간이 겹침", "확인"),
+  ], { x: M, y: 1.45, w: CW, colW: [0.55, 2.85, 7.78, 0.95], rowH: 0.5, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
     fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "causes-table" });
   txt(s, [
-    { text: "측정 ", options: { bold: true, color: TINY } }, { text: "데이터로 확인   ", options: { color: MUTED } },
-    { text: "추정 ", options: { bold: true, color: AMBER } }, { text: "데이터와 일치, 따로 검증 안 함   ", options: { color: MUTED } },
-    { text: "가설 ", options: { bold: true, color: MUTED } }, { text: "미검증", options: { color: MUTED } },
-  ], { x: M, y: 6.55, w: CW, h: 0.3, fontSize: 12, objectName: "causes-legend" });
-  s.addNotes("앞에서 본 결과들의 원인을 한 장에 모았습니다. 오른쪽 근거 칸은 얼마나 확실한지입니다. 측정은 데이터로 직접 확인한 것, 추정은 데이터와 맞지만 따로 검증하지 않은 것, 가설은 아직 검증하지 않은 것입니다. 가장 확실한 원인은 세 가지입니다. scratch는 반사나 나무결과 비슷한 가는 선이라 어렵고, 1차 93%는 테스트 사진까지 학습 데이터에 섞여 과대평가됐고, 2차 세트에서 떨어진 건 crack이 절반 크기로 작아졌기 때문입니다. ATSS가 왜 가장 좋은지는 아직 가설입니다.");
+    { text: "확인 ", options: { bold: true, color: TINY } }, { text: "데이터로 직접 확인   ", options: { color: MUTED } },
+    { text: "추정 ", options: { bold: true, color: AMBER } }, { text: "데이터와 맞지만 별도 검증 없음   ", options: { color: MUTED } },
+    { text: "가설 ", options: { bold: true, color: MUTED } }, { text: "아직 검증 못 함", options: { color: MUTED } },
+  ], { x: M, y: 6.62, w: CW, h: 0.3, fontSize: 12, objectName: "causes-legend" });
+  s.addNotes("앞에서 본 결과들의 원인을 한 장에 모았습니다. 오른쪽 근거 칸은 얼마나 확실한지입니다. 확인은 데이터로 직접 확인한 것, 추정은 데이터와 맞지만 따로 검증하지 않은 것, 가설은 아직 검증하지 못한 것입니다. 가장 확실한 원인은 세 가지입니다. scratch는 반사나 나무결과 비슷한 가는 선이라 어렵고, 93%는 테스트 사진까지 학습에 들어가 부풀려진 수치이고, 2차 세트에서 떨어진 건 crack이 절반 크기로 작아졌기 때문입니다. ATSS가 왜 가장 좋은지는 아직 가설입니다.");
 }
 
 // ---------- 10. logs ----------
@@ -412,12 +415,28 @@ pres.addSection({ title: "정리" });
   img(s, "dashboard.jpg", M, 1.75, 9.1, 9.1 * 947 / 1906, "dashboard");
   card(s, 9.9, 1.75, 2.83, 9.1 * 947 / 1906, "demo-card");
   txt(s, [
+    { text: "SIMULATED", options: { bold: true, fontSize: 20, breakLine: true } },
     { text: "카메라 → 모델 → 판정", options: { bullet: true, breakLine: true } },
     { text: "heatmap · 해시 기록", options: { bullet: true, breakLine: true } },
-    { text: "로트별 추적", options: { bullet: true, breakLine: true } },
-    { text: "실제 장비 미연결", options: { bullet: true, color: MUTED } },
+    { text: "LOT별 추적", options: { bullet: true } },
   ], { x: 10.15, y: 2.0, w: 2.45, h: 4.0, fontSize: 14, paraSpaceAfter: 10, objectName: "demo-b" });
   s.addNotes("마지막으로 대시보드에서 실제 모델이 가상 검사 라인을 돌리는 모습을 보여드리겠습니다. (라이브 데모로 전환)");
+}
+
+// ---------- 12. thanks ----------
+{
+  const s = pres.addSlide({ masterName: "COVER", sectionTitle: "정리" });
+  s.addText("감사합니다", { placeholder: "title" });
+  txt(s, "Q&A", { x: M, y: 3.75, w: 4.6, h: 0.7, fontSize: 32, bold: true, color: ACC, objectName: "qa" });
+  txt(s, "최예현", { x: M, y: 4.75, w: 4.6, h: 0.4, fontSize: 16, bold: true, objectName: "presenter" });
+  const items = [["cover_crack.jpg", "crack", RED], ["cover_scratch.jpg", "scratch", AMBER], ["cover_good.jpg", "정상", TINY]];
+  items.forEach(([f, label, col], i) => {
+    const x = 5.55 + i * 2.5;
+    img(s, f, x, 2.6, 2.3, 2.3, `end-${label}`);
+    dot(s, x, 5.1, col, `end-dot-${label}`);
+    txt(s, label, { x: x + 0.26, y: 5.02, w: 2.0, h: 0.32, fontSize: 14, bold: true, objectName: `end-label-${label}` });
+  });
+  s.addNotes("들어주셔서 감사합니다. 질문 받겠습니다.");
 }
 
 (async () => {
