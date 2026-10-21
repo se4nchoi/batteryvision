@@ -20,7 +20,7 @@ to a person for review."
 ### 0:30–1:05: Data and approach (slide 2)
 "I used a public Roboflow dataset, licensed CC BY 4.0: 1,531 original photos of two defect types, crack
 and scratch. The annotations already existed, so instead of labelling a thousand photos I imported them into
-Intel Geti and spot-checked them there ✍️. I kept the 153-image test split out of Geti entirely. I trained
+Intel Geti and spot-checked them there ✍️. The whole v8 export (3,673 images, including the 153-image test split) went into Geti, which re-split about 2,800 labelled images 70/20/10, so some test photos may have been trained on. I trained
 two detectors in Geti, ATSS-MobileNetV2 and YOLOX-S, and exported both to OpenVINO for CPU inference."
 
 ### 1:05–1:55: Results (slide 3 / Models page → Model performance)

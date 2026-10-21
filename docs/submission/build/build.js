@@ -83,7 +83,7 @@ pres.addSection({ title: "도입" });
   const s = pres.addSlide({ masterName: "COVER", sectionTitle: "도입" });
   txt(s, "Intel Geti · OpenVINO 실습", { x: M, y: 2.35, w: 4.6, h: 0.35, fontSize: 14, color: ACC, bold: true, objectName: "kicker" });
   s.addText("배터리 표면 식별\nVision AI", { placeholder: "title" });
-  s.addText("탐지 모델 3종 비교와 INT8 경량화", { placeholder: "sub" });
+  s.addText("ATSS · YOLOX-S · YOLOX-Tiny 모델 비교 및 INT8 경량화 분석", { placeholder: "sub" });
   const items = [["cover_crack.jpg", "crack", RED], ["cover_scratch.jpg", "scratch", AMBER], ["cover_good.jpg", "정상", TINY]];
   items.forEach(([f, label, col], i) => {
     const x = 5.55 + i * 2.5;
@@ -91,148 +91,152 @@ pres.addSection({ title: "도입" });
     dot(s, x, 5.1, col, `cover-dot-${label}`);
     txt(s, label, { x: x + 0.26, y: 5.02, w: 2.0, h: 0.32, fontSize: 14, bold: true, objectName: `cover-label-${label}` });
   });
-  s.addNotes("배터리 셀 표면의 crack과 scratch를 찾는 Vision AI를 Intel Geti로 학습하고 OpenVINO로 경량화해 비교한 실습입니다. 오른쪽이 실제 데이터의 crack, scratch, 정상 셀입니다.");
+  s.addNotes("배터리 셀 표면의 crack과 scratch를 찾는 Vision AI입니다. Intel Geti로 ATSS, YOLOX-S, YOLOX-Tiny 세 모델을 학습해 비교하고, INT8로 경량화했을 때 무엇이 달라지는지 분석했습니다.");
 }
 
 // ---------- 2. crack vs scratch ----------
 {
-  // Blurred, vignetted meme (prep_images.py → meme_bg.png) faded in behind the end of the title.
-  const s = content("도입", "crack은 쉽고, scratch는 어려워", "크기는 비슷한데, 대비가 다르다",
-    (sl) => img(sl, "meme_bg.png", 5.25, 0.0, 2.05, 2.05, "meme-backdrop"));
+  // Blurred, vignetted meme (prep_images.py -> meme_bg.png), right of the title so the text doesn't cover the face.
+  const s = content("도입", "crack은 쉽고, scratch는 어려워", "비슷한 크기, 다른 대비",
+    (sl) => img(sl, "meme_bg.png", 6.55, 0.0, 1.75, 1.75, "meme-backdrop"));
   txt(s, "배경 이미지: Mnet 방송 화면", { x: 3.6, y: 7.02, w: 4, h: 0.3, fontSize: 9, color: MUTED, valign: "middle", objectName: "meme-credit" });
-  [["zoom_crack.jpg", "crack", "어둡고 뚜렷한 깨짐", RED], ["zoom_scratch.jpg", "scratch", "가늘고 흐릿한 선", AMBER]].forEach(([f, label, desc, col], i) => {
-    const x = M + i * 3.05;
-    img(s, f, x, 1.85, 2.85, 2.85, `zoom-${label}`);
-    dot(s, x, 4.9, col, `zoom-dot-${label}`);
-    txt(s, [{ text: label + "  ", options: { bold: true } }, { text: desc, options: { color: MUTED } }], { x: x + 0.26, y: 4.82, w: 2.6, h: 0.32, fontSize: 14, objectName: `zoom-cap-${label}` });
+  [["zoom_crack.jpg", "crack", "어둡고 뚜렷함", RED], ["zoom_scratch.jpg", "scratch", "가늘고 흐릿함", AMBER]].forEach(([f, label, desc, col], i) => {
+    const x = M + i * 3.1;
+    img(s, f, x, 1.85, 2.9, 2.9, `zoom-${label}`);
+    dot(s, x, 4.95, col, `zoom-dot-${label}`);
+    txt(s, [{ text: label + "  ", options: { bold: true } }, { text: desc, options: { color: MUTED } }], { x: x + 0.26, y: 4.87, w: 2.6, h: 0.32, fontSize: 14, objectName: `zoom-cap-${label}` });
   });
-  card(s, M, 5.5, 5.9, 1.3, "stat-card");
-  txt(s, [{ text: "0.39% · 0.44%", options: { fontSize: 26, bold: true, color: AMBER, breakLine: true } }, { text: "crack · scratch 박스 크기 중앙값 (이미지 면적 대비)", options: { color: MUTED } }],
-    { x: M + 0.3, y: 5.65, w: 5.4, h: 1.0, valign: "middle", objectName: "stat-size" });
+  txt(s, "박스 크기 (중앙값): crack 0.39% · scratch 0.44%", { x: M, y: 5.45, w: 6.0, h: 0.32, fontSize: 13, color: MUTED, objectName: "size-line" });
+  card(s, M, 5.95, 6.0, 0.85, "takeaway-card");
+  txt(s, [{ text: "crack AP 1.00 · scratch AP 0.66–0.86", options: { bold: true, color: AMBER, breakLine: true } }, { text: "이후 오류는 대부분 scratch", options: { color: MUTED } }],
+    { x: M + 0.3, y: 6.02, w: 5.5, h: 0.72, fontSize: 14, valign: "middle", objectName: "takeaway" });
 
   s.addChart(pres.charts.BAR, [
     { name: "crack", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [1.0, 1.0, 1.0] },
     { name: "scratch", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [0.858, 0.784, 0.664] },
   ], {
-    ...chartBase(), x: 6.85, y: 1.75, w: 5.88, h: 5.05, barDir: "col", barGapWidthPct: 60,
+    ...chartBase(), x: 6.95, y: 1.85, w: 5.78, h: 4.95, barDir: "col", barGapWidthPct: 60,
     chartColors: [HEX.accent2, HEX.accent3], valAxisMinVal: 0, valAxisMaxVal: 1, valAxisLabelFormatCode: "0.0", dataLabelFormatCode: "0.00",
-    showTitle: true, title: "클래스별 AP@50 (테스트 131장)", titleColor: HEX.dk1, titleFontSize: 14, objectName: "ap-chart",
+    showTitle: true, title: "클래스별 AP@50 (1차 테스트 131장)", titleColor: HEX.dk1, titleFontSize: 14, objectName: "ap-chart",
   });
-  s.addNotes("crack은 세 모델 모두 AP 1.0으로 거의 완벽하지만, scratch는 0.66에서 0.86 사이입니다. 박스 크기는 둘 다 이미지의 0.4% 안팎으로 비슷합니다. 차이는 대비입니다. crack은 어둡고 뚜렷한 깨짐이고, scratch는 반사나 나무결과 비슷한 가늘고 흐릿한 선입니다. 이 프로젝트의 오류는 대부분 scratch에서 나옵니다.");
+  s.addNotes("crack은 세 모델 모두 AP 1.0이지만, scratch는 0.66에서 0.86입니다. 박스 크기는 둘 다 이미지의 0.4% 안팎으로 비슷합니다. 차이는 대비입니다. crack은 어둡고 뚜렷하고, scratch는 반사나 나무결과 비슷한 흐릿한 선입니다. 이후 나오는 오류도 대부분 scratch입니다.");
 }
 
 // ---------- 3. experiment design ----------
 pres.addSection({ title: "실험" });
 {
-  const s = content("실험", "실험 설계", "모든 모델에 같은 데이터, 같은 판정 기준");
-  const stats = [["1,531", "원본 사진"], ["2", "클래스 (crack · scratch)"], ["3", "모델 (ATSS · YOLOX-S · Tiny)"], ["131", "테스트 사진 (Geti에 올리지 않음)"]];
-  stats.forEach(([n, l], i) => {
-    const x = M + i * 3.07;
-    card(s, x, 1.8, 2.87, 1.25, `stat-${i}`);
-    txt(s, n, { x: x + 0.25, y: 1.92, w: 2.5, h: 0.6, fontSize: 30, bold: true, color: ACC, objectName: `stat-n-${i}` });
-    txt(s, l, { x: x + 0.25, y: 2.55, w: 2.5, h: 0.35, fontSize: 12, color: MUTED, objectName: `stat-l-${i}` });
-  });
-
-  card(s, M, 3.3, 5.9, 3.35, "pipeline-card");
-  txt(s, "파이프라인", { x: M + 0.3, y: 3.45, w: 5, h: 0.35, fontSize: 16, bold: true, objectName: "pipe-h" });
-  const steps = ["Roboflow 공개 데이터셋 (CC BY 4.0)", "Intel Geti 학습 · 모델 3종", "OpenVINO 내보내기 · FP16 / INT8", "CPU 추론 → 판정"];
-  steps.forEach((t, i) => {
-    const y = 3.95 + i * 0.47;
-    s.addShape(pres.shapes.OVAL, { x: M + 0.3, y, w: 0.32, h: 0.32, fill: { color: ACC }, line: { type: "none" }, objectName: `step-c-${i}` });
-    txt(s, String(i + 1), { x: M + 0.3, y, w: 0.32, h: 0.32, fontSize: 12, bold: true, color: BG, align: "center", valign: "middle", objectName: `step-n-${i}` });
-    txt(s, t, { x: M + 0.8, y: y - 0.02, w: 4.9, h: 0.36, fontSize: 14, valign: "middle", objectName: `step-t-${i}` });
-  });
-  const pol = [["REJECT", "≥ 0.60", RED], ["REVIEW", "0.30 – 0.60", AMBER], ["PASS", "< 0.30", TINY]];
-  pol.forEach(([n, r, col], i) => {
+  const s = content("실험", "실험 설계", "데이터셋과 모델 구성");
+  card(s, M, 1.8, 5.9, 5.0, "dataset-card");
+  txt(s, "데이터셋", { x: M + 0.3, y: 1.95, w: 5, h: 0.35, fontSize: 16, bold: true, objectName: "ds-h" });
+  txt(s, [
+    { text: "Roboflow 공개 데이터셋 · 라벨 포함 그대로 import", options: { bullet: true, breakLine: true } },
+    { text: "crack · scratch · 원본 1,531장", options: { bullet: true, breakLine: true } },
+    { text: "목적: 모델별 성능 차이와 INT8 경량화 효과 확인", options: { bullet: true } },
+  ], { x: M + 0.3, y: 2.4, w: 5.35, h: 1.45, fontSize: 14, paraSpaceAfter: 6, objectName: "ds-b" });
+  txt(s, "한계", { x: M + 0.3, y: 3.95, w: 5, h: 0.35, fontSize: 16, bold: true, color: AMBER, objectName: "limit-h" });
+  [["bg_green.jpg", "초록 매트"], ["bg_grey.jpg", "회색"], ["bg_wood.jpg", "나무 탁상"]].forEach(([f, l], i) => {
     const x = M + 0.3 + i * 1.8;
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: 5.85, w: 1.65, h: 0.62, rectRadius: 0.06, fill: { color: col, transparency: 80 }, line: { color: col, width: 1 }, objectName: `pol-${n}` });
-    txt(s, [{ text: n, options: { bold: true, color: col, breakLine: true } }, { text: r, options: { fontSize: 11, color: TEXT } }], { x, y: 5.88, w: 1.65, h: 0.56, fontSize: 13, align: "center", valign: "middle", objectName: `pol-t-${n}` });
+    img(s, f, x, 4.4, 1.65, 1.65, `bg-${i}`);
+    txt(s, l, { x, y: 6.1, w: 1.65, h: 0.3, fontSize: 12, color: MUTED, objectName: `bg-l-${i}` });
   });
+  txt(s, "탁상 촬영 · 셀당 사진 1장 · 같은 촬영 세션 반복", { x: M + 0.3, y: 6.4, w: 5.4, h: 0.3, fontSize: 13, bold: true, objectName: "limit-t" });
 
-  card(s, 6.75, 3.3, 5.98, 3.35, "limit-card");
-  txt(s, "데이터셋 한계", { x: 7.05, y: 3.45, w: 5.4, h: 0.35, fontSize: 16, bold: true, color: AMBER, objectName: "limit-h" });
-  [["bg_green.jpg", "초록 매트 39"], ["bg_grey.jpg", "회색 54"], ["bg_wood.jpg", "나무 탁상 38"]].forEach(([f, l], i) => {
-    const x = 7.05 + i * 1.85;
-    img(s, f, x, 3.92, 1.7, 1.7, `bg-${i}`);
-    txt(s, l, { x, y: 5.68, w: 1.7, h: 0.3, fontSize: 12, color: MUTED, objectName: `bg-l-${i}` });
-  });
-  txt(s, "탁상 촬영 · 셀당 사진 1장 → 이 촬영 환경에 맞춘 모델", { x: 7.05, y: 6.1, w: 5.5, h: 0.5, fontSize: 14, bold: true, objectName: "limit-t" });
-  txt(s, "데이터: Battery Defect Inspection (Roboflow Universe), CC BY 4.0 · 배경 수는 테스트 131장 기준 추정", { x: M, y: 6.74, w: 9, h: 0.22, fontSize: 9, color: MUTED, objectName: "credit" });
-  s.addNotes("공개 데이터셋 1,531장으로 crack과 scratch 두 클래스를 학습했습니다. 테스트 131장은 Geti에 올리지 않고 따로 보관해 모든 모델을 같은 사진, 같은 기준으로 평가했습니다. 판정은 0.6 이상이면 불합격, 0.3에서 0.6은 사람 검토, 그 아래는 합격입니다. 한계도 분명합니다. 모든 사진이 초록 매트, 회색, 나무 탁상 위에서 찍은 사진이라 이 모델은 이 촬영 환경에 맞춰진 모델입니다.");
+  txt(s, "모델 9종 = 아키텍처 3 × 내보내기 3", { x: 6.75, y: 1.8, w: 6, h: 0.35, fontSize: 16, bold: true, objectName: "grid-h" });
+  const H = { bold: true, color: MUTED, fill: { color: HEX.lt1 }, align: "center" };
+  const mrow = (name, col, sizes) => [{ text: name, options: { bold: true, color: col, align: "left" } }, ...sizes.map((v) => ({ text: v, options: { align: "center" } }))];
+  s.addTable([
+    [{ text: "", options: H }, { text: "FP16", options: H }, { text: "FP16 + XAI", options: H }, { text: "INT8", options: H }],
+    mrow("ATSS-MobileNetV2", ATSS, ["5.7 MB", "5.8 MB", "3.9 MB"]),
+    mrow("YOLOX-S", YS, ["18.4 MB", "18.4 MB", "9.8 MB"]),
+    mrow("YOLOX-Tiny", TINY, ["10.6 MB", "10.6 MB", "5.8 MB"]),
+  ], { x: 6.75, y: 2.3, w: 5.98, colW: [2.18, 1.2, 1.4, 1.2], rowH: 0.62, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
+    fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "model-grid" });
+  card(s, 6.75, 5.0, 5.98, 1.8, "legend-card");
+  txt(s, [
+    { text: "FP16  ", options: { bold: true } }, { text: "기본 모델", options: { color: MUTED, breakLine: true } },
+    { text: "XAI  ", options: { bold: true } }, { text: "결함 위치 heatmap 출력 (설명 가능)", options: { color: MUTED, breakLine: true } },
+    { text: "INT8  ", options: { bold: true } }, { text: "양자화로 경량화", options: { color: MUTED } },
+  ], { x: 7.05, y: 5.15, w: 5.5, h: 1.5, fontSize: 14, paraSpaceAfter: 6, valign: "middle", objectName: "legend" });
+  txt(s, "데이터: Battery Defect Inspection v8 (Roboflow Universe), CC BY 4.0", { x: M, y: 6.82, w: 9, h: 0.2, fontSize: 9, color: MUTED, objectName: "credit" });
+  s.addNotes("라벨이 이미 달린 Roboflow 공개 데이터셋을 그대로 Geti에 가져왔습니다. 목적은 모델별 성능 차이와 INT8 경량화의 효과를 보는 것입니다. 모델은 ATSS, YOLOX-S, YOLOX-Tiny 세 가지를 각각 기본 FP16, heatmap을 출력하는 FP16 XAI, 그리고 INT8로 내보내 총 9개를 비교했습니다. 한계는 분명합니다. 사진이 전부 초록 매트, 회색, 나무 탁상 위에서 찍은 탁상 사진이고, 셀당 사진은 한 장, 촬영 세션도 반복됩니다.");
 }
 
 // ---------- 4. hidden trap ----------
 {
-  const s = content("실험", "높은 결과에 숨은 함정", "목표는 점수가 아니라, 모델 + 데이터셋 조합으로 동작하는 Vision AI");
-  [["dup_test.jpg", "테스트 사진"], ["dup_train.jpg", "학습 사진"]].forEach(([f, l], i) => {
-    const x = M + i * 2.85;
-    img(s, f, x, 1.8, 2.6, 2.6, `dup-${i}`);
-    txt(s, l, { x, y: 4.48, w: 2.6, h: 0.3, fontSize: 14, bold: true, objectName: `dup-l-${i}` });
-  });
-  txt(s, "dHash 거리 4 / 256비트: 사실상 같은 사진", { x: M, y: 4.82, w: 5.5, h: 0.3, fontSize: 12, color: MUTED, objectName: "dup-cap" });
-
-  card(s, 6.55, 1.8, 6.18, 1.4, "nd-card");
-  txt(s, "22장", { x: 6.85, y: 1.95, w: 2.0, h: 0.7, fontSize: 36, bold: true, color: AMBER, objectName: "nd-n" });
-  txt(s, "테스트 153장 중 학습 사진과 거의 같은 사진", { x: 6.85, y: 2.7, w: 5.7, h: 0.35, fontSize: 14, color: MUTED, objectName: "nd-l" });
-  card(s, 6.55, 3.38, 6.18, 1.4, "map-card");
-  txt(s, [{ text: "93.3%", options: { color: MUTED } }, { text: "  →  ", options: { color: MUTED } }, { text: "92.9%", options: { color: ACC } }],
-    { x: 6.85, y: 3.53, w: 5.7, h: 0.7, fontSize: 36, bold: true, objectName: "map-n" });
-  txt(s, "22장 제거 후 mAP@50 (ATSS): 점수는 그대로, 평가는 정직하게", { x: 6.85, y: 4.28, w: 5.7, h: 0.35, fontSize: 14, color: MUTED, objectName: "map-l" });
-
-  card(s, M, 5.3, CW, 1.5, "lesson-card");
-  txt(s, "직접 만든 데이터셋이 아니었다", { x: M + 0.3, y: 5.45, w: 6, h: 0.35, fontSize: 16, bold: true, objectName: "lesson-h" });
+  const s = content("실험", "높은 결과에 숨은 함정", "1차 테스트 93%, 그런데 테스트 사진이 학습 데이터에 섞여 있었다");
+  card(s, M, 1.8, 6.0, 2.7, "upload-card");
+  txt(s, "테스트셋까지 Geti에 업로드", { x: M + 0.3, y: 1.95, w: 5.5, h: 0.35, fontSize: 16, bold: true, color: AMBER, objectName: "up-h" });
+  txt(s, "3,673장", { x: M + 0.3, y: 2.45, w: 5.5, h: 0.8, fontSize: 44, bold: true, objectName: "up-n" });
   txt(s, [
-    { text: "같은 촬영 세션이 학습과 테스트에 섞여 있음 (테스트 153장 중 152장)", options: { bullet: true, breakLine: true } },
-    { text: "학습셋은 Roboflow 증강(×3)이 들어간 상태로 배포됨", options: { bullet: true } },
-  ], { x: M + 0.3, y: 5.88, w: 7.4, h: 0.8, fontSize: 14, color: MUTED, paraSpaceAfter: 4, objectName: "lesson-b" });
-  txt(s, "교훈: 받은 데이터는 학습 전에 먼저 검증한다", { x: 8.3, y: 5.88, w: 4.2, h: 0.8, fontSize: 16, bold: true, color: ACC, valign: "middle", objectName: "lesson-t" });
-  s.addNotes("처음 결과는 mAP 93%로 좋아 보였습니다. 하지만 이 실습의 목적은 점수가 아니라 모델과 데이터셋을 조합해 실제로 동작하는 Vision AI를 만드는 것이라, 데이터부터 다시 봤습니다. 테스트 153장 중 22장이 학습 사진과 거의 같은 사진이었습니다. 직접 만든 데이터셋이 아니라서 생긴 문제입니다. 22장을 빼도 점수는 92.9%로 거의 같았지만, 이제는 믿을 수 있는 숫자입니다.");
+    { text: "= 학습 3,214 + 검증 306 + 테스트 153 (Roboflow v8 전체)", options: { breakLine: true } },
+    { text: "Geti가 라벨 있는 약 2,800장을 70/20/10으로 다시 나눠 학습", options: { color: MUTED } },
+  ], { x: M + 0.3, y: 3.4, w: 5.5, h: 0.95, fontSize: 14, paraSpaceAfter: 4, objectName: "up-b" });
+
+  [["dup_test.jpg", "테스트 사진"], ["dup_train.jpg", "학습 사진"]].forEach(([f, l], i) => {
+    const x = 6.85 + i * 2.15;
+    img(s, f, x, 1.8, 2.0, 2.0, `dup-${i}`);
+    txt(s, l, { x, y: 3.85, w: 2.0, h: 0.3, fontSize: 13, bold: true, objectName: `dup-l-${i}` });
+  });
+  card(s, 11.15, 1.8, 1.58, 2.35, "nd-card");
+  txt(s, "22장", { x: 11.25, y: 2.05, w: 1.4, h: 0.6, fontSize: 28, bold: true, color: AMBER, align: "center", objectName: "nd-n" });
+  txt(s, "학습 사진과 거의 같은 테스트 사진", { x: 11.25, y: 2.75, w: 1.4, h: 1.2, fontSize: 12, color: MUTED, align: "center", objectName: "nd-l" });
+  txt(s, "dHash 거리 4 / 256비트: 사실상 같은 사진", { x: 6.85, y: 4.2, w: 5.9, h: 0.3, fontSize: 12, color: MUTED, objectName: "dup-cap" });
+
+  card(s, M, 5.05, CW, 1.75, "lesson-card");
+  txt(s, "그래서 1차 테스트 점수는", { x: M + 0.3, y: 5.2, w: 6, h: 0.35, fontSize: 16, bold: true, objectName: "lesson-h" });
+  txt(s, [
+    { text: "학습에 쓴 사진이 포함됐을 수 있음 (Geti 화면에서 분할 목록 확인 불가)", options: { bullet: true, breakLine: true } },
+    { text: "모델끼리 비교는 가능, 처음 보는 사진에서의 성능은 2차 세트로 확인", options: { bullet: true } },
+  ], { x: M + 0.3, y: 5.62, w: 7.6, h: 0.95, fontSize: 14, color: MUTED, paraSpaceAfter: 4, objectName: "lesson-b" });
+  txt(s, "교훈: 테스트셋은 업로드 전에 분리", { x: 8.45, y: 5.62, w: 4.05, h: 0.95, fontSize: 16, bold: true, color: ACC, valign: "middle", objectName: "lesson-t" });
+  s.addNotes("처음 결과는 mAP 93%로 좋아 보였습니다. 하지만 데이터를 다시 보니 문제가 있었습니다. Roboflow 데이터셋을 통째로 Geti에 올리면서 테스트 153장도 함께 들어갔고, Geti가 이를 다시 나눠 학습했습니다. 그래서 1차 테스트 사진 중 일부는 모델이 학습 때 본 사진일 수 있습니다. 게다가 22장은 학습 사진과 사실상 같은 사진이었습니다. 직접 만든 데이터셋이 아니라서 놓친 부분입니다. 그래서 1차 점수는 모델끼리 비교하는 데만 쓰고, 처음 보는 사진에서의 성능은 2차 세트로 확인했습니다.");
 }
 
 // ---------- 5. small model ----------
 {
-  const s = content("실험", "작은 모델이 더 맵다", "가장 작은 ATSS가 가장 정확했다");
+  const s = content("실험", "작은 모델이 더 맵다", "FP16 기준 · 1차 테스트 131장");
   const models = [
-    ["ATSS-MobileNetV2", "3.9M · 20.6 GFLOPs", "92.9%", "scratch AP 0.86", ATSS, true],
-    ["YOLOX-S", "9M · 26.8 GFLOPs", "89.2%", "scratch AP 0.78", YS, false],
-    ["YOLOX-Tiny", "5.06M · 6.45 GFLOPs", "83.2%", "scratch AP 0.66", TINY, false],
+    ["ATSS-MobileNetV2", "3.9M", "20.6 GFLOPs", "92.9%", "scratch AP 0.86", ATSS, true],
+    ["YOLOX-S", "9M", "26.8 GFLOPs", "89.2%", "scratch AP 0.78", YS, false],
+    ["YOLOX-Tiny", "5.06M", "6.45 GFLOPs", "83.2%", "scratch AP 0.66", TINY, false],
   ];
-  models.forEach(([n, spec, map, scr, col, best], i) => {
+  models.forEach(([n, params, flops, map, scr, col, best], i) => {
     const x = M + i * 4.1;
-    card(s, x, 1.8, 3.9, 2.1, `model-${i}`);
+    card(s, x, 1.8, 3.9, 2.55, `model-${i}`);
     dot(s, x + 0.3, 2.04, col, `model-dot-${i}`);
     txt(s, n, { x: x + 0.56, y: 1.95, w: 2.4, h: 0.35, fontSize: 16, bold: true, objectName: `model-n-${i}` });
     if (best) {
       s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x + 2.95, y: 1.97, w: 0.7, h: 0.3, rectRadius: 0.05, fill: { color: ACC }, line: { type: "none" }, objectName: "best-badge" });
       txt(s, "최고", { x: x + 2.95, y: 1.97, w: 0.7, h: 0.3, fontSize: 11, bold: true, color: BG, align: "center", valign: "middle", objectName: "best-t" });
     }
-    txt(s, spec, { x: x + 0.3, y: 2.35, w: 3.4, h: 0.3, fontSize: 12, color: MUTED, objectName: `model-s-${i}` });
-    txt(s, map, { x: x + 0.3, y: 2.7, w: 3.4, h: 0.7, fontSize: 36, bold: true, color: col, objectName: `model-m-${i}` });
-    txt(s, `mAP@50 · ${scr}`, { x: x + 0.3, y: 3.42, w: 3.4, h: 0.3, fontSize: 12, color: MUTED, objectName: `model-a-${i}` });
+    txt(s, [{ text: "파라미터 ", options: { color: MUTED } }, { text: params, options: { bold: true } }, { text: "   연산량 ", options: { color: MUTED } }, { text: flops, options: { bold: true } }],
+      { x: x + 0.3, y: 2.4, w: 3.45, h: 0.3, fontSize: 13, objectName: `model-s-${i}` });
+    txt(s, map, { x: x + 0.3, y: 2.85, w: 3.4, h: 0.8, fontSize: 40, bold: true, color: col, objectName: `model-m-${i}` });
+    txt(s, `mAP@50 · ${scr}`, { x: x + 0.3, y: 3.75, w: 3.4, h: 0.3, fontSize: 13, color: MUTED, objectName: `model-a-${i}` });
   });
-  s.addChart(pres.charts.BAR, [
-    { name: "ATSS", labels: ["작은 물체", "중간", "큰 물체"], values: [0.385, 0.592, 0.66] },
-    { name: "YOLOX-S", labels: ["작은 물체", "중간", "큰 물체"], values: [0.39, 0.539, 0.589] },
-    { name: "YOLOX-Tiny", labels: ["작은 물체", "중간", "큰 물체"], values: [0.246, 0.454, 0.496] },
-  ], {
-    ...chartBase(), x: M, y: 4.1, w: 7.0, h: 2.55, barDir: "col", barGapWidthPct: 50,
-    chartColors: [HEX.accent4, HEX.accent5, HEX.accent6], valAxisMinVal: 0, valAxisMaxVal: 0.8, valAxisLabelFormatCode: "0.0", dataLabelFormatCode: "0.00", dataLabelFontSize: 10,
-    showTitle: true, title: "Geti 보고값: 크기별 mAP (검증셋)", titleColor: HEX.dk1, titleFontSize: 13, objectName: "size-chart",
-  });
-  card(s, 7.85, 4.1, 4.88, 2.55, "read-card");
+  card(s, M, 4.6, 6.0, 2.2, "why-card");
+  txt(s, "결과", { x: M + 0.3, y: 4.75, w: 5, h: 0.35, fontSize: 16, bold: true, color: ACC, objectName: "why-h" });
   txt(s, [
-    { text: "Geti 검증셋에서도 같은 순서 (mAP@50 0.88 · 0.84 · 0.80)", options: { bullet: true, breakLine: true } },
-    { text: "작은 물체는 ATSS ≈ YOLOX-S, Tiny만 크게 낮음", options: { bullet: true, breakLine: true } },
-    { text: "ATSS의 우위는 중간·큰 결함에서 나옴", options: { bullet: true, breakLine: true } },
-    { text: "가설: 입력 해상도 992×800 vs 640×640 (미검증)", options: { bullet: true, color: MUTED } },
-  ], { x: 8.1, y: 4.25, w: 4.45, h: 2.3, fontSize: 14, paraSpaceAfter: 6, objectName: "read-b" });
-  txt(s, "모델 크기·연산량은 Geti 표기, mAP@50은 테스트 131장 측정값", { x: M, y: 6.74, w: 8, h: 0.22, fontSize: 9, color: MUTED, objectName: "size-note" });
-  s.addNotes("세 모델을 같은 조건으로 비교했더니, 파라미터가 가장 적은 ATSS가 가장 정확했습니다. Geti의 검증셋 수치도 같은 순서입니다. 크기별로 보면 작은 물체에서는 ATSS와 YOLOX-S가 비슷하고 Tiny만 크게 떨어집니다. 그래서 ATSS의 우위는 중간과 큰 결함에서 나온다고 보는 게 맞고, 입력 해상도 차이는 아직 검증하지 않은 가설입니다.");
+    { text: "파라미터가 가장 적은 ATSS가 가장 정확", options: { bullet: true, breakLine: true } },
+    { text: "Geti 점수도 ATSS 최고 (86% · 81% · 81%)", options: { bullet: true, breakLine: true } },
+    { text: "2차 세트도 ATSS 우위 (검출 47% vs 3%)", options: { bullet: true } },
+  ], { x: M + 0.3, y: 5.2, w: 5.5, h: 1.5, fontSize: 14, paraSpaceAfter: 6, objectName: "why-b" });
+  card(s, 6.85, 4.6, 5.88, 2.2, "note-card");
+  txt(s, "주의", { x: 7.15, y: 4.75, w: 5, h: 0.35, fontSize: 16, bold: true, color: AMBER, objectName: "note-h" });
+  txt(s, [
+    { text: "'작은 모델' = 파라미터 기준", options: { bullet: true, breakLine: true } },
+    { text: "연산량은 Tiny가 가장 적음 (6.45 GFLOPs)", options: { bullet: true, breakLine: true } },
+    { text: "1차 점수는 학습 사진 포함 가능 → 모델 간 비교용", options: { bullet: true, color: MUTED } },
+  ], { x: 7.15, y: 5.2, w: 5.4, h: 1.5, fontSize: 14, paraSpaceAfter: 6, objectName: "note-b" });
+  s.addNotes("세 모델을 기본 FP16으로 비교했습니다. 파라미터가 가장 적은 ATSS가 92.9%로 가장 정확했고, Geti 점수도 같은 순서입니다. 처음 보는 2차 세트에서도 ATSS가 YOLOX-S보다 훨씬 많이 잡았습니다. 다만 '작다'는 파라미터 기준이고, 연산량은 Tiny가 가장 적습니다. 그리고 1차 점수는 학습 사진이 섞였을 수 있어서, 모델끼리 비교하는 용도로만 봅니다.");
 }
 
 // ---------- 6. error analysis ----------
 {
-  const s = content("실험", "오류 분석", "ATSS · 검토 기준 0.30");
+  const s = content("실험", "오류 분석", "ATSS · 검토 기준 0.30 · 1차 테스트");
+  card(s, M, 1.75, CW, 0.85, "conclusion-band", HEX.lt2);
+  txt(s, [{ text: "혼동 0건", options: { color: ACC } }, { text: "  ·  오류는 전부 놓친 scratch  ·  ", options: {} }, { text: "나무 배경에서 가장 약함", options: { color: RED } }],
+    { x: M + 0.3, y: 1.8, w: CW - 0.6, h: 0.75, fontSize: 22, bold: true, valign: "middle", objectName: "conclusion" });
   const H = { bold: true, color: MUTED, fill: { color: HEX.lt1 } };
   const cell = (v, o = {}) => ({ text: String(v), options: { align: "center", ...o } });
   s.addTable([
@@ -240,92 +244,98 @@ pres.addSection({ title: "실험" });
     [cell("crack", { align: "left", bold: true }), cell(45, { bold: true, color: ACC }), cell(0), cell(0)],
     [cell("scratch", { align: "left", bold: true }), cell(0), cell(59, { bold: true, color: ACC }), cell(19, { bold: true, color: RED })],
     [cell("배경 (오검출)", { align: "left", bold: true }), cell(3, { color: AMBER }), cell(13, { bold: true, color: AMBER }), cell("–", { color: MUTED })],
-  ], { x: M, y: 1.8, w: 5.6, colW: [1.7, 1.3, 1.3, 1.3], rowH: 0.48, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
+  ], { x: M, y: 2.9, w: 6.0, colW: [1.95, 1.35, 1.35, 1.35], rowH: 0.5, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
     fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "confusion" });
-  txt(s, "crack ↔ scratch 혼동 0건. 오류는 놓친 scratch 19개와 배경 오검출 16개", { x: M, y: 3.85, w: 5.6, h: 0.55, fontSize: 14, objectName: "conf-cap" });
 
-  card(s, M, 4.6, 5.6, 2.2, "bg-recall-card");
-  txt(s, "배경별 박스 재현율 (불합격 기준 0.60)", { x: M + 0.3, y: 4.75, w: 5, h: 0.32, fontSize: 14, bold: true, objectName: "bgr-h" });
+  card(s, 6.85, 2.9, 5.88, 2.0, "bg-recall-card");
+  txt(s, "배경별 박스 재현율 (불합격 기준 0.60)", { x: 7.15, y: 3.02, w: 5.3, h: 0.32, fontSize: 14, bold: true, objectName: "bgr-h" });
   [["초록 매트", 0.72], ["회색", 0.75], ["나무 탁상", 0.33]].forEach(([l, v], i) => {
-    const y = 5.25 + i * 0.47;
-    txt(s, l, { x: M + 0.3, y, w: 1.3, h: 0.32, fontSize: 13, color: MUTED, valign: "middle", objectName: `bgr-l-${i}` });
-    s.addShape(pres.shapes.RECTANGLE, { x: M + 1.65, y: y + 0.08, w: 3.0, h: 0.18, fill: { color: "3A3F48" }, line: { type: "none" }, objectName: `bgr-track-${i}` });
-    s.addShape(pres.shapes.RECTANGLE, { x: M + 1.65, y: y + 0.08, w: 3.0 * v, h: 0.18, fill: { color: v < 0.5 ? RED : ACC }, line: { type: "none" }, objectName: `bgr-fill-${i}` });
-    txt(s, `${Math.round(v * 100)}%`, { x: M + 4.75, y, w: 0.65, h: 0.32, fontSize: 13, bold: true, align: "right", valign: "middle", objectName: `bgr-v-${i}` });
+    const y = 3.47 + i * 0.45;
+    txt(s, l, { x: 7.15, y, w: 1.3, h: 0.32, fontSize: 13, color: MUTED, valign: "middle", objectName: `bgr-l-${i}` });
+    s.addShape(pres.shapes.RECTANGLE, { x: 8.5, y: y + 0.08, w: 3.3, h: 0.18, fill: { color: "3A3F48" }, line: { type: "none" }, objectName: `bgr-track-${i}` });
+    s.addShape(pres.shapes.RECTANGLE, { x: 8.5, y: y + 0.08, w: 3.3 * v, h: 0.18, fill: { color: v < 0.5 ? RED : ACC }, line: { type: "none" }, objectName: `bgr-fill-${i}` });
+    txt(s, `${Math.round(v * 100)}%`, { x: 11.9, y, w: 0.6, h: 0.32, fontSize: 13, bold: true, align: "right", valign: "middle", objectName: `bgr-v-${i}` });
   });
 
-  [["heat_atss.jpg", "ATSS", "48%", ATSS], ["heat_yolox.jpg", "YOLOX-S", "98%", YS]].forEach(([f, n, v, col], i) => {
-    const x = 6.55 + i * 3.15;
-    img(s, f, x, 1.8, 2.95, 2.95, `heat-${i}`);
-    dot(s, x, 4.92, col, `heat-dot-${i}`);
-    txt(s, [{ text: n + "  ", options: { bold: true } }, { text: "결함 적중 ", options: { color: MUTED } }, { text: v, options: { bold: true, color: col } }],
-      { x: x + 0.26, y: 4.84, w: 2.7, h: 0.32, fontSize: 14, objectName: `heat-l-${i}` });
-  });
+  card(s, M, 5.2, CW, 1.6, "heat-card");
+  img(s, "heat_atss.jpg", M + 0.2, 5.33, 1.34, 1.34, "heat-0");
+  img(s, "heat_yolox.jpg", M + 1.65, 5.33, 1.34, 1.34, "heat-1");
   txt(s, [
-    { text: "heatmap 최고점이 정답 박스 안에 있는 비율 (결함 사진 116장)", options: { color: MUTED, breakLine: true } },
-    { text: "더 정확한 모델(ATSS)이 더 잘 설명하지는 않는다", options: { bold: true } },
-  ], { x: 6.55, y: 5.35, w: 6.1, h: 0.9, fontSize: 14, objectName: "heat-cap" });
-  s.addNotes("오류를 열어보면 crack과 scratch를 서로 헷갈린 경우는 한 번도 없습니다. 오류는 전부 놓친 scratch이거나 배경을 scratch로 본 경우입니다. 특히 나무 탁상 배경에서 재현율이 33%로 크게 떨어집니다. heatmap도 비교했는데, YOLOX-S는 98%의 사진에서 결함을 정확히 가리키지만 ATSS는 48%에 그칩니다. 탐지 정확도와 설명 품질은 다른 성질입니다.");
+    { text: "heatmap이 결함을 짚은 비율: ", options: { color: MUTED } }, { text: "YOLOX-S 98%", options: { bold: true, color: YS } }, { text: " · ", options: { color: MUTED } }, { text: "ATSS 48%", options: { bold: true, color: ATSS, breakLine: true } },
+    { text: "더 정확한 모델이 더 잘 설명하지는 않는다", options: { bold: true } },
+  ], { x: M + 3.3, y: 5.35, w: 8.5, h: 1.3, fontSize: 15, valign: "middle", objectName: "heat-cap" });
+  s.addNotes("결론부터 말하면, crack과 scratch를 서로 헷갈린 경우는 한 번도 없고, 오류는 전부 놓친 scratch나 배경 오검출입니다. 특히 나무 탁상 배경에서 재현율이 33%로 가장 약합니다. heatmap은 YOLOX-S가 98%의 사진에서 결함을 짚지만 ATSS는 48%로, 정확도와 설명력은 별개였습니다.");
 }
 
 // ---------- 7. INT8 ----------
 pres.addSection({ title: "최적화" });
 {
-  const s = content("최적화", "INT8 장단점", "수업에서 다룬 모델 최적화(양자화)를 직접 적용");
-  s.addChart(pres.charts.BAR, [
-    { name: "FP16", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [43.9, 48.9, 33.5] },
-    { name: "INT8", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [20.0, 24.9, 8.3] },
-  ], {
-    ...chartBase(), x: M, y: 1.75, w: 6.4, h: 4.6, barDir: "col", barGapWidthPct: 55,
-    chartColors: ["6B7480", HEX.accent1], valAxisMinVal: 0, valAxisLabelFormatCode: "0", dataLabelFormatCode: "0.0",
-    showTitle: true, title: "CPU 추론 시간 (ms / 사진, 낮을수록 빠름)", titleColor: HEX.dk1, titleFontSize: 14, objectName: "speed-chart",
-  });
-  txt(s, "Intel Core Ultra 7 265K CPU · 사진 1장씩 · 테스트 131장 평균 · 전처리·후처리 포함", { x: M, y: 6.45, w: 6.4, h: 0.3, fontSize: 10, color: MUTED, objectName: "speed-note" });
+  const s = content("최적화", "INT8 장단점", "수업에서 다룬 양자화를 직접 적용 · 직접 설계한 벤치마크로 측정");
+  const H = { bold: true, color: MUTED, fill: { color: HEX.lt1 }, align: "center" };
+  const c = (t, o = {}) => ({ text: t, options: { align: "center", ...o } });
+  s.addTable([
+    [c("모델", { ...H, align: "left" }), c("CPU ms", H), c("속도", H), c("크기 MB", H), c("mAP@50", H), c("놓친 결함 셀 (/98)", H)],
+    [c("ATSS-MobileNetV2", { align: "left", bold: true, color: ATSS }), c("43.9 → 20.0"), c("2.2×", { bold: true, color: ACC }), c("5.7 → 3.9"), c("0.929 → 0.929"), c("0 → 1", { color: RED })],
+    [c("YOLOX-S", { align: "left", bold: true, color: YS }), c("48.9 → 24.9"), c("2.0×", { bold: true, color: ACC }), c("18.4 → 9.8"), c("0.892 → 0.902"), c("6 → 8", { color: RED })],
+    [c("YOLOX-Tiny", { align: "left", bold: true, color: TINY }), c("33.5 → 8.3"), c("4.0×", { bold: true, color: ACC }), c("10.6 → 5.8"), c("0.832 → 0.829"), c("1 → 0")],
+  ], { x: M, y: 1.8, w: CW, colW: [2.4, 2.3, 1.1, 1.8, 2.1, 2.43], rowH: 0.58, fontSize: 15, color: TEXT, fontFace: "Malgun Gothic",
+    fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "int8-table" });
+  card(s, M, 4.3, CW, 0.62, "method-card", HEX.lt2);
+  txt(s, [{ text: "측정 방법  ", options: { bold: true, color: ACC } }, { text: "1차 테스트 131장 · 사진 1장씩 · Intel Core Ultra 7 265K CPU · 전처리·후처리 포함 · 워밍업 10회 제외", options: { color: TEXT } }],
+    { x: M + 0.3, y: 4.33, w: CW - 0.6, h: 0.56, fontSize: 13, valign: "middle", objectName: "method" });
 
-  card(s, 7.25, 1.8, 5.48, 1.95, "pro-card");
-  txt(s, "장점", { x: 7.55, y: 1.95, w: 3, h: 0.35, fontSize: 16, bold: true, color: TINY, objectName: "pro-h" });
+  card(s, M, 5.15, 5.95, 1.65, "pro-card");
+  txt(s, "장점", { x: M + 0.3, y: 5.28, w: 3, h: 0.35, fontSize: 16, bold: true, color: TINY, objectName: "pro-h" });
   txt(s, [
-    { text: "CPU에서 2.0–4.0배 빠름 (Tiny INT8 8.3 ms)", options: { bullet: true, breakLine: true } },
-    { text: "파일 크기 약 절반 (ATSS 5.7 → 3.9 MB)", options: { bullet: true, breakLine: true } },
-    { text: "mAP@50 유지 (0.929 → 0.929)", options: { bullet: true } },
-  ], { x: 7.55, y: 2.35, w: 5.0, h: 1.3, fontSize: 14, paraSpaceAfter: 6, objectName: "pro-b" });
-
-  card(s, 7.25, 3.95, 5.48, 2.8, "con-card");
-  txt(s, "단점", { x: 7.55, y: 4.1, w: 3, h: 0.35, fontSize: 16, bold: true, color: RED, objectName: "con-h" });
+    { text: "CPU 2–4배 빠름 · 크기 약 절반", options: { bullet: true, breakLine: true } },
+    { text: "mAP@50은 거의 그대로", options: { bullet: true } },
+  ], { x: M + 0.3, y: 5.7, w: 5.4, h: 0.95, fontSize: 14, paraSpaceAfter: 6, objectName: "pro-b" });
+  card(s, 6.78, 5.15, 5.95, 1.65, "con-card");
+  txt(s, "단점", { x: 7.08, y: 5.28, w: 3, h: 0.35, fontSize: 16, bold: true, color: RED, objectName: "con-h" });
   txt(s, [
-    { text: "신뢰도 점수가 조금 낮아짐: ATSS 박스 재현율 57.7% → 52.0% (0.60 기준)", options: { bullet: true, breakLine: true } },
-    { text: "놓친 결함 셀 증가: ATSS 0 → 1, YOLOX-S 6 → 8", options: { bullet: true, breakLine: true } },
-    { text: "판정 기준값을 INT8 모델에 맞춰 다시 정해야 함", options: { bullet: true, bold: true } },
-  ], { x: 7.55, y: 4.55, w: 5.0, h: 2.0, fontSize: 14, paraSpaceAfter: 6, objectName: "con-b" });
-  s.addNotes("수업에서 다룬 모델 최적화를 직접 써보고 싶어서, Geti에서 INT8 양자화 모델을 받아 같은 조건으로 비교했습니다. CPU에서 2배에서 4배 빨라지고 파일 크기는 절반 정도가 되며 mAP는 그대로입니다. 대신 신뢰도 점수가 조금 낮아져서, 같은 판정 기준을 쓰면 놓치는 결함이 늘어납니다. INT8을 실제로 쓰려면 기준값을 다시 정해야 합니다.");
+    { text: "신뢰도가 낮아져 같은 기준에서 놓침 증가", options: { bullet: true, breakLine: true } },
+    { text: "INT8용 판정 기준값을 다시 정해야 함", options: { bullet: true, bold: true } },
+  ], { x: 7.08, y: 5.7, w: 5.4, h: 0.95, fontSize: 14, paraSpaceAfter: 6, objectName: "con-b" });
+  s.addNotes("수업에서 다룬 모델 최적화를 직접 써보고 싶어서, Geti에서 INT8 모델을 받아 직접 만든 벤치마크로 측정했습니다. 같은 131장을 한 장씩, 같은 CPU에서, 전처리와 후처리를 포함해 잰 값입니다. INT8은 2배에서 4배 빠르고 크기는 절반 정도이며, mAP는 그대로입니다. 대신 신뢰도 점수가 조금 낮아져 같은 기준에서는 놓치는 결함이 늘어납니다. INT8을 쓰려면 기준값을 다시 정해야 합니다.");
 }
 
 // ---------- 8. second dataset ----------
 pres.addSection({ title: "검증" });
 {
-  const s = content("검증", "2차 데이터셋", "나중에 촬영된 새 세션 45장 (결함 30 · 정상 15) · 학습에 쓰지 않음");
-  card(s, M, 1.8, 7.0, 3.55, "holdout-card");
-  txt(s, "결함 셀 검출률 (검토 또는 불합격)", { x: M + 0.3, y: 1.95, w: 6.4, h: 0.35, fontSize: 16, bold: true, objectName: "ho-h" });
-  txt(s, [{ text: "기존 테스트", options: { color: MUTED } }], { x: M + 2.6, y: 2.45, w: 1.8, h: 0.3, fontSize: 12, align: "right", objectName: "ho-c1" });
-  txt(s, [{ text: "2차 세션", options: { color: MUTED } }], { x: M + 4.9, y: 2.45, w: 1.8, h: 0.3, fontSize: 12, align: "right", objectName: "ho-c2" });
+  const s = content("검증", "2차 데이터셋", "같은 업로더의 다른 세트(v2) 45장 (결함 30 · 정상 15) · 학습에 전혀 안 쓴 사진 · 내 앱으로 테스트");
+  card(s, M, 1.8, 6.6, 3.3, "holdout-card");
+  txt(s, "결함 셀 검출률 (검토 또는 불합격)", { x: M + 0.3, y: 1.95, w: 6, h: 0.35, fontSize: 16, bold: true, objectName: "ho-h" });
+  txt(s, "1차 테스트", { x: M + 2.6, y: 2.4, w: 1.6, h: 0.3, fontSize: 12, color: MUTED, align: "right", objectName: "ho-c1" });
+  txt(s, "2차 세트", { x: M + 4.6, y: 2.4, w: 1.6, h: 0.3, fontSize: 12, color: MUTED, align: "right", objectName: "ho-c2" });
   [["ATSS", "100%", "47%", ATSS], ["YOLOX-S", "94%", "3%", YS], ["YOLOX-Tiny", "99%", "47%", TINY]].forEach(([n, a, b, col], i) => {
-    const y = 2.85 + i * 0.78;
-    dot(s, M + 0.3, y + 0.2, col, `ho-dot-${i}`);
+    const y = 2.78 + i * 0.72;
+    dot(s, M + 0.3, y + 0.19, col, `ho-dot-${i}`);
     txt(s, n, { x: M + 0.56, y, w: 2.0, h: 0.55, fontSize: 16, bold: true, valign: "middle", objectName: `ho-n-${i}` });
-    txt(s, a, { x: M + 2.6, y, w: 1.8, h: 0.55, fontSize: 26, bold: true, color: MUTED, align: "right", valign: "middle", objectName: `ho-a-${i}` });
-    txt(s, b, { x: M + 4.9, y, w: 1.8, h: 0.55, fontSize: 26, bold: true, color: RED, align: "right", valign: "middle", objectName: `ho-b-${i}` });
+    txt(s, a, { x: M + 2.6, y, w: 1.6, h: 0.55, fontSize: 26, bold: true, color: MUTED, align: "right", valign: "middle", objectName: `ho-a-${i}` });
+    txt(s, b, { x: M + 4.6, y, w: 1.6, h: 0.55, fontSize: 26, bold: true, color: RED, align: "right", valign: "middle", objectName: `ho-b-${i}` });
   });
-
-  img(s, "holdout_miss.jpg", 8.3, 1.8, 4.0, 4.0, "miss-img");
-  txt(s, [{ text: "정답: scratch", options: { bold: true, breakLine: true } }, { text: "ATSS 최고 점수 0.21 → 검토 기준 미달로 통과", options: { color: MUTED } }],
-    { x: 8.3, y: 5.92, w: 4.4, h: 0.6, fontSize: 13, objectName: "miss-cap" });
-
-  card(s, M, 5.55, 7.0, 1.25, "finding-card");
+  card(s, M, 5.3, 6.6, 1.5, "finding-card");
   txt(s, [
-    { text: "결함을 잘못 분류한 게 아니라 점수가 낮아 놓침 · 정상 셀 자동 불합격 0건", options: { bullet: true, breakLine: true } },
-    { text: "3번 슬라이드의 한계(촬영 환경)가 그대로 드러남", options: { bullet: true, bold: true, color: AMBER } },
-  ], { x: M + 0.3, y: 5.7, w: 6.5, h: 1.0, fontSize: 14, paraSpaceAfter: 6, objectName: "finding-b" });
-  s.addNotes("마지막으로, 같은 작성자가 나중에 찍은 새 세션 45장으로 다시 테스트했습니다. 기존 테스트에서 결함 셀을 거의 다 잡던 모델들이 여기서는 ATSS 47%, YOLOX-S 3%까지 떨어집니다. 결함을 다른 결함으로 착각한 게 아니라, 점수가 낮아서 그냥 통과시킨 경우입니다. 다행히 정상 셀을 불합격시킨 경우는 없었습니다. 앞에서 말한 촬영 환경의 한계가 실제로 드러난 장면입니다.");
+    { text: "착각이 아니라 점수가 낮아 놓침 · 정상 불합격 0건", options: { bullet: true, breakLine: true } },
+    { text: "원인: 1차는 본 적 있는 사진 포함 + 같은 촬영 환경", options: { bullet: true, bold: true, color: AMBER } },
+  ], { x: M + 0.3, y: 5.42, w: 6.1, h: 1.25, fontSize: 14, paraSpaceAfter: 4, objectName: "finding-b" });
+
+  txt(s, "기준값을 낮추면? (ATSS · 2차 세트)", { x: 7.45, y: 1.8, w: 5.3, h: 0.35, fontSize: 16, bold: true, objectName: "th-h" });
+  const H = { bold: true, color: MUTED, fill: { color: HEX.lt1 }, align: "center" };
+  const c = (t, o = {}) => ({ text: t, options: { align: "center", ...o } });
+  s.addTable([
+    [c("기준값", H), c("결함 검출", H), c("정상 오검출", H)],
+    [c("0.30 (현재)"), c("47%", { color: RED, bold: true }), c("13%")],
+    [c("0.20"), c("87%"), c("73%", { color: AMBER, bold: true })],
+    [c("0.15"), c("97%"), c("87%", { color: RED, bold: true })],
+  ], { x: 7.45, y: 2.3, w: 5.28, colW: [1.76, 1.76, 1.76], rowH: 0.5, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
+    fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "th-table" });
+  txt(s, [{ text: "놓침을 줄이면 정상 셀이 같이 걸림", options: { bold: true, breakLine: true } }, { text: "→ 기준값이 아니라 재학습 문제", options: { bold: true, color: ACC } }],
+    { x: 7.45, y: 4.4, w: 5.28, h: 0.75, fontSize: 15, objectName: "th-cap" });
+  img(s, "holdout_miss.jpg", 7.45, 5.3, 1.5, 1.5, "miss-img");
+  txt(s, [{ text: "놓친 예: scratch", options: { bold: true, breakLine: true } }, { text: "ATSS 최고 점수 0.21", options: { color: MUTED } }],
+    { x: 9.15, y: 5.55, w: 3.5, h: 0.9, fontSize: 13, valign: "middle", objectName: "miss-cap" });
+  s.addNotes("같은 업로더가 올린 다른 세트에서, 학습에 한 번도 쓰지 않은 45장으로 제 앱에서 다시 테스트했습니다. 1차 테스트에서 결함 셀을 거의 다 잡던 모델이 ATSS 47%, YOLOX-S 3%까지 떨어집니다. 결함을 착각한 게 아니라 점수가 낮아서 통과시킨 것이고, 정상 셀을 불합격시킨 경우는 없었습니다. 1차 테스트에는 학습 때 본 사진이 섞여 있었고 촬영 환경도 같았기 때문입니다. 그럼 기준값을 낮추면 될까요? 0.15까지 낮추면 결함은 97% 잡지만 정상 셀도 87%가 걸립니다. 두 점수 분포가 겹치기 때문에 기준값으로는 해결되지 않고, 새 환경의 사진으로 재학습해야 합니다.");
 }
 
 // ---------- 9. logs ----------
@@ -336,29 +346,31 @@ pres.addSection({ title: "정리" });
   const row = (a, b, c, d, hl) => [a, b, c, d].map((t, i) => ({ text: t, options: { align: i === 0 || i === 2 ? "center" : "left", ...(i === 2 && hl ? { bold: true, color: hl } : {}), ...(i === 3 ? { color: MUTED } : {}) } }));
   s.addTable([
     ["단계", "조건", "결과", "배운 것"].map((t) => ({ text: t, options: { ...H, align: "left" } })),
-    row("1", "ATSS · 테스트 153장", "93.3%", "첫 숫자는 좋아 보인다", ACC),
-    row("2", "복사본 22장 제거 · 131장", "92.9%", "점수는 그대로, 평가는 정직하게", ACC),
-    row("3", "YOLOX-S · YOLOX-Tiny 비교", "89.2 · 83.2%", "큰 모델이 이기지 않는다", ACC),
-    row("4", "INT8 양자화", "2–4배 빠름", "빠르지만 기준값 재조정 필요", AMBER),
-    row("5", "2차 세션 45장", "검출 47%", "환경이 바뀌면 다시 검증", RED),
-  ], { x: M, y: 1.5, w: 7.5, colW: [0.7, 2.45, 1.45, 2.9], rowH: 0.78, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
+    row("1", "ATSS · 1차 테스트 153장", "93.3%", "첫 숫자는 좋아 보인다", ACC),
+    row("2", "복사본 22장 제거 · 131장", "92.9%", "점수 그대로, 평가는 정직", ACC),
+    row("3", "업로드 내역 확인", "테스트 포함", "1차 점수는 비교용으로만", AMBER),
+    row("4", "YOLOX-S · Tiny 비교", "89.2 · 83.2%", "큰 모델이 이기지 않는다", ACC),
+    row("5", "INT8 양자화", "2–4배 빠름", "빠르지만 기준값 재조정", AMBER),
+    row("6", "2차 세트 45장", "검출 47%", "처음 보는 사진의 실력", RED),
+    row("7", "2차 · 기준값 0.15로 낮춤", "정상 87% 오검출", "기준값 X → 재학습 필요", RED),
+  ], { x: M, y: 1.35, w: 7.55, colW: [0.6, 2.45, 1.85, 2.65], rowH: 0.62, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
     fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "log-table" });
-  txt(s, "결과: mAP@50 (1–3), CPU 속도 (4), 결함 셀 검출률 · ATSS (5)", { x: M, y: 6.35, w: 7.5, h: 0.3, fontSize: 10, color: MUTED, objectName: "log-note" });
+  txt(s, "결과: mAP@50 (1–2, 4) · CPU 속도 (5) · 결함 셀 검출률, ATSS (6–7)", { x: M, y: 6.45, w: 7.55, h: 0.3, fontSize: 10, color: MUTED, objectName: "log-note" });
 
   const lessons = [
-    ["01", "데이터부터 의심하기", "받은 데이터셋의 중복·세션을 먼저 확인"],
-    ["02", "큰 모델 ≠ 좋은 모델", "데이터와 결함 크기에 맞는 모델 선택"],
+    ["01", "테스트셋은 먼저 분리", "업로드 전에 나누고, 중복·세션도 확인"],
+    ["02", "큰 모델 ≠ 좋은 모델", "데이터와 결함에 맞는 모델 선택"],
     ["03", "최적화는 기준값과 함께", "INT8은 빠르지만 판정 기준을 다시 맞춰야"],
-    ["04", "점수 ≠ 현장 성능", "새 촬영 환경마다 재검증"],
+    ["04", "점수 ≠ 현장 성능", "환경이 바뀌면 기준값이 아니라 재학습"],
   ];
   lessons.forEach(([n, h, d], i) => {
-    const y = 1.5 + i * 1.3;
-    card(s, 8.4, y, 4.33, 1.15, `lesson-${i}`);
-    txt(s, n, { x: 8.65, y: y + 0.18, w: 0.6, h: 0.4, fontSize: 18, bold: true, color: ACC, objectName: `lesson-n-${i}` });
-    txt(s, h, { x: 9.25, y: y + 0.15, w: 3.35, h: 0.38, fontSize: 15, bold: true, objectName: `lesson-h-${i}` });
-    txt(s, d, { x: 9.25, y: y + 0.58, w: 3.35, h: 0.4, fontSize: 12, color: MUTED, objectName: `lesson-d-${i}` });
+    const y = 1.35 + i * 1.3;
+    card(s, 8.45, y, 4.28, 1.15, `lesson-${i}`);
+    txt(s, n, { x: 8.7, y: y + 0.17, w: 0.6, h: 0.4, fontSize: 18, bold: true, color: ACC, objectName: `lesson-n-${i}` });
+    txt(s, h, { x: 9.3, y: y + 0.14, w: 3.3, h: 0.38, fontSize: 15, bold: true, objectName: `lesson-h-${i}` });
+    txt(s, d, { x: 9.3, y: y + 0.57, w: 3.3, h: 0.4, fontSize: 12, color: MUTED, objectName: `lesson-d-${i}` });
   });
-  s.addNotes("실험 순서대로 정리하면 이렇습니다. 점수가 가장 높았던 단계보다, 복사본을 찾고 2차 세션에서 점수가 떨어진 단계에서 가장 많이 배웠습니다. 데이터부터 의심할 것, 큰 모델이 늘 좋은 건 아니라는 것, 최적화는 기준값 조정과 함께 해야 한다는 것, 그리고 테스트 점수가 현장 성능을 보장하지 않는다는 것입니다.");
+  s.addNotes("실험 순서대로 정리했습니다. 점수가 가장 높았던 단계보다, 테스트셋이 학습 데이터에 섞인 걸 발견하고 2차 세트에서 점수가 떨어진 단계에서 더 많이 배웠습니다. 마지막으로 기준값을 낮춰 봤지만 정상 셀이 87% 걸려서, 새 환경에서는 기준값이 아니라 재학습이 필요하다는 결론입니다.");
 }
 
 // ---------- 10. demo ----------

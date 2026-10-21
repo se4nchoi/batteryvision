@@ -83,7 +83,12 @@ then report test results at the chosen values. Trade-off: lower thresholds → f
 ## Results: ATSS-MobileNetV2 (measured 2026-10-20)
 
 Source files: `docs/results/benchmark.json` and `docs/results/evaluation_20261020_151753.md`.
-Everything below was measured on the 153-image held-out test split on this laptop's CPU.
+Everything below was measured on the 153-image test split on this laptop's CPU.
+
+> **Caveat (found 2026-10-21):** the whole Roboflow v8 export, test split included (3,673 images), was
+> uploaded to Geti, and Geti re-split about 2,800 labelled images 70/20/10 for training. Some of these
+> "held-out" test photos may therefore have been trained on (Geti's UI does not list the split). Use the
+> test-set numbers to compare models; the later-session holdout is the only set never seen in training.
 
 **Dataset:** Roboflow "Battery Defect Inspection" v8 (CC BY 4.0), classes crack / scratch,
 images train/valid/test = 3,214 (1,072 originals ×3 augmented) / 306 / 153, test images without
