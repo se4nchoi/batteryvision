@@ -24,7 +24,7 @@
   td.sub { color: var(--muted); }
   .note { color: var(--muted); font-size: 8pt; }
   .summary { background: var(--soft); border-radius: 2mm; padding: 2.5mm 3.5mm; margin-bottom: 2mm; }
-  .figs { display: grid; grid-template-columns: repeat(4, 33mm); gap: 2.5mm; margin: 2mm 0 1mm; }
+  .figs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5mm; margin: 2mm 0 1mm; }
   .figs figure { margin: 0; }
   .figs img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 1.5mm; display: block; }
   .figs figcaption { font-size: 8pt; color: var(--muted); margin-top: 0.8mm; }
@@ -37,42 +37,44 @@
 
 <p class="kicker">Intel Geti · OpenVINO 실습 · 요약</p>
 <h1>배터리 표면 식별 Vision AI</h1>
-<p class="lead">배터리 셀 사진에서 crack과 scratch를 찾아 PASS · REVIEW · REJECT로 판정하는 객체 탐지 모델</p>
+<p class="lead">crack · scratch 탐지 → PASS · REVIEW · REJECT 판정</p>
 
 <div class="summary">
-  <b>한 줄 요약.</b> Intel Geti로 탐지 모델 3종(ATSS-MobileNetV2, YOLOX-S, YOLOX-Tiny)을 학습해 OpenVINO로 비교했다.
-  가장 작은 ATSS가 가장 정확했고(1차 테스트 mAP@50 92.9%), INT8 양자화로 CPU 추론이 2–4배 빨라졌다.
-  하지만 1차 테스트 사진이 Geti 학습 데이터에 섞여 있었고, 학습에 전혀 쓰지 않은 2차 세트에서는 결함 셀 검출률이 47%로 떨어졌다.
-  <b class="acc">1차 점수는 모델 간 비교용이며, 처음 보는 사진에서의 실제 성능은 2차 세트 결과다.</b>
+  <b>요약.</b> Geti로 ATSS-MobileNetV2 · YOLOX-S · YOLOX-Tiny 학습, OpenVINO로 비교.
+  1차 테스트 mAP@50 최고는 ATSS 92.9%, INT8로 CPU 추론 2–4배 단축.
+  단, 1차 테스트 사진이 Geti 학습 데이터에 포함 → <b class="acc">1차 점수는 모델 간 비교용</b>.
+  학습에 안 쓴 2차 세트에서 결함 셀 검출 47%.
 </div>
 
 <h2>1. 목표</h2>
-<p>점수 자체보다 <b>공개 데이터셋과 Geti 모델을 조합해 실제로 동작하는 검사 AI를 만드는 것</b>이 목표다.
-모델이 결함을 찾으면 신뢰도에 따라 0.60 이상은 불합격(REJECT), 0.30–0.60은 사람 검토(REVIEW), 그 아래는 합격(PASS)으로 판정한다.
-가상 검사 라인 대시보드에서 실제 모델로 이 판정을 시연한다.</p>
+<ul>
+  <li>공개 데이터셋 + Geti 모델로 동작하는 검사 AI 구성</li>
+  <li>판정: 신뢰도 ≥ 0.60 REJECT · 0.30–0.60 REVIEW · &lt; 0.30 PASS</li>
+  <li>가상 검사 라인 대시보드에서 실제 모델로 시연</li>
+</ul>
 
 <div class="figs">
-  <figure><img src="img/zoom_crack.jpg" alt="crack 확대"><figcaption><span class="dot" style="background:var(--crack)"></span>crack: 어둡고 뚜렷한 깨짐</figcaption></figure>
-  <figure><img src="img/zoom_scratch.jpg" alt="scratch 확대"><figcaption><span class="dot" style="background:var(--scratch)"></span>scratch: 가늘고 흐릿한 선</figcaption></figure>
-  <figure><img src="img/heat_atss.jpg" alt="ATSS heatmap"><figcaption>ATSS heatmap (결함 적중 48%)</figcaption></figure>
-  <figure><img src="img/heat_yolox.jpg" alt="YOLOX-S heatmap"><figcaption>YOLOX-S heatmap (결함 적중 98%)</figcaption></figure>
+  <figure><img src="img/zoom_crack.jpg" alt="crack 확대"><figcaption><span class="dot" style="background:var(--crack)"></span>crack · 어둡고 뚜렷함</figcaption></figure>
+  <figure><img src="img/zoom_scratch.jpg" alt="scratch 확대"><figcaption><span class="dot" style="background:var(--scratch)"></span>scratch · 가늘고 흐릿함</figcaption></figure>
+  <figure><img src="img/heat_atss.jpg" alt="ATSS heatmap"><figcaption>ATSS heatmap · 적중 48%</figcaption></figure>
+  <figure><img src="img/heat_yolox.jpg" alt="YOLOX-S heatmap"><figcaption>YOLOX-S heatmap · 적중 98%</figcaption></figure>
 </div>
 
 <h2>2. 데이터와 방법</h2>
 <ul>
-  <li><b>데이터:</b> 라벨이 포함된 Roboflow 공개 데이터셋(Battery Defect Inspection v8), 원본 1,531장, 클래스 crack · scratch.
+  <li><b>데이터:</b> Roboflow Battery Defect Inspection v8 (라벨 포함), 원본 1,531장, crack · scratch.
       학습 3,214장(원본 1,072장 ×3 증강) · 검증 306장 · 테스트 153장.</li>
-  <li><b>Geti 업로드:</b> v8 전체 3,673장(테스트 153장 포함)을 올렸고, Geti가 라벨 있는 약 2,800장을 70/20/10으로 다시 나눠 학습했다.
-      따라서 <b>1차 테스트 사진 중 일부는 학습에 쓰였을 수 있다</b>(Geti 화면에서 분할 목록은 확인할 수 없음).</li>
-  <li><b>데이터 정제:</b> 테스트 153장 중 22장이 학습 사진과 거의 같은 사진(dHash 거리 ≤ 8/256)이어서 빼고 131장(1차 테스트)으로 평가했다.
-      ATSS mAP@50은 93.3% → 92.9%로 거의 같았다. 같은 촬영 세션이 학습과 테스트에 섞여 있는 문제(153장 중 152장)도 있다.</li>
-  <li><b>2차 세트:</b> 같은 업로더의 다른 데이터셋(Battery Defect Detection v2)에서 기존 데이터와 겹치지 않는 45장(결함 30 · 정상 15). 학습에 전혀 쓰지 않았다.</li>
-  <li><b>모델:</b> Geti 템플릿 ATSS-MobileNetV2(3.9M), YOLOX-S(9M), YOLOX-Tiny(5.06M). 각각 FP16, FP16+XAI(heatmap), INT8로 내보냈다.</li>
-  <li><b>측정:</b> 직접 만든 벤치마크(benchmark.py)로 모든 모델을 같은 사진, 같은 판정 기준으로 평가. 속도는 Intel Core Ultra 7 265K CPU에서 사진 1장씩, 전처리·후처리 포함 평균.</li>
-  <li><b>한계:</b> 모든 사진이 탁상 촬영이며 배경은 초록 매트 · 회색 · 나무 탁상(테스트 131장 기준 39 · 54 · 38장), 셀당 사진 1장이다.</li>
+  <li><b>Geti 업로드:</b> v8 전체 3,673장(테스트 포함). Geti가 약 2,800장을 70/20/10으로 재분할
+      → <b>1차 테스트 일부가 학습에 쓰였을 가능성</b>.</li>
+  <li><b>정제:</b> 학습 사진의 복사본 22장(dHash ≤ 8/256) 제거 → 1차 테스트 131장. ATSS mAP@50 93.3% → 92.9%.
+      촬영 세션 중복(153장 중 152장)은 남음.</li>
+  <li><b>2차 세트:</b> 같은 업로더의 Battery Defect Detection v2 중 기존과 겹치지 않는 45장(결함 30 · 정상 15), 학습 미사용.</li>
+  <li><b>모델:</b> ATSS-MobileNetV2(3.9M) · YOLOX-S(9M) · YOLOX-Tiny(5.06M) × FP16 · FP16+XAI · INT8.</li>
+  <li><b>측정:</b> 직접 만든 벤치마크(benchmark.py). 같은 사진 · 같은 기준. 속도는 Core Ultra 7 265K CPU, 사진 1장씩, 전처리·후처리 포함.</li>
+  <li><b>한계:</b> 탁상 촬영, 배경 3종(초록 매트 39 · 회색 54 · 나무 탁상 38장), 셀당 사진 1장.</li>
 </ul>
 
-<h2>3. 결과: 모델 비교 (1차 테스트, 모델 간 비교용)</h2>
+<h2>3. 결과: 모델 비교 (1차 테스트)</h2>
 <table>
   <tr><th>모델</th><th>정밀도</th><th>mAP@50</th><th>mAP@50:95</th><th>scratch AP</th><th>놓친 결함 셀 (/98)</th><th>검토된 정상 셀 (/33)</th><th>CPU ms</th><th>크기</th></tr>
   <tr><td><span class="dot" style="background:var(--atss)"></span>ATSS-MobileNetV2</td><td>FP16</td><td><b>0.929</b></td><td><b>0.587</b></td><td><b>0.858</b></td><td>0</td><td>3</td><td>43.9</td><td>5.7 MB</td></tr>
@@ -82,18 +84,19 @@
   <tr><td><span class="dot" style="background:var(--tiny)"></span>YOLOX-Tiny</td><td>FP16</td><td>0.832</td><td>0.369</td><td>0.664</td><td>1</td><td>0</td><td>33.5</td><td>10.6 MB</td></tr>
   <tr><td class="sub">　</td><td>INT8</td><td>0.829</td><td>0.343</td><td>0.658</td><td>0</td><td>0</td><td><b>8.3</b></td><td>5.8 MB</td></tr>
 </table>
-<p class="note">테스트 131장(결함 98 · 정상 33). "놓친 결함 셀"은 검토 기준 0.30 미만으로 통과한 결함 사진 수. crack AP@50은 모든 모델에서 1.000.
-Geti 점수 86% · 81% · 81%, Geti 검증셋 mAP@50 0.878 · 0.841 · 0.798로 ATSS가 가장 높다. CPU 시간은 측정마다 수 ms 편차가 있어 FP16 대비 INT8 차이를 기준으로 본다.</p>
+<p class="note">결함 98 · 정상 33장. 놓친 결함 셀 = 검토 기준 0.30 미만. crack AP@50은 전 모델 1.000. Geti 점수 86 · 81 · 81%. CPU 시간은 측정마다 수 ms 편차.</p>
 <ul>
-  <li><b>작은 모델이 더 정확했다.</b> 파라미터가 가장 적은 ATSS가 가장 정확했다. Geti의 크기별 mAP를 보면 작은 물체에서는 ATSS(0.385)와 YOLOX-S(0.39)가 비슷하고 Tiny(0.246)만 낮아, ATSS의 우위는 중간·큰 결함에서 나온다. 입력 해상도 차이(992×800 vs 640×640)는 아직 검증하지 않은 가설이다.</li>
-  <li><b>INT8:</b> CPU에서 2.0–4.0배 빠르고 크기는 약 절반, mAP@50은 유지된다. 대신 신뢰도가 조금 낮아져 0.60 기준 박스 재현율이 ATSS 57.7% → 52.0%로 떨어지고, 놓친 결함 셀이 ATSS 0 → 1, YOLOX-S 6 → 8로 늘었다. INT8을 쓰려면 판정 기준값을 다시 정해야 한다.</li>
+  <li><b>정확도:</b> ATSS 최고(파라미터 최소). Geti 크기별 mAP에서 작은 물체는 ATSS 0.385 ≈ YOLOX-S 0.39, Tiny 0.246
+      → ATSS 우위는 중간·큰 결함. 해상도 차이(992×800 vs 640×640)는 미검증 가설.</li>
+  <li><b>INT8:</b> CPU 2.0–4.0배 빠름, 크기 약 절반, mAP@50 유지. 신뢰도 하락으로 0.60 기준 박스 재현율 ATSS 57.7% → 52.0%,
+      놓친 결함 셀 ATSS 0 → 1 · YOLOX-S 6 → 8 → INT8용 기준값 재설정 필요.</li>
 </ul>
 
-<h2>4. 오류 분석</h2>
+<h2>4. 오류 분석 (ATSS, 1차 테스트)</h2>
 <div class="two">
   <div>
     <table>
-      <tr><th>ATSS · 기준 0.30</th><th>crack</th><th>scratch</th><th>놓침</th></tr>
+      <tr><th>기준 0.30</th><th>crack</th><th>scratch</th><th>놓침</th></tr>
       <tr><td>정답 crack</td><td><b>45</b></td><td>0</td><td>0</td></tr>
       <tr><td>정답 scratch</td><td>0</td><td><b>59</b></td><td>19</td></tr>
       <tr><td>배경 (오검출)</td><td>3</td><td>13</td><td>–</td></tr>
@@ -101,16 +104,14 @@ Geti 점수 86% · 81% · 81%, Geti 검증셋 mAP@50 0.878 · 0.841 · 0.798로 
   </div>
   <div>
     <ul>
-      <li>crack과 scratch를 서로 헷갈린 경우는 0건이다. 오류는 놓친 scratch 19개와 배경 오검출 16개다.</li>
-      <li>배경별 박스 재현율(0.60 기준, ATSS): 초록 매트 72% · 회색 75% · <b>나무 탁상 33%</b>. 나무결이 scratch와 비슷해 보인다.</li>
+      <li>crack ↔ scratch 혼동 0건. 오류 = 놓친 scratch 19 + 배경 오검출 16.</li>
+      <li>배경별 박스 재현율(0.60): 초록 매트 72% · 회색 75% · <b>나무 탁상 33%</b>.</li>
+      <li>heatmap 최고점이 정답 박스 안: YOLOX-S 98% · ATSS 48% (정제 전 결함 사진 116장). 정확도 ≠ heatmap 품질.</li>
     </ul>
   </div>
 </div>
-<p><b>heatmap(XAI):</b> heatmap 최고점이 정답 박스 안에 들어간 비율은 YOLOX-S 98%, ATSS 48%(결함 사진 116장, 정제 전 테스트셋)이다.
-더 정확한 모델이 더 잘 설명하지는 않았다. heatmap은 결함의 위치를 보여줄 뿐 판단 이유를 설명하지는 않으므로, 검토 보조 도구로만 쓴다.</p>
 
-<h2>5. 2차 데이터셋: 처음 보는 사진</h2>
-<p>같은 작성자가 나중에 촬영한 새 세션 45장(결함 30 · 정상 15, 학습에 쓰지 않음, 기존 데이터와 중복 0건)으로 다시 평가했다.</p>
+<h2>5. 2차 데이터셋 (학습 미사용 45장)</h2>
 <table>
   <tr><th>결함 셀 검출률 (검토 또는 불합격)</th><th>1차 테스트 (131장)</th><th>2차 세트 (45장)</th><th>INT8 · 2차 세트</th><th>정상 셀 자동 불합격</th></tr>
   <tr><td><span class="dot" style="background:var(--atss)"></span>ATSS-MobileNetV2</td><td>100%</td><td><b>47%</b></td><td>43%</td><td>0건</td></tr>
@@ -118,32 +119,31 @@ Geti 점수 86% · 81% · 81%, Geti 검증셋 mAP@50 0.878 · 0.841 · 0.798로 
   <tr><td><span class="dot" style="background:var(--tiny)"></span>YOLOX-Tiny</td><td>99%</td><td><b>47%</b></td><td>60%</td><td>0건</td></tr>
 </table>
 <ul>
-  <li>결함을 다른 결함으로 착각한 것이 아니라, 맞는 위치를 찾고도 점수가 0.06–0.28로 낮아 검토 기준(0.30)에 못 미쳐 통과시켰다.</li>
-  <li><b>기준값을 낮추면?</b> ATSS 기준 0.30 → 0.20 → 0.15에서 결함 검출 47% → 87% → 97%, 정상 셀 오검출 13% → 73% → 87%.
-      결함과 정상의 점수 분포가 겹쳐 기준값으로는 해결되지 않는다. 새 환경의 사진으로 재학습이 필요하다.</li>
-  <li>정상 셀을 자동 불합격시킨 경우는 없다. 촬영 환경이 바뀌었을 때의 실패는 <b>놓침</b>이며, 이는 실제 라인에서 가장 비싼 오류다.</li>
-  <li>1차 테스트가 쉬웠던 이유는 학습에 쓰였을 수 있는 사진과 같은 촬영 환경 때문이다. 새 스테이션 · 카메라 · 조명마다 재검증이 필요하다.</li>
+  <li>클래스 착각 0건. 위치는 맞혔으나 점수 0.06–0.28로 검토 기준(0.30) 미달.</li>
+  <li><b>기준값 하향(ATSS):</b> 0.30 → 0.20 → 0.15에서 검출 47 → 87 → 97%, 정상 오검출 13 → 73 → 87%. 점수 분포 겹침 → 재학습 필요.</li>
+  <li>정상 셀 자동 불합격 0건. 실패 유형은 놓침(라인에서 가장 비싼 오류).</li>
+  <li>1차가 높았던 원인: 학습 사진 포함 가능 + 같은 촬영 환경.</li>
 </ul>
 
 <h2>6. 배운 것</h2>
 <ol>
-  <li><b>테스트셋은 먼저 분리.</b> 데이터셋을 통째로 올려 테스트 사진이 학습에 섞였고, 중복 사진과 겹친 촬영 세션도 있었다. 업로드 전에 테스트셋을 따로 빼고 검증한다.</li>
-  <li><b>큰 모델 ≠ 좋은 모델.</b> 1,500장 규모 데이터에서는 가장 작은 ATSS가 가장 정확했다.</li>
-  <li><b>최적화는 기준값과 함께.</b> INT8은 속도와 크기에서 이득이 크지만, 신뢰도 분포가 바뀌므로 판정 기준을 다시 맞춰야 한다.</li>
-  <li><b>점수 ≠ 현장 성능.</b> 1차 92.9%가 처음 보는 2차 세트에서는 47% 검출로 떨어졌고, 기준값 조정으로는 회복되지 않았다.</li>
+  <li><b>테스트셋은 먼저 분리.</b> 통째 업로드로 테스트가 학습에 섞임 · 복사본 · 세션 겹침.</li>
+  <li><b>큰 모델 ≠ 좋은 모델.</b> 3.9M ATSS &gt; 9M YOLOX-S.</li>
+  <li><b>최적화는 기준값과 함께.</b> INT8 = 속도 ↑ · 신뢰도 ↓.</li>
+  <li><b>점수 ≠ 현장 성능.</b> 92.9% → 새 환경 검출 47%, 기준값 조정으로 회복 불가.</li>
 </ol>
 
 <h2>7. 앞으로 할 일</h2>
 <ul>
-  <li>테스트셋을 뺀 학습 · 검증 데이터만 Geti에 올려 재학습하고, 깨끗한 테스트 점수를 다시 측정한다.</li>
-  <li>실제 검사 스테이션에서 찍은 사진과 2차 세트 사진을 학습에 추가해 회복 정도를 측정한다.</li>
-  <li>판정 기준값을 테스트셋이 아닌 검증셋에서 모델별(FP16 · INT8)로 정한다.</li>
-  <li>YOLOX를 더 큰 입력 크기로 재학습해 해상도 가설을 확인하고, 학습을 2–3회 반복해 편차를 확인한다.</li>
-  <li>NPU(Intel AI Boost)는 이번 측정에서 장치 오류로 실패해, 드라이버 업데이트 후 다시 측정한다.</li>
+  <li>테스트셋 제외 후 재학습 · 재측정</li>
+  <li>실제 스테이션 · 2차 세트 사진 추가 학습</li>
+  <li>기준값을 검증셋에서 모델별(FP16 · INT8)로 결정</li>
+  <li>YOLOX 고해상도 재학습(해상도 가설 확인), 2–3회 반복 학습으로 편차 확인</li>
+  <li>NPU 재측정 (이번 측정은 장치 오류)</li>
 </ul>
 
 <p class="note" style="margin-top:3mm">데이터: Battery Defect Inspection v8 · Battery Defect Detection v2, Roboflow Universe (universe.roboflow.com/battery-oqphu), CC BY 4.0.
-측정 원본: docs/results/benchmark.json, docs/results/later_session_clean_9models/benchmark.json, docs/EVALUATION.md, Geti 모델 지표 PDF(docs/submission/build/geti_metrics.json).</p>
+측정 원본: docs/results/benchmark.json, docs/results/later_session_clean_9models/benchmark.json, docs/EVALUATION.md, docs/submission/build/geti_metrics.json.</p>
 
 </body>
 </html>
