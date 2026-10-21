@@ -190,39 +190,34 @@ pres.addSection({ title: "실험" });
 
 // ---------- 5. small model ----------
 {
-  const s = content("실험", "작은 모델이 더 맵다", "FP16 기준 · 1차 테스트 131장");
-  const models = [
-    ["ATSS-MobileNetV2", "3.9M", "20.6 GFLOPs", "92.9%", "scratch AP 0.86", ATSS, true],
-    ["YOLOX-S", "9M", "26.8 GFLOPs", "89.2%", "scratch AP 0.78", YS, false],
-    ["YOLOX-Tiny", "5.06M", "6.45 GFLOPs", "83.2%", "scratch AP 0.66", TINY, false],
+  const s = content("실험", "작은 모델이 더 맵다", "FP16 기준 · Geti 화면 vs 직접 측정");
+  const gw = 5.05 * 689 / 743;
+  img(s, "geti_models.png", M, 1.75, gw, 5.05, "geti-models");
+  const X = M + gw + 0.35, RW = W - M - X;
+  txt(s, "직접 측정 · 1차 테스트 131장", { x: X, y: 1.75, w: RW, h: 0.35, fontSize: 16, bold: true, objectName: "own-h" });
+  const cols = [["mAP@50", X + 2.75, 1.75], ["scratch AP", X + 4.55, 1.2], ["2차 세트 검출", X + 5.5, 1.4]];
+  cols.forEach(([t, x, w], i) => txt(s, t, { x, y: 2.2, w, h: 0.3, fontSize: 12, color: MUTED, align: "right", objectName: `own-col-${i}` }));
+  const rows = [
+    ["ATSS-MobileNetV2", "3.9M · 20.6 GFLOPs", "92.9%", "0.86", "47%", ATSS, true],
+    ["YOLOX-S", "9M · 26.8 GFLOPs", "89.2%", "0.78", "3%", YS, false],
+    ["YOLOX-Tiny", "5.06M · 6.45 GFLOPs", "83.2%", "0.66", "47%", TINY, false],
   ];
-  models.forEach(([n, params, flops, map, scr, col, best], i) => {
-    const x = M + i * 4.1;
-    card(s, x, 1.8, 3.9, 3.1, `model-${i}`);
-    dot(s, x + 0.3, 2.04, col, `model-dot-${i}`);
-    txt(s, n, { x: x + 0.56, y: 1.95, w: 2.4, h: 0.35, fontSize: 16, bold: true, objectName: `model-n-${i}` });
+  rows.forEach(([n, spec, map, scr, ho, col, best], i) => {
+    const y = 2.6 + i * 1.3;
+    card(s, X, y, RW, 1.15, `own-row-${i}`);
+    dot(s, X + 0.25, y + 0.25, col, `own-dot-${i}`);
+    txt(s, n, { x: X + 0.5, y: y + 0.15, w: 2.3, h: 0.35, fontSize: 15, bold: true, objectName: `own-n-${i}` });
+    txt(s, spec, { x: X + 0.5, y: y + 0.6, w: 2.3, h: 0.3, fontSize: 12, color: MUTED, objectName: `own-s-${i}` });
+    txt(s, map, { x: X + 2.75, y: y + 0.12, w: 1.75, h: 0.9, fontSize: 34, bold: true, color: col, align: "right", valign: "middle", objectName: `own-m-${i}` });
+    txt(s, scr, { x: X + 4.55, y: y + 0.12, w: 1.2, h: 0.9, fontSize: 18, align: "right", valign: "middle", objectName: `own-a-${i}` });
+    txt(s, ho, { x: X + 5.8, y: y + 0.12, w: 1.1, h: 0.9, fontSize: 18, bold: true, color: RED, align: "right", valign: "middle", objectName: `own-h2-${i}` });
     if (best) {
-      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x + 2.95, y: 1.97, w: 0.7, h: 0.3, rectRadius: 0.05, fill: { color: ACC }, line: { type: "none" }, objectName: "best-badge" });
-      txt(s, "최고", { x: x + 2.95, y: 1.97, w: 0.7, h: 0.3, fontSize: 11, bold: true, color: BG, align: "center", valign: "middle", objectName: "best-t" });
+      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: X + 2.1, y: y + 0.62, w: 0.55, h: 0.26, rectRadius: 0.04, fill: { color: ACC }, line: { type: "none" }, objectName: "best-badge" });
+      txt(s, "최고", { x: X + 2.1, y: y + 0.62, w: 0.55, h: 0.26, fontSize: 10, bold: true, color: BG, align: "center", valign: "middle", objectName: "best-t" });
     }
-    txt(s, [{ text: "파라미터 ", options: { color: MUTED } }, { text: params, options: { bold: true } }, { text: "   연산량 ", options: { color: MUTED } }, { text: flops, options: { bold: true } }],
-      { x: x + 0.3, y: 2.4, w: 3.45, h: 0.3, fontSize: 13, objectName: `model-s-${i}` });
-    txt(s, map, { x: x + 0.3, y: 2.95, w: 3.4, h: 1.1, fontSize: 54, bold: true, color: col, objectName: `model-m-${i}` });
-    txt(s, `mAP@50 · ${scr}`, { x: x + 0.3, y: 4.25, w: 3.4, h: 0.3, fontSize: 14, color: MUTED, objectName: `model-a-${i}` });
   });
-  card(s, M, 5.15, 6.0, 1.65, "why-card");
-  txt(s, "같은 순서", { x: M + 0.3, y: 5.28, w: 5, h: 0.35, fontSize: 16, bold: true, color: ACC, objectName: "why-h" });
-  txt(s, [
-    { text: "Geti 점수: 86% · 81% · 81%", options: { bullet: true, breakLine: true } },
-    { text: "2차 세트 검출: ATSS 47% · YOLOX-S 3%", options: { bullet: true } },
-  ], { x: M + 0.3, y: 5.7, w: 5.5, h: 0.95, fontSize: 14, paraSpaceAfter: 6, objectName: "why-b" });
-  card(s, 6.85, 5.15, 5.88, 1.65, "note-card");
-  txt(s, "주의", { x: 7.15, y: 5.28, w: 5, h: 0.35, fontSize: 16, bold: true, color: AMBER, objectName: "note-h" });
-  txt(s, [
-    { text: "작은 = 파라미터 기준", options: { bullet: true, breakLine: true } },
-    { text: "연산량은 Tiny 최소 (6.45 GFLOPs)", options: { bullet: true } },
-  ], { x: 7.15, y: 5.7, w: 5.4, h: 0.95, fontSize: 14, paraSpaceAfter: 6, objectName: "note-b" });
-  s.addNotes("세 모델을 기본 FP16으로 비교했습니다. 파라미터가 가장 적은 ATSS가 92.9%로 가장 정확했고, Geti 점수도 같은 순서입니다. 처음 보는 2차 세트에서도 ATSS가 YOLOX-S보다 훨씬 많이 잡았습니다. 다만 '작다'는 파라미터 기준이고, 연산량은 Tiny가 가장 적습니다. 그리고 1차 점수는 학습 사진이 섞였을 수 있어서, 모델끼리 비교하는 용도로만 봅니다.");
+  txt(s, "Geti 점수와 같은 순서 · 작은 = 파라미터 기준 (연산량은 Tiny 최소)", { x: X, y: 6.5, w: RW, h: 0.3, fontSize: 12, color: MUTED, objectName: "own-note" });
+  s.addNotes("왼쪽은 Geti 화면입니다. 세 모델 모두 같은 2,800장으로 학습했고, Geti 점수는 ATSS 86%, 나머지 81%입니다. 오른쪽은 직접 만든 벤치마크로 잰 값인데 순서가 같습니다. 파라미터가 가장 적은 ATSS가 가장 정확했고, 학습에 안 쓴 2차 세트에서도 ATSS가 YOLOX-S보다 훨씬 많이 잡았습니다. 다만 '작다'는 파라미터 기준이고, 연산량은 Tiny가 가장 적습니다.");
 }
 
 // ---------- 6. error analysis ----------
@@ -266,31 +261,34 @@ pres.addSection({ title: "실험" });
 pres.addSection({ title: "최적화" });
 {
   const s = content("최적화", "INT8 장단점", "수업에서 다룬 양자화 적용 · 직접 만든 벤치마크로 측정");
+  s.addChart(pres.charts.BAR, [
+    { name: "FP16", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [43.9, 48.9, 33.5] },
+    { name: "INT8", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [20.0, 24.9, 8.3] },
+  ], {
+    ...chartBase(), x: M, y: 1.7, w: 6.3, h: 3.4, barDir: "col", barGapWidthPct: 55,
+    chartColors: ["6B7480", HEX.accent1], valAxisMinVal: 0, valAxisLabelFormatCode: "0", dataLabelFormatCode: "0.0",
+    showTitle: true, title: "CPU ms / 사진 (낮을수록 빠름)", titleColor: HEX.dk1, titleFontSize: 14, objectName: "speed-chart",
+  });
   const H = { bold: true, color: MUTED, fill: { color: HEX.lt1 }, align: "center" };
   const c = (t, o = {}) => ({ text: t, options: { align: "center", ...o } });
   s.addTable([
-    [c("모델", { ...H, align: "left" }), c("CPU ms", H), c("속도", H), c("크기 MB", H), c("mAP@50", H), c("놓친 결함 셀 (/98)", H)],
-    [c("ATSS-MobileNetV2", { align: "left", bold: true, color: ATSS }), c("43.9 → 20.0"), c("2.2×", { bold: true, color: ACC }), c("5.7 → 3.9"), c("0.929 → 0.929"), c("0 → 1", { color: RED })],
-    [c("YOLOX-S", { align: "left", bold: true, color: YS }), c("48.9 → 24.9"), c("2.0×", { bold: true, color: ACC }), c("18.4 → 9.8"), c("0.892 → 0.902"), c("6 → 8", { color: RED })],
-    [c("YOLOX-Tiny", { align: "left", bold: true, color: TINY }), c("33.5 → 8.3"), c("4.0×", { bold: true, color: ACC }), c("10.6 → 5.8"), c("0.832 → 0.829"), c("1 → 0")],
-  ], { x: M, y: 1.8, w: CW, colW: [2.4, 2.3, 1.1, 1.8, 2.1, 2.43], rowH: 0.58, fontSize: 15, color: TEXT, fontFace: "Malgun Gothic",
+    [c("모델", { ...H, align: "left" }), c("속도", H), c("크기 MB", H), c("mAP@50", H), c("놓친 셀", H)],
+    [c("ATSS", { align: "left", bold: true, color: ATSS }), c("2.2×", { bold: true, color: ACC }), c("5.7 → 3.9"), c("0.929 → 0.929"), c("0 → 1", { color: RED })],
+    [c("YOLOX-S", { align: "left", bold: true, color: YS }), c("2.0×", { bold: true, color: ACC }), c("18.4 → 9.8"), c("0.892 → 0.902"), c("6 → 8", { color: RED })],
+    [c("YOLOX-Tiny", { align: "left", bold: true, color: TINY }), c("4.0×", { bold: true, color: ACC }), c("10.6 → 5.8"), c("0.832 → 0.829"), c("1 → 0")],
+  ], { x: 7.15, y: 2.0, w: 5.58, colW: [1.3, 0.8, 1.15, 1.43, 0.9], rowH: 0.62, fontSize: 13, color: TEXT, fontFace: "Malgun Gothic",
     fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "int8-table" });
-  card(s, M, 4.3, CW, 0.62, "method-card", HEX.lt2);
-  txt(s, [{ text: "측정 방법  ", options: { bold: true, color: ACC } }, { text: "1차 테스트 131장 · 사진 1장씩 · Intel Core Ultra 7 265K CPU · 전처리·후처리 포함 · 워밍업 10회 제외", options: { color: TEXT } }],
-    { x: M + 0.3, y: 4.33, w: CW - 0.6, h: 0.56, fontSize: 13, valign: "middle", objectName: "method" });
+  txt(s, "값: FP16 → INT8 · 놓친 셀 = 결함 98장 중 검토 기준 0.30 미만", { x: 7.15, y: 4.55, w: 5.58, h: 0.3, fontSize: 11, color: MUTED, objectName: "int8-note" });
 
-  card(s, M, 5.15, 5.95, 1.65, "pro-card");
-  txt(s, "장점", { x: M + 0.3, y: 5.28, w: 3, h: 0.35, fontSize: 16, bold: true, color: TINY, objectName: "pro-h" });
-  txt(s, [
-    { text: "CPU 2–4배 빠름 · 크기 약 절반", options: { bullet: true, breakLine: true } },
-    { text: "mAP@50은 거의 그대로", options: { bullet: true } },
-  ], { x: M + 0.3, y: 5.7, w: 5.4, h: 0.95, fontSize: 14, paraSpaceAfter: 6, objectName: "pro-b" });
-  card(s, 6.78, 5.15, 5.95, 1.65, "con-card");
-  txt(s, "단점", { x: 7.08, y: 5.28, w: 3, h: 0.35, fontSize: 16, bold: true, color: RED, objectName: "con-h" });
-  txt(s, [
-    { text: "신뢰도 하락 → 같은 기준에서 놓침 증가", options: { bullet: true, breakLine: true } },
-    { text: "INT8용 기준값 재설정 필요", options: { bullet: true, bold: true } },
-  ], { x: 7.08, y: 5.7, w: 5.4, h: 0.95, fontSize: 14, paraSpaceAfter: 6, objectName: "con-b" });
+  card(s, M, 5.25, CW, 0.55, "method-card", HEX.lt2);
+  txt(s, [{ text: "측정 방법  ", options: { bold: true, color: ACC } }, { text: "1차 테스트 131장 · 사진 1장씩 · Intel Core Ultra 7 265K CPU · 전처리·후처리 포함 · 워밍업 10회 제외", options: { color: TEXT } }],
+    { x: M + 0.3, y: 5.25, w: CW - 0.6, h: 0.55, fontSize: 13, valign: "middle", objectName: "method" });
+  card(s, M, 6.0, 5.95, 0.8, "pro-card");
+  txt(s, [{ text: "장점  ", options: { bold: true, color: TINY } }, { text: "2–4배 빠름 · 크기 절반 · mAP 유지", options: {} }],
+    { x: M + 0.3, y: 6.0, w: 5.5, h: 0.8, fontSize: 15, valign: "middle", objectName: "pro" });
+  card(s, 6.78, 6.0, 5.95, 0.8, "con-card");
+  txt(s, [{ text: "단점  ", options: { bold: true, color: RED } }, { text: "신뢰도 ↓ → 놓침 ↑ · 기준값 재설정 필요", options: {} }],
+    { x: 7.08, y: 6.0, w: 5.5, h: 0.8, fontSize: 15, valign: "middle", objectName: "con" });
   s.addNotes("수업에서 다룬 모델 최적화를 직접 써보고 싶어서, Geti에서 INT8 모델을 받아 직접 만든 벤치마크로 측정했습니다. 같은 131장을 한 장씩, 같은 CPU에서, 전처리와 후처리를 포함해 잰 값입니다. INT8은 2배에서 4배 빠르고 크기는 절반 정도이며, mAP는 그대로입니다. 대신 신뢰도 점수가 조금 낮아져 같은 기준에서는 놓치는 결함이 늘어납니다. INT8을 쓰려면 기준값을 다시 정해야 합니다.");
 }
 
