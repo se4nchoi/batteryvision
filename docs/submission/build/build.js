@@ -106,7 +106,8 @@ pres.addSection({ title: "도입" });
     dot(s, x, 5.42, col, `zoom-dot-${label}`);
     txt(s, [{ text: label + "  ", options: { bold: true } }, { text: desc, options: { color: MUTED } }], { x: x + 0.26, y: 5.34, w: 3.1, h: 0.32, fontSize: 14, objectName: `zoom-cap-${label}` });
   });
-  txt(s, [{ text: "박스 크기 중앙값  ", options: { color: MUTED } }, { text: "crack 0.39% · scratch 0.44%", options: { bold: true } }], { x: M, y: 6.0, w: 6.9, h: 0.4, fontSize: 16, objectName: "size-line" });
+  txt(s, [{ text: "박스 크기 (640px 사진, 중앙값)  ", options: { color: MUTED } }, { text: "crack 44×38px · scratch 43×38px", options: { bold: true } }], { x: M, y: 5.85, w: 6.9, h: 0.4, fontSize: 16, objectName: "size-line" });
+  txt(s, [{ text: "왜?  ", options: { bold: true, color: ACC } }, { text: "scratch = 반사·나무결 같은 가는 선 → 오검출 16건 중 13건", options: {} }], { x: M, y: 6.3, w: 6.9, h: 0.4, fontSize: 14, objectName: "why-2" });
 
   s.addChart(pres.charts.BAR, [
     { name: "crack", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [1.0, 1.0, 1.0] },
@@ -116,7 +117,7 @@ pres.addSection({ title: "도입" });
     chartColors: [HEX.accent2, HEX.accent3], valAxisMinVal: 0, valAxisMaxVal: 1, valAxisLabelFormatCode: "0.0", dataLabelFormatCode: "0.00",
     showTitle: true, title: "클래스별 AP@50 (1차 테스트 131장)", titleColor: HEX.dk1, titleFontSize: 14, objectName: "ap-chart",
   });
-  s.addNotes("crack은 세 모델 모두 AP 1.0이지만, scratch는 0.66에서 0.86입니다. 박스 크기는 둘 다 이미지의 0.4% 안팎으로 비슷합니다. 차이는 대비입니다. crack은 어둡고 뚜렷하고, scratch는 반사나 나무결과 비슷한 흐릿한 선입니다. 이후 나오는 오류도 대부분 scratch입니다.");
+  s.addNotes("crack은 세 모델 모두 AP 1.0이지만, scratch는 0.66에서 0.86입니다. 박스 크기는 640픽셀 사진에서 둘 다 약 44×38픽셀로 같습니다. 차이는 대비입니다. crack은 어둡고 뚜렷하고, scratch는 반사나 나무결과 비슷한 흐릿한 선입니다. 이후 나오는 오류도 대부분 scratch입니다. 실제로 배경을 결함으로 잘못 본 16건 중 13건이 scratch였습니다. 모델이 배경의 결이나 반사를 scratch로 착각한다는 뜻입니다.");
 }
 
 // ---------- 3. experiment design ----------
@@ -181,7 +182,7 @@ pres.addSection({ title: "실험" });
   card(s, M, 5.05, CW, 1.75, "lesson-card");
   txt(s, "1차 테스트 점수는", { x: M + 0.3, y: 5.2, w: 6, h: 0.35, fontSize: 16, bold: true, objectName: "lesson-h" });
   txt(s, [
-    { text: "학습에 쓴 사진 포함 가능", options: { bullet: true, breakLine: true } },
+    { text: "학습에 쓴 사진 포함 가능 → 일반화가 아니라 암기를 측정", options: { bullet: true, breakLine: true } },
     { text: "모델 간 비교용 · 실제 성능은 2차 세트로", options: { bullet: true } },
   ], { x: M + 0.3, y: 5.62, w: 7.6, h: 0.95, fontSize: 14, color: MUTED, paraSpaceAfter: 4, objectName: "lesson-b" });
   txt(s, "교훈: 테스트셋은 업로드 전에 분리", { x: 8.45, y: 5.62, w: 4.05, h: 0.95, fontSize: 16, bold: true, color: ACC, valign: "middle", objectName: "lesson-t" });
@@ -219,8 +220,10 @@ pres.addSection({ title: "실험" });
       txt(s, "best", { x: X + 2.1, y: y + 0.62, w: 0.55, h: 0.26, fontSize: 10, bold: true, color: BG, align: "center", valign: "middle", objectName: "best-t" });
     }
   });
-  txt(s, "Geti 점수와 같은 순서 · 작은 = 파라미터 기준 (연산량은 Tiny 최소)", { x: X, y: 6.5, w: RW, h: 0.3, fontSize: 12, color: MUTED, objectName: "own-note" });
-  s.addNotes("왼쪽은 Geti 화면입니다. 세 모델 모두 같은 2,800장으로 학습했고, Geti 점수는 ATSS 86%, 나머지 81%입니다. 다만 Roboflow가 원본마다 증강 사본 3장을 만들어 두었고 Geti가 이를 무작위로 나눴기 때문에, 같은 원본의 사본이 Geti 학습과 테스트에 함께 들어갔을 가능성이 높아 Geti 점수도 낙관적입니다. 오른쪽은 직접 만든 벤치마크로 잰 값인데 순서가 같습니다. 파라미터가 가장 적은 ATSS가 가장 정확했고, 학습에 안 쓴 2차 세트에서도 ATSS가 YOLOX-S보다 훨씬 많이 잡았습니다. 다만 '작다'는 파라미터 기준이고, 연산량은 Tiny가 가장 적습니다.");
+  txt(s, [{ text: "Geti 점수와 같은 순서 · 작은 = 파라미터 기준 (연산량은 Tiny 최소)", options: { color: MUTED, breakLine: true } },
+    { text: "왜?  ", options: { bold: true, color: ACC } }, { text: "가설: ATSS 입력 992×800 (YOLOX 640×640) · 적은 데이터엔 작은 모델 · 학습 1회라 미검증", options: { color: MUTED } }],
+    { x: X, y: 6.2, w: RW, h: 0.62, fontSize: 12, objectName: "own-note" });
+  s.addNotes("왼쪽은 Geti 화면입니다. 세 모델 모두 같은 2,800장으로 학습했고, Geti 점수는 ATSS 86%, 나머지 81%입니다. 다만 Roboflow가 원본마다 증강 사본 3장을 만들어 두었고 Geti가 이를 무작위로 나눴기 때문에, 같은 원본의 사본이 Geti 학습과 테스트에 함께 들어갔을 가능성이 높아 Geti 점수도 낙관적입니다. 오른쪽은 직접 만든 벤치마크로 잰 값인데 순서가 같습니다. 파라미터가 가장 적은 ATSS가 가장 정확했고, 학습에 안 쓴 2차 세트에서도 ATSS가 YOLOX-S보다 훨씬 많이 잡았습니다. 다만 '작다'는 파라미터 기준이고, 연산량은 Tiny가 가장 적습니다. 왜 ATSS가 이겼는지는 가설 단계입니다. ATSS는 992×800으로 학습해 결함을 1.5배 크게 보고, 데이터가 2,800장으로 적어 작은 모델이 덜 과적합했을 수 있습니다. 모델마다 한 번씩만 학습해서 확정할 수는 없습니다.");
 }
 
 // ---------- 6. error analysis ----------
@@ -256,8 +259,9 @@ pres.addSection({ title: "실험" });
     txt(s, [{ text: n + "  ", options: { bold: true } }, { text: "결함 적중 ", options: { color: MUTED } }, { text: v, options: { bold: true, color: col } }],
       { x: x + 0.26, y: 5.84, w: 2.6, h: 0.32, fontSize: 14, objectName: `heat-l-${i}` });
   });
-  txt(s, "heatmap 최고점이 정답 박스 안 · 정확도 ≠ heatmap 품질", { x: 6.85, y: 6.3, w: 5.88, h: 0.3, fontSize: 12, color: MUTED, objectName: "heat-cap" });
-  s.addNotes("결론부터 말하면, crack과 scratch를 서로 헷갈린 경우는 한 번도 없고, 오류는 전부 놓친 scratch나 배경 오검출입니다. 특히 나무 탁상 배경에서 재현율이 33%로 가장 약합니다. heatmap은 YOLOX-S가 98%의 사진에서 결함을 짚지만 ATSS는 48%로, 정확도와 설명력은 별개였습니다.");
+  txt(s, "heatmap 최고점이 정답 박스 안 · 정확도 ≠ heatmap 품질", { x: 6.85, y: 6.25, w: 5.88, h: 0.3, fontSize: 12, color: MUTED, objectName: "heat-cap" });
+  txt(s, [{ text: "왜?  ", options: { bold: true, color: ACC } }, { text: "나무결 = scratch와 같은 가는 선 패턴", options: {} }], { x: 6.85, y: 6.52, w: 5.88, h: 0.32, fontSize: 14, objectName: "why-6" });
+  s.addNotes("결론부터 말하면, crack과 scratch를 서로 헷갈린 경우는 한 번도 없고, 오류는 전부 놓친 scratch나 배경 오검출입니다. 특히 나무 탁상 배경에서 재현율이 33%로 가장 약합니다. 나무결이 scratch처럼 가는 선 모양이라 놓치기도 하고 잘못 보기도 합니다. heatmap은 YOLOX-S가 98%의 사진에서 결함을 짚지만 ATSS는 48%로, 정확도와 설명력은 별개였습니다.");
 }
 
 // ---------- 7. INT8 ----------
@@ -282,6 +286,7 @@ pres.addSection({ title: "최적화" });
   ], { x: 7.15, y: 2.0, w: 5.58, colW: [1.3, 0.8, 1.15, 1.43, 0.9], rowH: 0.62, fontSize: 13, color: TEXT, fontFace: "Malgun Gothic",
     fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "int8-table" });
   txt(s, "값: FP16 → INT8 · 놓친 셀 = 결함 98장 중 검토 기준 0.30 미만", { x: 7.15, y: 4.55, w: 5.58, h: 0.3, fontSize: 11, color: MUTED, objectName: "int8-note" });
+  txt(s, [{ text: "왜?  ", options: { bold: true, color: ACC } }, { text: "int8 연산·데이터 절반 → 빠름 · 점수 소폭 ↓ → 놓침", options: {} }], { x: 7.15, y: 4.82, w: 5.58, h: 0.32, fontSize: 13, objectName: "why-7" });
 
   card(s, M, 5.25, CW, 0.55, "method-card", HEX.lt2);
   txt(s, [{ text: "측정 방법  ", options: { bold: true, color: ACC } }, { text: "1차 테스트 131장 · 사진 1장씩 · Intel Core Ultra 7 265K CPU · 전처리·후처리 포함 · 워밍업 10회 제외", options: { color: TEXT } }],
@@ -292,7 +297,7 @@ pres.addSection({ title: "최적화" });
   card(s, 6.78, 6.0, 5.95, 0.8, "con-card");
   txt(s, [{ text: "단점  ", options: { bold: true, color: RED } }, { text: "신뢰도 ↓ → 놓침 ↑ · 기준값 재설정 필요", options: {} }],
     { x: 7.08, y: 6.0, w: 5.5, h: 0.8, fontSize: 15, valign: "middle", objectName: "con" });
-  s.addNotes("수업에서 다룬 모델 최적화를 직접 써보고 싶어서, Geti에서 INT8 모델을 받아 직접 만든 벤치마크로 측정했습니다. 같은 131장을 한 장씩, 같은 CPU에서, 전처리와 후처리를 포함해 잰 값입니다. INT8은 2배에서 4배 빠르고 크기는 절반 정도이며, mAP는 그대로입니다. 대신 신뢰도 점수가 조금 낮아져 같은 기준에서는 놓치는 결함이 늘어납니다. INT8을 쓰려면 기준값을 다시 정해야 합니다.");
+  s.addNotes("수업에서 다룬 모델 최적화를 직접 써보고 싶어서, Geti에서 INT8 모델을 받아 직접 만든 벤치마크로 측정했습니다. 같은 131장을 한 장씩, 같은 CPU에서, 전처리와 후처리를 포함해 잰 값입니다. INT8은 2배에서 4배 빠르고 크기는 절반 정도이며, mAP는 그대로입니다. 대신 신뢰도 점수가 조금 낮아져 같은 기준에서는 놓치는 결함이 늘어납니다. INT8을 쓰려면 기준값을 다시 정해야 합니다. 빨라지는 이유는 CPU의 8비트 연산 명령을 쓰고 옮길 데이터가 절반이기 때문이고, 놓침이 느는 이유는 양자화로 점수가 조금 내려가 0.30 근처 결함이 기준 아래로 떨어지기 때문입니다.");
 }
 
 // ---------- 8. second dataset ----------
@@ -313,8 +318,9 @@ pres.addSection({ title: "검증" });
   img(s, "holdout_miss.jpg", M, 4.75, 2.05, 2.05, "miss-img");
   txt(s, [
     { text: "놓친 예: scratch · ATSS 최고 점수 0.21", options: { bold: true, breakLine: true } },
+    { text: "2차 crack 30×26px로 작아짐 → 검출 1/15", options: { bullet: true, bold: true, color: RED, breakLine: true } },
     { text: "클래스 착각 0건 · 정상 불합격 0건", options: { bullet: true, breakLine: true } },
-    { text: "1차: 학습 사진 포함 가능 + 같은 촬영 환경", options: { bullet: true, bold: true, color: AMBER } },
+    { text: "1차: 학습 사진 포함 가능 + 같은 촬영 환경", options: { bullet: true, color: AMBER } },
   ], { x: M + 2.3, y: 4.8, w: 4.3, h: 1.95, fontSize: 14, paraSpaceAfter: 6, valign: "middle", objectName: "miss-cap" });
 
   txt(s, "기준값을 바꾸면? (2차 세트)", { x: 7.45, y: 1.8, w: 5.3, h: 0.35, fontSize: 16, bold: true, objectName: "th-h" });
@@ -328,14 +334,15 @@ pres.addSection({ title: "검증" });
     [m("ATSS", ATSS), c("0.15"), c("97%"), c("87%", { color: RED, bold: true })],
     [m("YOLOX-S", YS), c("0.30 (현재)"), c("3%", { color: RED, bold: true }), c("0%")],
     [m("YOLOX-S", YS), c("0.05"), c("57%", { bold: true }), c("0%", { color: ACC, bold: true })],
-  ], { x: 7.45, y: 2.25, w: 5.28, colW: [1.4, 1.3, 1.24, 1.34], rowH: 0.44, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
+  ], { x: 7.45, y: 2.25, w: 5.28, colW: [1.4, 1.3, 1.24, 1.34], rowH: 0.41, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
     fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "th-table" });
   txt(s, [
-    { text: "ATSS  ", options: { bold: true, color: ATSS } }, { text: "검출 ↑ = 정상 오검출 ↑", options: { breakLine: true } },
+    { text: "ATSS  ", options: { bold: true, color: ATSS } }, { text: "검출 ↑ = 정상 오검출 ↑ (점수 분포 겹침)", options: { breakLine: true } },
     { text: "YOLOX-S  ", options: { bold: true, color: YS } }, { text: "순위는 정확 (mAP@50 0.93), 점수만 낮음", options: { breakLine: true } },
+    { text: "왜?  ", options: { bold: true, color: ACC } }, { text: "YOLOX 점수 = 두 확률의 곱 (objectness × class)", options: { color: MUTED, breakLine: true } },
     { text: "→ 기준값은 모델별로 · 그래도 부족 → 재학습", options: { bold: true, color: ACC } },
-  ], { x: 7.45, y: 5.1, w: 5.28, h: 1.6, fontSize: 14, paraSpaceAfter: 6, valign: "top", objectName: "th-cap" });
-  s.addNotes("같은 업로더가 올린 다른 세트에서, 학습에 한 번도 쓰지 않은 45장으로 제 앱에서 다시 테스트했습니다. 1차 테스트에서 결함 셀을 거의 다 잡던 모델이 ATSS 47%, YOLOX-S 3%까지 떨어집니다. 결함을 착각한 게 아니라 점수가 낮아서 통과시킨 것이고, 정상 셀을 불합격시킨 경우는 없었습니다. 기준값을 바꿔 보면, ATSS는 0.15까지 낮추면 결함 97%를 잡지만 정상 셀도 87%가 걸립니다. YOLOX-S는 다릅니다. 2차 세트 mAP@50이 0.93으로 결함을 정상보다 높게 순위 매기는 건 정확한데, 점수 자체가 낮습니다. 0.05로 낮추면 정상 오검출 없이 57%를 잡습니다. 즉 기준값은 모델마다 따로 정해야 하고, 그래도 부족하기 때문에 새 환경 사진으로 재학습이 필요합니다.");
+  ], { x: 7.45, y: 4.85, w: 5.28, h: 1.95, fontSize: 14, paraSpaceAfter: 6, valign: "top", objectName: "th-cap" });
+  s.addNotes("같은 업로더가 올린 다른 세트에서, 학습에 한 번도 쓰지 않은 45장으로 제 앱에서 다시 테스트했습니다. 1차 테스트에서 결함 셀을 거의 다 잡던 모델이 ATSS 47%, YOLOX-S 3%까지 떨어집니다. 결함을 착각한 게 아니라 점수가 낮아서 통과시킨 것이고, 정상 셀을 불합격시킨 경우는 없었습니다. 가장 큰 원인은 crack입니다. 2차 세트의 crack은 약 30×26픽셀로 1차의 절반 면적이고, ATSS는 15개 중 1개만 잡았습니다. 학습 때 본 크기의 crack만 쉬웠던 겁니다. 기준값을 바꿔 보면, ATSS는 0.15까지 낮추면 결함 97%를 잡지만 정상 셀도 87%가 걸립니다. YOLOX-S는 다릅니다. 2차 세트 mAP@50이 0.93으로 결함을 정상보다 높게 순위 매기는 건 정확한데, 점수 자체가 낮습니다. YOLOX 점수는 물체일 확률과 클래스 확률을 곱한 값이라 원래 낮게 나오고, 처음 보는 사진에서는 더 낮아집니다. 0.05로 낮추면 정상 오검출 없이 57%를 잡습니다. 즉 기준값은 모델마다 따로 정해야 하고, 그래도 부족하기 때문에 새 환경 사진으로 재학습이 필요합니다.");
 }
 
 // ---------- 9. logs ----------

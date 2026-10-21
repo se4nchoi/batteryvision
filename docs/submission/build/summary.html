@@ -119,6 +119,7 @@
   <tr><td><span class="dot" style="background:var(--tiny)"></span>YOLOX-Tiny</td><td>99%</td><td><b>47%</b></td><td>60%</td><td>0건</td></tr>
 </table>
 <ul>
+  <li><b>주 원인은 작은 crack:</b> 2차 crack 중앙값 30×26px(1차 44×38px, 640px 사진) → crack 검출 ATSS 1/15 · YOLOX-S 0/15. scratch는 ATSS 8/15.</li>
   <li>클래스 착각 0건. 위치는 맞혔으나 점수 0.06–0.28로 검토 기준(0.30) 미달.</li>
   <li><b>기준값 하향(ATSS):</b> 0.30 → 0.20 → 0.15에서 검출 47 → 87 → 97%, 정상 오검출 13 → 73 → 87%. 점수 분포 겹침.</li>
   <li><b>YOLOX-S:</b> 2차 mAP@50 0.93으로 순위는 정확하나 점수가 낮음. 기준값 0.05에서 검출 57%, 정상 오검출 0% → 기준값은 모델별로 정해야 함. 그래도 부족 → 재학습 필요.</li>
