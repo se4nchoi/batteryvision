@@ -98,7 +98,7 @@ pres.addSection({ title: "도입" });
 // ---------- 2. crack vs scratch ----------
 {
   // Blurred, vignetted meme (prep_images.py -> meme_bg.png), right of the title so the text doesn't cover the face.
-  const s = content("도입", "crack은 쉽고, scratch는 어려워", "비슷한 크기, 다른 대비",
+  const s = content("도입", "crack은 쉽고, scratch는 어려워", "crack AP 1.00, scratch 0.66–0.86 · 크기는 같고 대비가 다름",
     (sl) => img(sl, "meme_bg.png", 6.55, 0.0, 1.75, 1.75, "meme-backdrop"));
   txt(s, "배경 이미지: Mnet 방송 화면", { x: 3.6, y: 7.02, w: 4, h: 0.3, fontSize: 9, color: MUTED, valign: "middle", objectName: "meme-credit" });
   [["zoom_crack.jpg", "crack", "어둡고 뚜렷함", RED], ["zoom_scratch.jpg", "scratch", "가늘고 흐릿함", AMBER]].forEach(([f, label, desc, col], i) => {
@@ -107,7 +107,7 @@ pres.addSection({ title: "도입" });
     dot(s, x, 5.42, col, `zoom-dot-${label}`);
     txt(s, [{ text: label + "  ", options: { bold: true } }, { text: desc, options: { color: MUTED } }], { x: x + 0.26, y: 5.34, w: 3.1, h: 0.32, fontSize: 14, objectName: `zoom-cap-${label}` });
   });
-  txt(s, [{ text: "박스 크기 (640px 사진, 중앙값)  ", options: { color: MUTED } }, { text: "crack 44×38px · scratch 43×38px", options: { bold: true } }], { x: M, y: 6.0, w: 6.9, h: 0.4, fontSize: 16, objectName: "size-line" });
+  txt(s, [{ text: "박스 크기 (640px 사진, 중앙값)", options: { color: MUTED, breakLine: true } }, { text: "crack 44×38px · scratch 43×38px", options: { bold: true } }], { x: M, y: 5.96, w: 6.9, h: 0.73, fontSize: 16, objectName: "size-line" });
 
   s.addChart(pres.charts.BAR, [
     { name: "crack", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [1.0, 1.0, 1.0] },
@@ -139,7 +139,7 @@ pres.addSection({ title: "실험" });
   });
   txt(s, "탁상 촬영 · 셀당 사진 1장 · 같은 촬영 세션 반복", { x: M + 0.3, y: 6.4, w: 5.4, h: 0.3, fontSize: 13, bold: true, objectName: "limit-t" });
 
-  txt(s, "모델 9종 = 아키텍처 3 × 내보내기 3", { x: 6.75, y: 1.8, w: 6, h: 0.35, fontSize: 16, bold: true, objectName: "grid-h" });
+  txt(s, "모델별 EXPORT", { x: 6.75, y: 1.8, w: 6, h: 0.35, fontSize: 16, bold: true, objectName: "grid-h" });
   const H = { bold: true, color: MUTED, fill: { color: HEX.lt1 }, align: "center" };
   const mrow = (name, col, sizes) => [{ text: name, options: { bold: true, color: col, align: "left" } }, ...sizes.map((v) => ({ text: v, options: { align: "center" } }))];
   s.addTable([
@@ -191,10 +191,10 @@ pres.addSection({ title: "실험" });
 
 // ---------- 5. small model ----------
 {
-  const s = content("실험", "작은 모델이 더 맵다", "FP16 기준 · Geti 화면 vs 직접 측정");
+  const s = content("실험", "작은 모델이 더 맵다 ?", "파라미터가 가장 적은 ATSS가 가장 정확 · Geti 점수도 같은 순서");
   const gw = 4.4 * 689 / 743;
   img(s, "geti_models.png", M, 1.75, gw, 4.4, "geti-models");
-  txt(s, [{ text: "Geti 점수도 낙관적  ", options: { bold: true, color: AMBER, breakLine: true } },
+  txt(s, [{ text: "낙관적인 Geti 점수", options: { bold: true, color: AMBER, breakLine: true } },
     { text: "같은 원본의 ×3 증강 사본이 Geti 학습·테스트에 함께 분할됐을 가능성", options: { color: MUTED } }],
     { x: M, y: 6.22, w: gw, h: 0.6, fontSize: 11, objectName: "geti-caveat" });
   const X = M + gw + 0.35, RW = W - M - X;
@@ -220,7 +220,7 @@ pres.addSection({ title: "실험" });
       txt(s, "best", { x: X + 2.1, y: y + 0.62, w: 0.55, h: 0.26, fontSize: 10, bold: true, color: BG, align: "center", valign: "middle", objectName: "best-t" });
     }
   });
-  txt(s, "Geti 점수와 같은 순서 · 작은 = 파라미터 기준 (연산량은 Tiny 최소)", { x: X, y: 6.4, w: RW, h: 0.3, fontSize: 12, color: MUTED, objectName: "own-note" });
+  txt(s, "작은 = 파라미터 기준 (연산량은 Tiny 최소) · 32px 미만 박스에서 격차 최대 (AP 0.86 vs 0.80)", { x: X, y: 6.4, w: RW, h: 0.3, fontSize: 12, color: MUTED, objectName: "own-note" });
   s.addNotes("왼쪽은 Geti 화면입니다. 세 모델 모두 같은 2,800장으로 학습했고, Geti 점수는 ATSS 86%, 나머지 81%입니다. 다만 Roboflow가 원본마다 증강 사본 3장을 만들어 두었고 Geti가 이를 무작위로 나눴기 때문에, 같은 원본의 사본이 Geti 학습과 테스트에 함께 들어갔을 가능성이 높아 Geti 점수도 낙관적입니다. 오른쪽은 직접 만든 벤치마크로 잰 값인데 순서가 같습니다. 파라미터가 가장 적은 ATSS가 가장 정확했고, 학습에 안 쓴 2차 세트에서도 ATSS가 YOLOX-S보다 훨씬 많이 잡았습니다. 다만 '작다'는 파라미터 기준이고, 연산량은 Tiny가 가장 적습니다. 왜 ATSS가 이겼는지는 가설 단계입니다. ATSS는 992×800으로 학습해 결함을 1.5배 크게 보고, 데이터가 2,800장으로 적어 작은 모델이 덜 과적합했을 수 있습니다. 모델마다 한 번씩만 학습해서 확정할 수는 없습니다.");
 }
 
@@ -264,7 +264,7 @@ pres.addSection({ title: "실험" });
 // ---------- 7. INT8 ----------
 pres.addSection({ title: "최적화" });
 {
-  const s = content("최적화", "INT8 장단점", "수업에서 다룬 양자화 적용 · 직접 만든 벤치마크로 측정");
+  const s = content("최적화", "INT8 장단점", "Self benchmark");
   s.addChart(pres.charts.BAR, [
     { name: "FP16", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [43.9, 48.9, 33.5] },
     { name: "INT8", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [20.0, 24.9, 8.3] },
@@ -298,8 +298,29 @@ pres.addSection({ title: "최적화" });
 
 // ---------- 8. second dataset ----------
 pres.addSection({ title: "검증" });
+// ---------- 8a. the two datasets ----------
 {
-  const s = content("검증", "2차 데이터셋", "학습 미사용 · 같은 업로더의 v2 세트 45장 (결함 30 · 정상 15)");
+  const s = content("검증", "2차 데이터셋", "같은 업로더 · 같은 결함 종류 · 다른 촬영 세션, 학습에 한 번도 안 쓴 사진");
+  const shots = [
+    ["roboflow_v8.png", 1192, 758, "1차", "Battery Defect Inspection v8 · 3,673장 → Geti 학습", ACC],
+    ["roboflow_v2.png", 1170, 714, "2차", "Battery Defect Detection v2 · 720장 → 테스트만", AMBER],
+  ];
+  shots.forEach(([f, w0, h0, tag, cap, col], i) => {
+    const x = M + i * 6.17, w = 5.95, h = w * h0 / w0;
+    img(s, f, x, 1.75, w, h, `rf-${i}`);
+    txt(s, [{ text: tag + "  ", options: { bold: true, color: col } }, { text: cap, options: {} }],
+      { x, y: 1.75 + h + 0.1, w, h: 0.35, fontSize: 14, objectName: `rf-cap-${i}` });
+  });
+  card(s, M, 6.05, CW, 0.75, "overlap-card");
+  txt(s, [{ text: "1차와 겹치는 140장 제거  ", options: { bold: true, color: AMBER } },
+    { text: "(같은 파일명 123 + 같은 픽셀 17) → 증강 안 된 45장 사용 (결함 30 · 정상 15)", options: {} }],
+    { x: M + 0.3, y: 6.05, w: CW - 0.6, h: 0.75, fontSize: 14, valign: "middle", objectName: "overlap" });
+  s.addNotes("2차 세트는 같은 업로더가 나중에 따로 올린 데이터셋입니다. 결함 종류와 촬영 방식은 비슷하지만 다른 촬영 세션입니다. 1차 데이터셋과 파일명이 같거나 픽셀이 사실상 같은 사진 140장을 먼저 뺐고, 증강되지 않은 45장만 테스트에 썼습니다. 그래서 모델 입장에서는 한 번도 본 적 없는 사진입니다.");
+}
+
+// ---------- 8b. second-set results ----------
+{
+  const s = content("검증", "2차 세트 결과", "처음 보는 사진에선 결함 셀 절반 이상 놓침 · 기준값 조정으로도 해결 안 됨");
   card(s, M, 1.8, 6.6, 2.75, "holdout-card");
   txt(s, "결함 셀 검출률 (검토 또는 불합격)", { x: M + 0.3, y: 1.92, w: 6, h: 0.35, fontSize: 16, bold: true, objectName: "ho-h" });
   txt(s, "1차 테스트", { x: M + 2.6, y: 2.3, w: 1.6, h: 0.3, fontSize: 12, color: MUTED, align: "right", objectName: "ho-c1" });
@@ -359,12 +380,12 @@ pres.addSection({ title: "정리" });
     row("2", "Scratch 식별 어려움", "반사·나무결과 비슷한 가는 선. 배경 오검출 16건 중 13건이 scratch", "확인"),
     row("4", "과대평가 수치 (93%)", "테스트 사진도 학습에 포함. 복사본 22장, 같은 촬영 세션", "확인"),
     row("5", "낙관적인 Geti score", "원본 1장당 증강본 3장이 Geti 학습·테스트에 나뉘어 들어갔을 가능성", "추정"),
-    row("5", "ATSS 최고평가", "입력 해상도 차이 (992×800 vs 640×640), 적은 데이터엔 작은 모델. 학습 1회라 미확인", "가설"),
+    row("5", "ATSS 최고평가", "입력 해상도 차이 (992×800 vs 640×640). 32px 미만 박스에서 격차 최대 (0.86 vs 0.80)", "추정"),
     row("6", "나무 배경 취약 (33%)", "나무결도 scratch처럼 가는 선", "추정"),
     row("7", "INT8 놓침 증가", "양자화 후 점수 소폭 하락, 0.30 근처 결함이 기준 미달", "추정"),
-    row("8", "2차 세트 검출 47%", "crack이 30×26px로 작아짐 (15개 중 1개 검출), 촬영 환경도 바뀜", "확인"),
-    row("8", "YOLOX-S 낮은 점수", "점수 = 물체일 확률 × 클래스 확률. 두 확률의 곱이라 낮게 나옴", "추정"),
-    row("8", "기준값 조정으로 해결 불가", "새 환경에서 결함과 정상의 점수 구간이 겹침", "확인"),
+    row("9", "2차 세트 검출 47%", "crack이 30×26px로 작아짐 (15개 중 1개 검출), 촬영 환경도 바뀜", "확인"),
+    row("9", "YOLOX-S 낮은 점수", "점수 = 물체일 확률 × 클래스 확률. 두 확률의 곱이라 낮게 나옴", "추정"),
+    row("9", "기준값 조정으로 해결 불가", "새 환경에서 결함과 정상의 점수 구간이 겹침", "확인"),
   ], { x: M, y: 1.45, w: CW, colW: [0.55, 2.85, 7.78, 0.95], rowH: 0.5, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
     fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "causes-table" });
   txt(s, [
@@ -372,41 +393,26 @@ pres.addSection({ title: "정리" });
     { text: "추정 ", options: { bold: true, color: AMBER } }, { text: "데이터와 맞지만 별도 검증 없음   ", options: { color: MUTED } },
     { text: "가설 ", options: { bold: true, color: MUTED } }, { text: "아직 검증 못 함", options: { color: MUTED } },
   ], { x: M, y: 6.62, w: CW, h: 0.3, fontSize: 12, objectName: "causes-legend" });
-  s.addNotes("앞에서 본 결과들의 원인을 한 장에 모았습니다. 오른쪽 근거 칸은 얼마나 확실한지입니다. 확인은 데이터로 직접 확인한 것, 추정은 데이터와 맞지만 따로 검증하지 않은 것, 가설은 아직 검증하지 못한 것입니다. 가장 확실한 원인은 세 가지입니다. scratch는 반사나 나무결과 비슷한 가는 선이라 어렵고, 93%는 테스트 사진까지 학습에 들어가 부풀려진 수치이고, 2차 세트에서 떨어진 건 crack이 절반 크기로 작아졌기 때문입니다. ATSS가 왜 가장 좋은지는 아직 가설입니다.");
+  s.addNotes("앞에서 본 결과들의 원인을 한 장에 모았습니다. 오른쪽 근거 칸은 얼마나 확실한지입니다. 확인은 데이터로 직접 확인한 것, 추정은 데이터와 맞지만 따로 검증하지 않은 것, 가설은 아직 검증하지 못한 것입니다. 가장 확실한 원인은 세 가지입니다. scratch는 반사나 나무결과 비슷한 가는 선이라 어렵고, 93%는 테스트 사진까지 학습에 들어가 부풀려진 수치이고, 2차 세트에서 떨어진 건 crack이 절반 크기로 작아졌기 때문입니다. ATSS가 왜 가장 좋은지는 추정 단계입니다. 32픽셀 미만의 작은 결함에서 격차가 가장 커서 입력 해상도 차이와 맞지만, 다시 학습해서 확인하지는 않았습니다.");
 }
 
-// ---------- 10. logs ----------
+// ---------- 10. lessons ----------
 {
-  const s = content("정리", "Logs and Lesson Learned", null);
-  const H = { bold: true, color: MUTED, fill: { color: HEX.lt1 } };
-  const row = (a, b, c, d, hl) => [a, b, c, d].map((t, i) => ({ text: t, options: { align: i === 0 || i === 2 ? "center" : "left", ...(i === 2 && hl ? { bold: true, color: hl } : {}), ...(i === 3 ? { color: MUTED } : {}) } }));
-  s.addTable([
-    ["단계", "조건", "결과", "배운 것"].map((t) => ({ text: t, options: { ...H, align: "left" } })),
-    row("1", "ATSS · 1차 테스트 153장", "93.3%", "–", ACC),
-    row("2", "복사본 22장 제거 · 131장", "92.9%", "중복 영향 0.4%p", ACC),
-    row("3", "업로드 내역 확인", "테스트 포함", "1차 = 비교용", AMBER),
-    row("4", "YOLOX-S · Tiny 비교", "89.2 · 83.2%", "ATSS 최고", ACC),
-    row("5", "INT8 양자화", "2–4배 빠름", "놓침 소폭 증가", AMBER),
-    row("6", "2차 세트 45장", "검출 47%", "환경 변화에 취약", RED),
-    row("7", "2차 · 기준값 0.15로 낮춤", "정상 87% 오검출", "재학습 필요", RED),
-  ], { x: M, y: 1.35, w: 7.55, colW: [0.6, 2.45, 1.85, 2.65], rowH: 0.62, fontSize: 14, color: TEXT, fontFace: "Malgun Gothic",
-    fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "log-table" });
-  txt(s, "결과: mAP@50 (1–2, 4) · CPU 속도 (5) · 결함 셀 검출률, ATSS (6–7)", { x: M, y: 6.45, w: 7.55, h: 0.3, fontSize: 10, color: MUTED, objectName: "log-note" });
-
+  const s = content("정리", "Lesson Learned", "다음에 다르게 할 것");
   const lessons = [
-    ["01", "테스트셋은 먼저 분리", "업로드 전 분리 · 중복 확인"],
-    ["02", "큰 모델 ≠ 좋은 모델", "3.9M ATSS가 9M YOLOX-S보다 정확"],
-    ["03", "최적화는 기준값과 함께", "INT8 = 속도 ↑, 신뢰도 ↓"],
-    ["04", "점수 ≠ 현장 성능", "92.9% → 새 환경 47%"],
+    ["01", "테스트셋은 업로드 전에 분리", "v8 전체(테스트 포함)를 올려 1차 점수가 부풀려짐", ACC],
+    ["02", "새 환경 사진으로 다시 검증", "1차 92.9% → 처음 보는 사진에선 결함 셀 47%", RED],
+    ["03", "기준값은 모델별로, 검증셋에서", "YOLOX-S 0.30 → 3%, 0.05 → 57% · INT8도 점수가 바뀜", AMBER],
+    ["04", "크기보다 데이터에 맞는 모델", "3.9M ATSS가 9M YOLOX-S보다 정확", ATSS],
   ];
-  lessons.forEach(([n, h, d], i) => {
-    const y = 1.35 + i * 1.3;
-    card(s, 8.45, y, 4.28, 1.15, `lesson-${i}`);
-    txt(s, n, { x: 8.7, y: y + 0.17, w: 0.6, h: 0.4, fontSize: 18, bold: true, color: ACC, objectName: `lesson-n-${i}` });
-    txt(s, h, { x: 9.3, y: y + 0.14, w: 3.3, h: 0.38, fontSize: 15, bold: true, objectName: `lesson-h-${i}` });
-    txt(s, d, { x: 9.3, y: y + 0.57, w: 3.3, h: 0.4, fontSize: 12, color: MUTED, objectName: `lesson-d-${i}` });
+  lessons.forEach(([n, h, d, col], i) => {
+    const x = M + (i % 2) * 6.17, y = 1.75 + Math.floor(i / 2) * 2.55;
+    card(s, x, y, 5.95, 2.35, `lesson-${i}`);
+    txt(s, n, { x: x + 0.35, y: y + 0.3, w: 1.0, h: 0.7, fontSize: 32, bold: true, color: col, objectName: `lesson-n-${i}` });
+    txt(s, h, { x: x + 1.35, y: y + 0.35, w: 4.4, h: 0.6, fontSize: 20, bold: true, objectName: `lesson-h-${i}` });
+    txt(s, d, { x: x + 1.35, y: y + 1.1, w: 4.4, h: 0.9, fontSize: 14, color: MUTED, objectName: `lesson-d-${i}` });
   });
-  s.addNotes("실험 순서대로 정리했습니다. 점수가 가장 높았던 단계보다, 테스트셋이 학습 데이터에 섞인 걸 발견하고 2차 세트에서 점수가 떨어진 단계에서 더 많이 배웠습니다. 마지막으로 기준값을 낮춰 봤지만 정상 셀이 87% 걸려서, 새 환경에서는 기준값이 아니라 재학습이 필요하다는 결론입니다.");
+  s.addNotes("다음에 다르게 할 것 네 가지입니다. 테스트셋은 업로드 전에 따로 빼고, 새 환경에서는 그 환경 사진으로 다시 검증하고, 판정 기준값은 모델과 정밀도마다 검증셋에서 정하고, 모델은 크기보다 데이터와 결함에 맞는 걸 고르겠습니다.");
 }
 
 // ---------- 11. demo ----------
@@ -429,13 +435,6 @@ pres.addSection({ title: "정리" });
   s.addText("감사합니다", { placeholder: "title" });
   txt(s, "Q&A", { x: M, y: 3.75, w: 4.6, h: 0.7, fontSize: 32, bold: true, color: ACC, objectName: "qa" });
   txt(s, "최예현", { x: M, y: 4.75, w: 4.6, h: 0.4, fontSize: 16, bold: true, objectName: "presenter" });
-  const items = [["cover_crack.jpg", "crack", RED], ["cover_scratch.jpg", "scratch", AMBER], ["cover_good.jpg", "정상", TINY]];
-  items.forEach(([f, label, col], i) => {
-    const x = 5.55 + i * 2.5;
-    img(s, f, x, 2.6, 2.3, 2.3, `end-${label}`);
-    dot(s, x, 5.1, col, `end-dot-${label}`);
-    txt(s, label, { x: x + 0.26, y: 5.02, w: 2.0, h: 0.32, fontSize: 14, bold: true, objectName: `end-label-${label}` });
-  });
   s.addNotes("들어주셔서 감사합니다. 질문 받겠습니다.");
 }
 

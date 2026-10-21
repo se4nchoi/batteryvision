@@ -1,0 +1,32 @@
+{
+ "buckets_px": {
+  "small": "< 32x32",
+  "medium": "32x32 - 96x96",
+  "large": "> 96x96"
+ },
+ "models": {
+  "atss_mbv2_fp16": {
+   "all": 0.929,
+   "small": 0.859,
+   "medium": 0.966,
+   "large": 0.995
+  },
+  "yolox_s_fp16": {
+   "all": 0.892,
+   "small": 0.8,
+   "medium": 0.937,
+   "large": 0.966
+  },
+  "yolox_tiny_fp16": {
+   "all": 0.832,
+   "small": 0.705,
+   "medium": 0.877,
+   "large": 0.95
+  }
+ },
+ "boxes_per_bucket": {
+  "small": 31,
+  "medium": 78,
+  "large": 14
+ }
+}
