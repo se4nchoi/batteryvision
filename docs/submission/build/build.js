@@ -119,32 +119,6 @@ const chip = (s, x, y, w, text, col, name, h = 0.38) => {
 };
 const T0 = 1.45; // content top on slides without a subtitle
 
-// ---------- 2. crack vs scratch ----------
-{
-  // Blurred, vignetted meme (prep_images.py -> meme_bg.png), right of the title so the text doesn't cover the face.
-  const s = content("도입", "crack은 쉽고, scratch는 어려워", null,
-    (sl) => img(sl, "meme_bg.png", 6.55, 0.0, 1.75, 1.75, "meme-backdrop"));
-  txt(s, "배경 이미지: Mnet 방송 화면", { x: 3.6, y: 7.02, w: 4, h: 0.3, fontSize: 9, color: MUTED, valign: "middle", objectName: "meme-credit" });
-  [["zoom_crack.jpg", "crack", "뚜렷함", RED], ["zoom_scratch.jpg", "scratch", "흐릿함", AMBER]].forEach(([f, label, desc, col], i) => {
-    const x = M + i * 3.55;
-    img(s, f, x, T0 + 0.25, 3.4, 3.4, `zoom-${label}`);
-    chip(s, x, T0 + 3.8, 1.1, label, col, `zoom-chip-${label}`);
-    txt(s, desc, { x: x + 1.25, y: T0 + 3.8, w: 2.0, h: 0.38, fontSize: 14, color: MUTED, valign: "middle", objectName: `zoom-cap-${label}` });
-  });
-  card(s, M, 6.0, 6.95, 0.8, "size-card");
-  txt(s, [{ text: "박스 크기  ", options: { color: MUTED } }, { text: "crack 44×38px · scratch 43×38px", options: { bold: true } }],
-    { x: M + 0.3, y: 6.0, w: 6.5, h: 0.8, fontSize: 16, valign: "middle", objectName: "size-line" });
-  s.addChart(pres.charts.BAR, [
-    { name: "crack", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [1.0, 1.0, 1.0] },
-    { name: "scratch", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [0.858, 0.784, 0.664] },
-  ], {
-    ...chartBase(), x: 7.9, y: T0 + 0.2, w: 4.83, h: 5.15, barDir: "col", barGapWidthPct: 50,
-    chartColors: [HEX.accent2, HEX.accent3], valAxisMinVal: 0, valAxisMaxVal: 1, valAxisLabelFormatCode: "0.0", dataLabelFormatCode: "0.00",
-    showTitle: true, title: "AP@50 (1차 테스트)", titleColor: HEX.dk1, titleFontSize: 14, objectName: "ap-chart",
-  });
-  s.addNotes("crack은 세 모델 모두 AP 1.0이지만, scratch는 0.66에서 0.86입니다. 박스 크기는 640픽셀 사진에서 둘 다 약 44×38픽셀로 같습니다. 차이는 대비입니다. crack은 어둡고 뚜렷하고, scratch는 반사나 나무결과 비슷한 흐릿한 선입니다. 이후 나오는 오류도 대부분 scratch입니다. 실제로 배경을 결함으로 잘못 본 16건 중 13건이 scratch였습니다. 모델이 배경의 결이나 반사를 scratch로 착각한다는 뜻입니다.");
-}
-
 // ---------- 3. experiment design ----------
 pres.addSection({ title: "실험" });
 {
@@ -178,6 +152,32 @@ pres.addSection({ title: "실험" });
     fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "model-grid" });
   txt(s, "데이터: Battery Defect Inspection v8 (Roboflow Universe), CC BY 4.0", { x: M, y: 6.85, w: 9, h: 0.18, fontSize: 9, color: MUTED, objectName: "credit" });
   s.addNotes("라벨이 이미 달린 Roboflow 공개 데이터셋을 그대로 Geti에 가져왔습니다. 목적은 모델별 성능 차이와 INT8 경량화의 효과를 보는 것입니다. 모델은 ATSS, YOLOX-S, YOLOX-Tiny 세 가지를 각각 기본 FP16, heatmap을 출력하는 FP16 XAI, 그리고 INT8로 내보내 총 9개를 비교했습니다. 한계는 분명합니다. 사진이 전부 초록 매트, 회색, 나무 탁상 위에서 찍은 탁상 사진이고, 셀당 사진은 한 장, 촬영 세션도 반복됩니다.");
+}
+
+// ---------- 2. crack vs scratch ----------
+{
+  // Blurred, vignetted meme (prep_images.py -> meme_bg.png), right of the title so the text doesn't cover the face.
+  const s = content("실험", "crack은 쉽고, scratch는 어려워", null,
+    (sl) => img(sl, "meme_bg.png", 6.55, 0.0, 1.75, 1.75, "meme-backdrop"));
+  txt(s, "배경 이미지: Mnet 방송 화면", { x: 3.6, y: 7.02, w: 4, h: 0.3, fontSize: 9, color: MUTED, valign: "middle", objectName: "meme-credit" });
+  [["zoom_crack.jpg", "crack", "뚜렷함", RED], ["zoom_scratch.jpg", "scratch", "흐릿함", AMBER]].forEach(([f, label, desc, col], i) => {
+    const x = M + i * 3.55;
+    img(s, f, x, T0 + 0.25, 3.4, 3.4, `zoom-${label}`);
+    chip(s, x, T0 + 3.8, 1.1, label, col, `zoom-chip-${label}`);
+    txt(s, desc, { x: x + 1.25, y: T0 + 3.8, w: 2.0, h: 0.38, fontSize: 14, color: MUTED, valign: "middle", objectName: `zoom-cap-${label}` });
+  });
+  card(s, M, 6.0, 6.95, 0.8, "size-card");
+  txt(s, [{ text: "박스 크기  ", options: { color: MUTED } }, { text: "crack 44×38px · scratch 43×38px", options: { bold: true } }],
+    { x: M + 0.3, y: 6.0, w: 6.5, h: 0.8, fontSize: 16, valign: "middle", objectName: "size-line" });
+  s.addChart(pres.charts.BAR, [
+    { name: "crack", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [1.0, 1.0, 1.0] },
+    { name: "scratch", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [0.858, 0.784, 0.664] },
+  ], {
+    ...chartBase(), x: 7.9, y: T0 + 0.2, w: 4.83, h: 5.15, barDir: "col", barGapWidthPct: 50,
+    chartColors: [HEX.accent2, HEX.accent3], valAxisMinVal: 0, valAxisMaxVal: 1, valAxisLabelFormatCode: "0.0", dataLabelFormatCode: "0.00",
+    showTitle: true, title: "AP@50 (1차 테스트)", titleColor: HEX.dk1, titleFontSize: 14, objectName: "ap-chart",
+  });
+  s.addNotes("crack은 세 모델 모두 AP 1.0이지만, scratch는 0.66에서 0.86입니다. 박스 크기는 640픽셀 사진에서 둘 다 약 44×38픽셀로 같습니다. 차이는 대비입니다. crack은 어둡고 뚜렷하고, scratch는 반사나 나무결과 비슷한 흐릿한 선입니다. 이후 나오는 오류도 대부분 scratch입니다. 실제로 배경을 결함으로 잘못 본 16건 중 13건이 scratch였습니다. 모델이 배경의 결이나 반사를 scratch로 착각한다는 뜻입니다.");
 }
 
 // ---------- 4. hidden trap ----------
@@ -278,25 +278,22 @@ pres.addSection({ title: "실험" });
 // ---------- 6b. benchmark ----------
 {
   const s = content("실험", "벤치마크", null);
-  const flow = [["모델 9개", ACC], ["131장 + 45장 · 같은 기준", ACC], ["benchmark.py", AMBER], ["결과 JSON → 대시보드", TINY]];
-  flow.forEach(([t, col], i) => {
-    const x = M + i * 3.12;
-    chip(s, x, T0 + 0.3, 2.65, t, col, `flow-${i}`, 0.55);
-    if (i < flow.length - 1) txt(s, "→", { x: x + 2.65, y: T0 + 0.3, w: 0.47, h: 0.55, fontSize: 20, bold: true, color: MUTED, align: "center", valign: "middle", objectName: `flow-arrow-${i}` });
-  });
-  const cards = [
-    ["정확도", "mAP@50 · 클래스별 AP", ATSS],
-    ["판정", "PASS · REVIEW · REJECT · 놓친 셀", RED],
-    ["기준값 sweep", "0.05 ~ 0.95", AMBER],
-    ["견고성", "blur · 어둡게 · 노이즈 · JPEG", YS],
-    ["중복 검사", "dHash → 복사본 22장 발견", AMBER],
-    ["속도", "CPU · iGPU · 사진 1장씩", TINY],
-  ];
-  cards.forEach(([h, d, col], i) => {
-    const x = M + (i % 3) * 4.1, y = T0 + 1.2 + Math.floor(i / 3) * 2.15;
-    card(s, x, y, 3.9, 1.95, `bm-${i}`);
-    txt(s, h, { x: x + 0.3, y: y + 0.3, w: 3.3, h: 0.5, fontSize: 22, bold: true, color: col, objectName: `bm-h-${i}` });
-    txt(s, d, { x: x + 0.3, y: y + 1.0, w: 3.3, h: 0.6, fontSize: 15, color: MUTED, objectName: `bm-d-${i}` });
+  // dashboard Models page (docs/submission/build/img/bench_*.png)
+  const iw = 6.65, top = T0 + 0.2;
+  const h1 = iw * 788 / 1640, h2 = iw * 479 / 1630;
+  img(s, "bench_detail.png", M, top, iw, h1, "bench-detail");
+  img(s, "bench_all.png", M, top + h1 + 0.1, iw, h2, "bench-all");
+
+  const X = M + iw + 0.35, RW = W - M - X;
+  txt(s, "benchmark.py", { x: X, y: top, w: RW, h: 0.4, fontSize: 18, bold: true, color: AMBER, objectName: "bm-h" });
+  [["모델 9개", ACC], ["131장 + 45장 · 같은 기준", ACC], ["결과 → 대시보드", TINY]].forEach(([t, col], i) =>
+    chip(s, X, top + 0.55 + i * 0.5, RW, t, col, `flow-${i}`, 0.4));
+  txt(s, "측정", { x: X, y: top + 2.15, w: RW, h: 0.35, fontSize: 16, bold: true, objectName: "bm-m-h" });
+  [["정확도", "mAP · 클래스별 AP", ATSS], ["판정", "PASS · REVIEW · REJECT", RED], ["기준값 sweep", "0.05 ~ 0.95", AMBER],
+   ["견고성", "blur · 노이즈 · JPEG", YS], ["중복 검사", "복사본 22장 발견", AMBER], ["속도", "CPU · iGPU", TINY]].forEach(([h, d, col], i) => {
+    const y = top + 2.6 + i * 0.44;
+    txt(s, h, { x: X, y, w: 1.65, h: 0.38, fontSize: 14, bold: true, color: col, valign: "middle", objectName: `bm-k-${i}` });
+    txt(s, d, { x: X + 1.7, y, w: RW - 1.7, h: 0.38, fontSize: 14, color: MUTED, valign: "middle", objectName: `bm-v-${i}` });
   });
   s.addNotes("Geti 점수는 Geti가 직접 나눈 사진으로 매긴 점수라, 모델끼리 같은 조건으로 비교하거나 새 사진으로 다시 재볼 수 없었습니다. 그래서 benchmark.py를 직접 만들었습니다. Geti에서 내보낸 9개 모델을 똑같은 사진, 똑같은 판정 기준으로 돌리고, 정확도, 판정 결과, 기준값별 변화, 사진을 흐리게 하거나 어둡게 했을 때의 견고성, 학습 사진과의 중복, 그리고 CPU와 iGPU에서의 속도까지 한 번에 잽니다. 22장 복사본도 이 중복 검사에서 찾았습니다. 결과는 JSON으로 저장되고 대시보드의 Models 페이지에서 바로 볼 수 있습니다.");
 }
@@ -409,7 +406,7 @@ pres.addSection({ title: "정리" });
   ];
   s.addTable([
     [{ text: "장", options: { ...H, align: "center" } }, { text: "결과", options: H }, { text: "원인", options: H }, { text: "근거", options: { ...H, align: "center" } }],
-    row("2", "Scratch 식별 어려움", "반사·나무결 같은 가는 선", "확인"),
+    row("3", "Scratch 식별 어려움", "반사·나무결 같은 가는 선", "확인"),
     row("4", "과대평가 수치 (93%)", "테스트 사진 학습 포함 · 복사본 22장", "확인"),
     row("5", "낙관적인 Geti score", "증강본이 학습·테스트에 섞임", "추정"),
     row("5", "ATSS 최고평가", "입력 해상도 992×800 vs 640×640", "추정"),
