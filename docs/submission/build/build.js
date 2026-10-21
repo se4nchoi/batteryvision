@@ -182,7 +182,7 @@ pres.addSection({ title: "실험" });
 
 // ---------- 4. hidden trap ----------
 {
-  const s = content("실험", "높은 수치, 숨은 함정", "1차 테스트 93%, but 학습 데이터");
+  const s = content("실험", "높은 수치, 숨은 함정", "1차 테스트 93%, but 과적합 학습 데이터");
   const stats = [["3,673장", "테스트 153장 포함 업로드", AMBER], ["22장", "학습 사진의 복사본", AMBER], ["93.3 → 92.9%", "복사본 제거 후 mAP@50", ACC]];
   stats.forEach(([n, l, col], i) => {
     const y = 1.75 + i * 1.65;
@@ -256,10 +256,37 @@ pres.addSection({ title: "실험" });
     const x = 6.85 + i * 3.0;
     img(s, f, x, T0 + 1.15, 2.88, 2.88, `heat-${i}`);
     dot(s, x, T0 + 4.22, col, `heat-dot-${i}`);
-    txt(s, [{ text: n + "  ", options: { bold: true } }, { text: "적중 ", options: { color: MUTED } }, { text: v, options: { bold: true, color: col } }],
+    txt(s, [{ text: n + "  ", options: { bold: true } }, { text: "위치 ", options: { color: MUTED } }, { text: v, options: { bold: true, color: col } }],
       { x: x + 0.26, y: T0 + 4.14, w: 2.6, h: 0.32, fontSize: 14, objectName: `heat-l-${i}` });
   });
+  chip(s, 6.85, T0 + 4.6, 5.88, "heatmap 위치 ≠ 탐지 정확도 · 놓친 scratch: ATSS 19 · YOLOX-S 28", AMBER, "heat-vs-acc", 0.5);
   s.addNotes("결론부터 말하면, crack과 scratch를 서로 헷갈린 경우는 한 번도 없고, 오류는 전부 놓친 scratch나 배경 오검출입니다. 특히 나무 탁상 배경에서 재현율이 33%로 가장 약합니다. 나무결이 scratch처럼 가는 선 모양이라 놓치기도 하고 잘못 보기도 합니다. heatmap은 YOLOX-S가 98%의 사진에서 결함을 짚지만 ATSS는 48%로, 정확도와 설명력은 별개였습니다.");
+}
+
+// ---------- 6b. benchmark ----------
+{
+  const s = content("실험", "벤치마크", null);
+  const flow = [["모델 9개", ACC], ["131장 + 45장 · 같은 기준", ACC], ["benchmark.py", AMBER], ["결과 JSON → 대시보드", TINY]];
+  flow.forEach(([t, col], i) => {
+    const x = M + i * 3.12;
+    chip(s, x, T0 + 0.3, 2.65, t, col, `flow-${i}`, 0.55);
+    if (i < flow.length - 1) txt(s, "→", { x: x + 2.65, y: T0 + 0.3, w: 0.47, h: 0.55, fontSize: 20, bold: true, color: MUTED, align: "center", valign: "middle", objectName: `flow-arrow-${i}` });
+  });
+  const cards = [
+    ["정확도", "mAP@50 · 클래스별 AP", ATSS],
+    ["판정", "PASS · REVIEW · REJECT · 놓친 셀", RED],
+    ["기준값 sweep", "0.05 ~ 0.95", AMBER],
+    ["견고성", "blur · 어둡게 · 노이즈 · JPEG", YS],
+    ["중복 검사", "dHash → 복사본 22장 발견", AMBER],
+    ["속도", "CPU · iGPU · 사진 1장씩", TINY],
+  ];
+  cards.forEach(([h, d, col], i) => {
+    const x = M + (i % 3) * 4.1, y = T0 + 1.2 + Math.floor(i / 3) * 2.15;
+    card(s, x, y, 3.9, 1.95, `bm-${i}`);
+    txt(s, h, { x: x + 0.3, y: y + 0.3, w: 3.3, h: 0.5, fontSize: 22, bold: true, color: col, objectName: `bm-h-${i}` });
+    txt(s, d, { x: x + 0.3, y: y + 1.0, w: 3.3, h: 0.6, fontSize: 15, color: MUTED, objectName: `bm-d-${i}` });
+  });
+  s.addNotes("Geti 점수는 Geti가 직접 나눈 사진으로 매긴 점수라, 모델끼리 같은 조건으로 비교하거나 새 사진으로 다시 재볼 수 없었습니다. 그래서 benchmark.py를 직접 만들었습니다. Geti에서 내보낸 9개 모델을 똑같은 사진, 똑같은 판정 기준으로 돌리고, 정확도, 판정 결과, 기준값별 변화, 사진을 흐리게 하거나 어둡게 했을 때의 견고성, 학습 사진과의 중복, 그리고 CPU와 iGPU에서의 속도까지 한 번에 잽니다. 22장 복사본도 이 중복 검사에서 찾았습니다. 결과는 JSON으로 저장되고 대시보드의 Models 페이지에서 바로 볼 수 있습니다.");
 }
 
 // ---------- 7. INT8 ----------
@@ -283,13 +310,12 @@ pres.addSection({ title: "최적화" });
     [c("YOLOX-Tiny", { align: "left", bold: true, color: TINY }), c("4.0×", { bold: true, color: ACC }), c("10.6 → 5.8"), c("0.832 → 0.829"), c("1 → 0")],
   ], { x: 7.15, y: 2.0, w: 5.58, colW: [1.3, 0.8, 1.15, 1.43, 0.9], rowH: 0.62, fontSize: 13, color: TEXT, fontFace: "Malgun Gothic",
     fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "int8-table" });
-  ["1차 테스트 131장", "사진 1장씩", "Core Ultra 7 CPU", "전·후처리 포함"].forEach((t, i) => chip(s, M + i * 3.07, 5.3, 2.9, t, MUTED, `method-${i}`, 0.42));
-  card(s, M, 5.95, 5.95, 0.85, "pro-card");
+  card(s, M, 5.55, 5.95, 1.0, "pro-card");
   txt(s, [{ text: "장점  ", options: { bold: true, color: TINY } }, { text: "2–4배 빠름 · 크기 ½ · mAP 유지", options: {} }],
-    { x: M + 0.3, y: 5.95, w: 5.5, h: 0.85, fontSize: 15, valign: "middle", objectName: "pro" });
-  card(s, 6.78, 5.95, 5.95, 0.85, "con-card");
+    { x: M + 0.3, y: 5.55, w: 5.5, h: 1.0, fontSize: 16, valign: "middle", objectName: "pro" });
+  card(s, 6.78, 5.55, 5.95, 1.0, "con-card");
   txt(s, [{ text: "단점  ", options: { bold: true, color: RED } }, { text: "놓침 증가 · 기준값 재설정", options: {} }],
-    { x: 7.08, y: 5.95, w: 5.5, h: 0.85, fontSize: 15, valign: "middle", objectName: "con" });
+    { x: 7.08, y: 5.55, w: 5.5, h: 1.0, fontSize: 16, valign: "middle", objectName: "con" });
   s.addNotes("수업에서 다룬 모델 최적화를 직접 써보고 싶어서, Geti에서 INT8 모델을 받아 직접 만든 벤치마크로 측정했습니다. 같은 131장을 한 장씩, 같은 CPU에서, 전처리와 후처리를 포함해 잰 값입니다. INT8은 2배에서 4배 빠르고 크기는 절반 정도이며, mAP는 그대로입니다. 대신 신뢰도 점수가 조금 낮아져 같은 기준에서는 놓치는 결함이 늘어납니다. INT8을 쓰려면 기준값을 다시 정해야 합니다. 빨라지는 이유는 CPU의 8비트 연산 명령을 쓰고 옮길 데이터가 절반이기 때문이고, 놓침이 느는 이유는 양자화로 점수가 조금 내려가 0.30 근처 결함이 기준 아래로 떨어지기 때문입니다.");
 }
 
@@ -376,10 +402,10 @@ pres.addSection({ title: "정리" });
     row("5", "낙관적인 Geti score", "증강본이 학습·테스트에 섞임", "추정"),
     row("5", "ATSS 최고평가", "입력 해상도 992×800 vs 640×640", "추정"),
     row("6", "나무 배경 취약 (33%)", "나무결 = 가는 선", "추정"),
-    row("7", "INT8 놓침 증가", "양자화로 점수 소폭 하락", "추정"),
-    row("9", "2차 세트 검출 47%", "작아진 crack (30×26px) · 새 환경", "확인"),
-    row("9", "YOLOX-S 낮은 점수", "점수 = 두 확률의 곱", "추정"),
-    row("9", "기준값 조정으로 해결 불가", "결함·정상 점수 겹침", "확인"),
+    row("8", "INT8 놓침 증가", "양자화로 점수 소폭 하락", "추정"),
+    row("10", "2차 세트 검출 47%", "작아진 crack (30×26px) · 새 환경", "확인"),
+    row("10", "YOLOX-S 낮은 점수", "점수 = 두 확률의 곱", "추정"),
+    row("10", "기준값 조정으로 해결 불가", "결함·정상 점수 겹침", "확인"),
   ], { x: M, y: T0 + 0.25, w: CW, colW: [0.55, 3.4, 7.23, 0.95], rowH: 0.46, fontSize: 15, color: TEXT, fontFace: "Malgun Gothic",
     fill: { color: HEX.lt2 }, border: { type: "solid", pt: 0.75, color: "3A3F48" }, valign: "middle", objectName: "causes-table" });
   chip(s, M, 6.5, 1.6, "확인 = 데이터", TINY, "lg-1", 0.34);
