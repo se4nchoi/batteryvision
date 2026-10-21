@@ -33,3 +33,7 @@ Thumbs.db
 # Held-out test images for LIVE mode (dataset license; keep local)
 sample_data/live/*
 !sample_data/live/README.md
+
+# Submission build scratch (rendered previews, candidate sheets)
+docs/submission/build/render/
+docs/submission/build/cand/

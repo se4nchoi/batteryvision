@@ -1,0 +1,6 @@
+{
+  "source": "Geti 'model metrics' PDF exports (Downloads/*_model_metrics.pdf), values read from the chart vectors; last epoch value. Geti's own validation/test split, not our held-out test set.",
+  "ATSS-MobileNetV2": {"f_test": {"scratch": 0.77, "crack": 1.0}, "epochs": 40, "val_map50": 0.878, "val_map": 0.522, "val_map_small": 0.385, "val_map_medium": 0.592, "val_map_large": 0.66, "val_f1": 0.848},
+  "YOLOX-S": {"f_test": {"scratch": 0.70, "crack": 0.98}, "epochs": 58, "val_map50": 0.841, "val_map": 0.472, "val_map_small": 0.39, "val_map_medium": 0.539, "val_map_large": 0.589, "val_f1": 0.81},
+  "YOLOX-Tiny": {"f_test": {"scratch": 0.67, "crack": 0.99}, "epochs": 54, "val_map50": 0.798, "val_map": 0.402, "val_map_small": 0.246, "val_map_medium": 0.454, "val_map_large": 0.496, "val_f1": 0.785}
+}

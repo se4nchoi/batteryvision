@@ -1,14 +1,13 @@
 {
-  "generated_at": "2026-10-20T08:47:25+00:00",
-  "command": "scripts/benchmark.py --coco ../datasets/battery/test/_annotations.coco.json --images ../datasets/battery/test --train-images ../datasets/battery/train --latency-devices CPU GPU.0 NPU",
+  "generated_at": "2026-10-21T00:49:52+00:00",
+  "command": "scripts/benchmark.py --coco ../datasets/battery/test/_annotations.coco.json --images ../datasets/battery/test --train-images ../datasets/battery/train --latency-devices CPU GPU.0",
   "machine": {
     "cpu": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
     "os": "Windows-11-10.0.26200-SP0",
     "device": "CPU",
     "devices": {
       "CPU": "Intel(R) Core(TM) Ultra 7 265K",
-      "GPU.0": "Intel(R) Graphics (iGPU)",
-      "NPU": "Intel(R) AI Boost"
+      "GPU.0": "Intel(R) Graphics (iGPU)"
     }
   },
   "test_set": {
@@ -72,7 +71,7 @@
         },
         "notes": "Geti 'OpenVINO FP16' (no XAI head), version 1, 20 Oct 2026"
       },
-      "eval_seconds": 72.5,
+      "eval_seconds": 66.3,
       "robustness": {
         "clean": {
           "map50": 0.9291961162816049,
@@ -368,9 +367,9 @@
       },
       "latency": {
         "n": 130,
-        "mean_ms": 45.522999999999996,
-        "median_ms": 43.379999999999995,
-        "p95_ms": 60.602,
+        "mean_ms": 48.479769230769236,
+        "median_ms": 45.959999999999994,
+        "p95_ms": 61.9805,
         "note": "First call excluded (warm-up)."
       },
       "threshold_sweep": [
@@ -533,9 +532,9 @@
         "CPU": {
           "latency": {
             "n": 131,
-            "mean_ms": 46.15038167938932,
-            "median_ms": 43.18,
-            "p95_ms": 71.715,
+            "mean_ms": 43.87114503816794,
+            "median_ms": 43.58,
+            "p95_ms": 47.555,
             "note": "10 warm-up calls excluded; one call per test image."
           },
           "map50": 0.9291961162816049,
@@ -544,16 +543,13 @@
         "GPU.0": {
           "latency": {
             "n": 131,
-            "mean_ms": 46.92969465648855,
-            "median_ms": 45.65,
-            "p95_ms": 55.864999999999995,
+            "mean_ms": 45.784198473282444,
+            "median_ms": 45.68,
+            "p95_ms": 46.465,
             "note": "10 warm-up calls excluded; one call per test image."
           },
           "map50": 0.9284605140809173,
           "map50_95": 0.5832094791186065
-        },
-        "NPU": {
-          "error": "RuntimeError: L0 zeCommandQueueExecuteCommandLists result: ZE_RESULT_ERROR_DEVICE_LOST, code 0x70000001 - device hung, reset, was removed, or driver update occurred"
         }
       }
     },
@@ -578,7 +574,7 @@
         },
         "notes": "Geti 'OpenVINO FP16 with XAI head (Explanation included)', version 1, 20 Oct 2026"
       },
-      "eval_seconds": 84.0,
+      "eval_seconds": 72.1,
       "robustness": {
         "clean": {
           "map50": 0.9291961162816049,
@@ -874,9 +870,9 @@
       },
       "latency": {
         "n": 130,
-        "mean_ms": 52.37823076923076,
-        "median_ms": 49.0,
-        "p95_ms": 79.38899999999998,
+        "mean_ms": 46.49192307692307,
+        "median_ms": 45.1,
+        "p95_ms": 55.082,
         "note": "First call excluded (warm-up)."
       },
       "threshold_sweep": [
@@ -1039,9 +1035,9 @@
         "CPU": {
           "latency": {
             "n": 131,
-            "mean_ms": 52.50832061068702,
-            "median_ms": 49.27,
-            "p95_ms": 73.475,
+            "mean_ms": 48.61167938931298,
+            "median_ms": 46.45,
+            "p95_ms": 65.735,
             "note": "10 warm-up calls excluded; one call per test image."
           },
           "map50": 0.9291961162816049,
@@ -1050,16 +1046,13 @@
         "GPU.0": {
           "latency": {
             "n": 131,
-            "mean_ms": 48.245114503816794,
-            "median_ms": 47.3,
-            "p95_ms": 54.985,
+            "mean_ms": 51.421832061068706,
+            "median_ms": 47.2,
+            "p95_ms": 68.33500000000001,
             "note": "10 warm-up calls excluded; one call per test image."
           },
           "map50": 0.9284605140809173,
           "map50_95": 0.5832094791186065
-        },
-        "NPU": {
-          "error": "RuntimeError: L0 zeCommandQueueExecuteCommandLists result: ZE_RESULT_ERROR_DEVICE_LOST, code 0x70000001 - device hung, reset, was removed, or driver update occurred"
         }
       }
     },
@@ -1084,7 +1077,7 @@
         },
         "notes": "Geti 'OpenVINO INT8' (post-training optimization), version 1, 20 Oct 2026"
       },
-      "eval_seconds": 59.2,
+      "eval_seconds": 38.9,
       "robustness": {
         "clean": {
           "map50": 0.9292565453395685,
@@ -1380,9 +1373,9 @@
       },
       "latency": {
         "n": 130,
-        "mean_ms": 21.193461538461534,
-        "median_ms": 19.95,
-        "p95_ms": 24.8855,
+        "mean_ms": 20.478846153846153,
+        "median_ms": 20.01,
+        "p95_ms": 23.2415,
         "note": "First call excluded (warm-up)."
       },
       "threshold_sweep": [
@@ -1555,9 +1548,9 @@
         "CPU": {
           "latency": {
             "n": 131,
-            "mean_ms": 21.021755725190843,
-            "median_ms": 19.72,
-            "p95_ms": 29.235,
+            "mean_ms": 19.97480916030534,
+            "median_ms": 19.36,
+            "p95_ms": 25.009999999999998,
             "note": "10 warm-up calls excluded; one call per test image."
           },
           "map50": 0.9292565453395685,
@@ -1566,16 +1559,13 @@
         "GPU.0": {
           "latency": {
             "n": 131,
-            "mean_ms": 24.540152671755727,
-            "median_ms": 24.31,
-            "p95_ms": 26.61,
+            "mean_ms": 25.174427480916034,
+            "median_ms": 24.73,
+            "p95_ms": 27.945,
             "note": "10 warm-up calls excluded; one call per test image."
           },
           "map50": 0.933316454388597,
           "map50_95": 0.5840495209782959
-        },
-        "NPU": {
-          "error": "RuntimeError: L0 zeCommandQueueExecuteCommandLists result: ZE_RESULT_ERROR_DEVICE_LOST, code 0x70000001 - device hung, reset, was removed, or driver update occurred"
         }
       }
     },
@@ -1600,7 +1590,7 @@
         },
         "notes": "Geti 'OpenVINO FP16' (no XAI head), version 1, 20 Oct 2026"
       },
-      "eval_seconds": 67.7,
+      "eval_seconds": 62.5,
       "robustness": {
         "clean": {
           "map50": 0.8918194206387692,
@@ -1896,9 +1886,9 @@
       },
       "latency": {
         "n": 130,
-        "mean_ms": 43.57992307692307,
-        "median_ms": 40.915,
-        "p95_ms": 61.123999999999995,
+        "mean_ms": 46.01576923076923,
+        "median_ms": 41.9,
+        "p95_ms": 62.777,
         "note": "First call excluded (warm-up)."
       },
       "threshold_sweep": [
@@ -2116,9 +2106,9 @@
         "CPU": {
           "latency": {
             "n": 131,
-            "mean_ms": 42.699541984732825,
-            "median_ms": 40.84,
-            "p95_ms": 60.915,
+            "mean_ms": 48.882900763358776,
+            "median_ms": 44.56,
+            "p95_ms": 69.18,
             "note": "10 warm-up calls excluded; one call per test image."
           },
           "map50": 0.8918194206387692,
@@ -2127,16 +2117,13 @@
         "GPU.0": {
           "latency": {
             "n": 131,
-            "mean_ms": 25.887404580152673,
-            "median_ms": 25.39,
-            "p95_ms": 28.47,
+            "mean_ms": 27.122290076335883,
+            "median_ms": 25.89,
+            "p95_ms": 34.68,
             "note": "10 warm-up calls excluded; one call per test image."
           },
           "map50": 0.9033707426406523,
           "map50_95": 0.5524060518733486
-        },
-        "NPU": {
-          "error": "RuntimeError: L0 zeCommandQueueExecuteCommandLists result: ZE_RESULT_ERROR_DEVICE_LOST, code 0x70000001 - device hung, reset, was removed, or driver update occurred"
         }
       }
     },
@@ -2161,7 +2148,7 @@
           "split": "validation"
         }
       },
-      "eval_seconds": 71.6,
+      "eval_seconds": 66.6,
       "robustness": {
         "clean": {
           "map50": 0.8918194206387692,
@@ -2457,9 +2444,9 @@
       },
       "latency": {
         "n": 130,
-        "mean_ms": 53.956230769230764,
-        "median_ms": 46.68,
-        "p95_ms": 82.97449999999998,
+        "mean_ms": 47.186307692307686,
+        "median_ms": 46.34,
+        "p95_ms": 52.8485,
         "note": "First call excluded (warm-up)."
       },
       "threshold_sweep": [
@@ -2677,9 +2664,9 @@
         "CPU": {
           "latency": {
             "n": 131,
-            "mean_ms": 45.66458015267176,
-            "median_ms": 43.46,
-            "p95_ms": 62.05,
+            "mean_ms": 48.047404580152666,
+            "median_ms": 46.7,
+            "p95_ms": 53.44,
             "note": "10 warm-up calls excluded; one call per test image."
           },
           "map50": 0.8918194206387692,
@@ -2688,16 +2675,13 @@
         "GPU.0": {
           "latency": {
             "n": 131,
-            "mean_ms": 27.551450381679388,
-            "median_ms": 26.95,
-            "p95_ms": 30.89,
+            "mean_ms": 27.368625954198475,
+            "median_ms": 27.09,
+            "p95_ms": 29.729999999999997,
             "note": "10 warm-up calls excluded; one call per test image."
           },
           "map50": 0.9033707426406523,
           "map50_95": 0.5524060518733486
-        },
-        "NPU": {
-          "error": "RuntimeError: L0 zeCommandQueueExecuteCommandLists result: ZE_RESULT_ERROR_DEVICE_LOST, code 0x70000001 - device hung, reset, was removed, or driver update occurred"
         }
       }
     },
@@ -2722,7 +2706,7 @@
         },
         "notes": "Geti 'OpenVINO INT8' (post-training optimization), version 1, 20 Oct 2026"
       },
-      "eval_seconds": 41.6,
+      "eval_seconds": 41.8,
       "robustness": {
         "clean": {
           "map50": 0.9019615796763778,
@@ -3018,9 +3002,9 @@
       },
       "latency": {
         "n": 130,
-        "mean_ms": 19.778307692307695,
-        "median_ms": 17.85,
-        "p95_ms": 33.08399999999998,
+        "mean_ms": 22.76023076923077,
+        "median_ms": 21.535,
+        "p95_ms": 24.503999999999998,
         "note": "First call excluded (warm-up)."
       },
       "threshold_sweep": [
@@ -3256,9 +3240,9 @@
         "CPU": {
           "latency": {
             "n": 131,
-            "mean_ms": 18.738778625954197,
-            "median_ms": 17.58,
-            "p95_ms": 29.61,
+            "mean_ms": 24.92580152671756,
+            "median_ms": 22.99,
+            "p95_ms": 34.68,
             "note": "10 warm-up calls excluded; one call per test image."
           },
           "map50": 0.9019615796763778,
@@ -3267,16 +3251,1524 @@
         "GPU.0": {
           "latency": {
             "n": 131,
-            "mean_ms": 20.739847328244277,
-            "median_ms": 19.94,
-            "p95_ms": 29.200000000000003,
+            "mean_ms": 21.315190839694655,
+            "median_ms": 20.15,
+            "p95_ms": 28.46,
             "note": "10 warm-up calls excluded; one call per test image."
           },
           "map50": 0.8873929139101961,
           "map50_95": 0.53831574881398
+        }
+      }
+    },
+    {
+      "name": "yolox_tiny_fp16",
+      "path": "C:\\Users\\user\\_se4nchoi\\batteryvision\\models\\yolox_tiny_fp16\\model.xml",
+      "sha256_12": "265a0f111a57",
+      "size_mb": 10.6,
+      "labels": [
+        "scratch",
+        "crack"
+      ],
+      "wrapper": "SSD",
+      "meta": {
+        "architecture": "YOLOX-Tiny",
+        "precision": "FP16",
+        "notes": "Geti 'OpenVINO FP16', version 1, 21 Oct 2026. Geti validation score not recorded yet."
+      },
+      "eval_seconds": 95.9,
+      "robustness": {
+        "clean": {
+          "map50": 0.8317860198648915,
+          "map50_95": 0.36946098019028534,
+          "precision": 0.9722222222222222,
+          "recall": 0.5691056910569106,
+          "defect_escape_rate": 0.01020408163265306,
+          "false_reject_rate": 0.0
         },
-        "NPU": {
-          "error": "RuntimeError: L0 zeCommandQueueExecuteCommandLists result: ZE_RESULT_ERROR_DEVICE_LOST, code 0x70000001 - device hung, reset, was removed, or driver update occurred"
+        "blur": {
+          "map50": 0.7380823905561401,
+          "map50_95": 0.2765758678761725,
+          "precision": 0.9180327868852459,
+          "recall": 0.45528455284552843,
+          "defect_escape_rate": 0.05102040816326531,
+          "false_reject_rate": 0.0
+        },
+        "dark": {
+          "map50": 0.765937842705874,
+          "map50_95": 0.2985157908099158,
+          "precision": 0.9629629629629629,
+          "recall": 0.42276422764227645,
+          "defect_escape_rate": 0.10204081632653061,
+          "false_reject_rate": 0.0
+        },
+        "bright": {
+          "map50": 0.7914068424971623,
+          "map50_95": 0.32785350095131144,
+          "precision": 0.9850746268656716,
+          "recall": 0.5365853658536586,
+          "defect_escape_rate": 0.061224489795918366,
+          "false_reject_rate": 0.0
+        },
+        "low_contrast": {
+          "map50": 0.7605767089499078,
+          "map50_95": 0.30590971494693203,
+          "precision": 0.9655172413793104,
+          "recall": 0.45528455284552843,
+          "defect_escape_rate": 0.09183673469387756,
+          "false_reject_rate": 0.0
+        },
+        "noise": {
+          "map50": 0.8439148285629757,
+          "map50_95": 0.367750563369384,
+          "precision": 0.9722222222222222,
+          "recall": 0.5691056910569106,
+          "defect_escape_rate": 0.02040816326530612,
+          "false_reject_rate": 0.0
+        },
+        "jpeg_q20": {
+          "map50": 0.8476621598853038,
+          "map50_95": 0.37147359357266346,
+          "precision": 0.9722222222222222,
+          "recall": 0.5691056910569106,
+          "defect_escape_rate": 0.01020408163265306,
+          "false_reject_rate": 0.0
+        }
+      },
+      "coco": {
+        "map50": 0.8317860198648915,
+        "map50_95": 0.36946098019028534,
+        "per_class": {
+          "crack": {
+            "ap50": 1.0,
+            "ap50_95": 0.46414435771992746
+          },
+          "scratch": {
+            "ap50": 0.6635720397297832,
+            "ap50_95": 0.2747776026606432
+          }
+        }
+      },
+      "pr_at_threshold": {
+        "threshold": 0.6,
+        "iou": 0.5,
+        "overall": {
+          "tp": 70,
+          "fp": 2,
+          "fn": 53,
+          "precision": 0.9722222222222222,
+          "recall": 0.5691056910569106,
+          "f1": 0.7179487179487181
+        },
+        "per_class": {
+          "crack": {
+            "tp": 45,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "scratch": {
+            "tp": 25,
+            "fp": 2,
+            "fn": 53,
+            "precision": 0.9259259259259259,
+            "recall": 0.32051282051282054,
+            "f1": 0.4761904761904762
+          }
+        }
+      },
+      "image_level": {
+        "matrix": {
+          "defective": {
+            "PASS": 1,
+            "REVIEW": 25,
+            "REJECT": 72
+          },
+          "no_defect_annotated": {
+            "PASS": 33,
+            "REVIEW": 0,
+            "REJECT": 0
+          }
+        },
+        "defective_images": 98,
+        "no_defect_images": 33,
+        "defect_catch_rate": 0.9897959183673469,
+        "defect_escape_rate": 0.01020408163265306,
+        "false_reject_rate": 0.0,
+        "review_rate": 0.19083969465648856
+      },
+      "operating_points": {
+        "review": {
+          "threshold": 0.3,
+          "iou": 0.5,
+          "overall": {
+            "tp": 93,
+            "fp": 21,
+            "fn": 30,
+            "precision": 0.8157894736842105,
+            "recall": 0.7560975609756098,
+            "f1": 0.7848101265822786
+          },
+          "per_class": {
+            "crack": {
+              "tp": 45,
+              "fp": 0,
+              "fn": 0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "scratch": {
+              "tp": 48,
+              "fp": 21,
+              "fn": 30,
+              "precision": 0.6956521739130435,
+              "recall": 0.6153846153846154,
+              "f1": 0.6530612244897959
+            }
+          }
+        },
+        "reject": {
+          "threshold": 0.6,
+          "iou": 0.5,
+          "overall": {
+            "tp": 70,
+            "fp": 2,
+            "fn": 53,
+            "precision": 0.9722222222222222,
+            "recall": 0.5691056910569106,
+            "f1": 0.7179487179487181
+          },
+          "per_class": {
+            "crack": {
+              "tp": 45,
+              "fp": 0,
+              "fn": 0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "scratch": {
+              "tp": 25,
+              "fp": 2,
+              "fn": 53,
+              "precision": 0.9259259259259259,
+              "recall": 0.32051282051282054,
+              "f1": 0.4761904761904762
+            }
+          }
+        }
+      },
+      "confusion": {
+        "review": {
+          "threshold": 0.3,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              45,
+              0,
+              0
+            ],
+            [
+              0,
+              48,
+              30
+            ],
+            [
+              0,
+              21,
+              0
+            ]
+          ],
+          "note": "rows = annotated, columns = predicted; background = missed (column) / false box (row)"
+        },
+        "reject": {
+          "threshold": 0.6,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              45,
+              0,
+              0
+            ],
+            [
+              0,
+              25,
+              53
+            ],
+            [
+              0,
+              2,
+              0
+            ]
+          ],
+          "note": "rows = annotated, columns = predicted; background = missed (column) / false box (row)"
+        }
+      },
+      "cell_binary": {
+        "flagged": {
+          "tp": 97,
+          "fn": 1,
+          "fp": 0,
+          "tn": 33,
+          "accuracy": 0.9923664122137404,
+          "precision": 1.0,
+          "recall": 0.9897959183673469,
+          "specificity": 1.0,
+          "f1": 0.9948717948717948
+        },
+        "rejected": {
+          "tp": 72,
+          "fn": 26,
+          "fp": 0,
+          "tn": 33,
+          "accuracy": 0.8015267175572519,
+          "precision": 1.0,
+          "recall": 0.7346938775510204,
+          "specificity": 1.0,
+          "f1": 0.8470588235294119
+        }
+      },
+      "by_background": {
+        "green mat": {
+          "n_images": 39,
+          "n_defective": 39,
+          "n_clean": 0,
+          "defect_catch_rate": 0.9743589743589743,
+          "false_reject_rate": null,
+          "box_recall": 0.7435897435897436,
+          "box_precision": 0.9666666666666667
+        },
+        "grey / neutral": {
+          "n_images": 54,
+          "n_defective": 33,
+          "n_clean": 21,
+          "defect_catch_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_recall": 0.75,
+          "box_precision": 1.0
+        },
+        "wood / brown": {
+          "n_images": 38,
+          "n_defective": 26,
+          "n_clean": 12,
+          "defect_catch_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_recall": 0.2916666666666667,
+          "box_precision": 0.9333333333333333
+        }
+      },
+      "latency": {
+        "n": 130,
+        "mean_ms": 37.50053846153846,
+        "median_ms": 37.18000000000001,
+        "p95_ms": 48.503499999999995,
+        "note": "First call excluded (warm-up)."
+      },
+      "threshold_sweep": [
+        {
+          "threshold": 0.05,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.06060606060606061,
+          "box_precision": 0.4794520547945205,
+          "box_recall": 0.8536585365853658
+        },
+        {
+          "threshold": 0.1,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.6121212121212121,
+          "box_recall": 0.8211382113821138
+        },
+        {
+          "threshold": 0.15,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.6577181208053692,
+          "box_recall": 0.7967479674796748
+        },
+        {
+          "threshold": 0.2,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.7368421052631579,
+          "box_recall": 0.7967479674796748
+        },
+        {
+          "threshold": 0.25,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8067226890756303,
+          "box_recall": 0.7804878048780488
+        },
+        {
+          "threshold": 0.3,
+          "defect_recall": 0.9897959183673469,
+          "escape_rate": 0.010204081632653073,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8157894736842105,
+          "box_recall": 0.7560975609756098
+        },
+        {
+          "threshold": 0.35,
+          "defect_recall": 0.9489795918367347,
+          "escape_rate": 0.05102040816326525,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8640776699029126,
+          "box_recall": 0.7235772357723578
+        },
+        {
+          "threshold": 0.4,
+          "defect_recall": 0.9387755102040817,
+          "escape_rate": 0.061224489795918324,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8811881188118812,
+          "box_recall": 0.7235772357723578
+        },
+        {
+          "threshold": 0.45,
+          "defect_recall": 0.9183673469387755,
+          "escape_rate": 0.08163265306122447,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8854166666666666,
+          "box_recall": 0.6910569105691057
+        },
+        {
+          "threshold": 0.5,
+          "defect_recall": 0.8571428571428571,
+          "escape_rate": 0.1428571428571429,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.9080459770114943,
+          "box_recall": 0.6422764227642277
+        },
+        {
+          "threshold": 0.55,
+          "defect_recall": 0.8061224489795918,
+          "escape_rate": 0.19387755102040816,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.9625,
+          "box_recall": 0.6260162601626016
+        },
+        {
+          "threshold": 0.6,
+          "defect_recall": 0.7346938775510204,
+          "escape_rate": 0.26530612244897955,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.9722222222222222,
+          "box_recall": 0.5691056910569106
+        },
+        {
+          "threshold": 0.65,
+          "defect_recall": 0.7040816326530612,
+          "escape_rate": 0.29591836734693877,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.9855072463768116,
+          "box_recall": 0.5528455284552846
+        },
+        {
+          "threshold": 0.7,
+          "defect_recall": 0.6020408163265306,
+          "escape_rate": 0.3979591836734694,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.4796747967479675
+        },
+        {
+          "threshold": 0.75,
+          "defect_recall": 0.4489795918367347,
+          "escape_rate": 0.5510204081632653,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.35772357723577236
+        },
+        {
+          "threshold": 0.8,
+          "defect_recall": 0.12244897959183673,
+          "escape_rate": 0.8775510204081632,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.0975609756097561
+        },
+        {
+          "threshold": 0.85,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        },
+        {
+          "threshold": 0.9,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        },
+        {
+          "threshold": 0.95,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        }
+      ],
+      "failures": [
+        {
+          "file": "20250518_174446_jpg.rf.534fde57caca3000cf0e55fce5d486d7.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.276
+          ]
+        }
+      ],
+      "unmatched_model_labels": [],
+      "devices": {
+        "CPU": {
+          "latency": {
+            "n": 131,
+            "mean_ms": 33.50145038167939,
+            "median_ms": 33.64,
+            "p95_ms": 41.78,
+            "note": "10 warm-up calls excluded; one call per test image."
+          },
+          "map50": 0.8317860198648915,
+          "map50_95": 0.36946098019028534
+        },
+        "GPU.0": {
+          "latency": {
+            "n": 131,
+            "mean_ms": 23.404351145038166,
+            "median_ms": 15.93,
+            "p95_ms": 19.0,
+            "note": "10 warm-up calls excluded; one call per test image."
+          },
+          "map50": 0.8339893780557852,
+          "map50_95": 0.36837860402771905
+        }
+      }
+    },
+    {
+      "name": "yolox_tiny_fp16_xai",
+      "path": "C:\\Users\\user\\_se4nchoi\\batteryvision\\models\\yolox_tiny_fp16_xai\\model.xml",
+      "sha256_12": "e4c9712035e2",
+      "size_mb": 10.64,
+      "labels": [
+        "scratch",
+        "crack"
+      ],
+      "wrapper": "SSD",
+      "meta": {
+        "architecture": "YOLOX-Tiny",
+        "precision": "FP16",
+        "notes": "Geti 'OpenVINO FP16 with XAI head (Explanation included)', version 1, 21 Oct 2026. Geti validation score not recorded yet."
+      },
+      "eval_seconds": 58.6,
+      "robustness": {
+        "clean": {
+          "map50": 0.8317860198648915,
+          "map50_95": 0.36946098019028534,
+          "precision": 0.9722222222222222,
+          "recall": 0.5691056910569106,
+          "defect_escape_rate": 0.01020408163265306,
+          "false_reject_rate": 0.0
+        },
+        "blur": {
+          "map50": 0.7380823905561401,
+          "map50_95": 0.2765758678761725,
+          "precision": 0.9180327868852459,
+          "recall": 0.45528455284552843,
+          "defect_escape_rate": 0.05102040816326531,
+          "false_reject_rate": 0.0
+        },
+        "dark": {
+          "map50": 0.765937842705874,
+          "map50_95": 0.2985157908099158,
+          "precision": 0.9629629629629629,
+          "recall": 0.42276422764227645,
+          "defect_escape_rate": 0.10204081632653061,
+          "false_reject_rate": 0.0
+        },
+        "bright": {
+          "map50": 0.7914068424971623,
+          "map50_95": 0.32785350095131144,
+          "precision": 0.9850746268656716,
+          "recall": 0.5365853658536586,
+          "defect_escape_rate": 0.061224489795918366,
+          "false_reject_rate": 0.0
+        },
+        "low_contrast": {
+          "map50": 0.7605767089499078,
+          "map50_95": 0.30590971494693203,
+          "precision": 0.9655172413793104,
+          "recall": 0.45528455284552843,
+          "defect_escape_rate": 0.09183673469387756,
+          "false_reject_rate": 0.0
+        },
+        "noise": {
+          "map50": 0.8439148285629757,
+          "map50_95": 0.367750563369384,
+          "precision": 0.9722222222222222,
+          "recall": 0.5691056910569106,
+          "defect_escape_rate": 0.02040816326530612,
+          "false_reject_rate": 0.0
+        },
+        "jpeg_q20": {
+          "map50": 0.8476621598853038,
+          "map50_95": 0.37147359357266346,
+          "precision": 0.9722222222222222,
+          "recall": 0.5691056910569106,
+          "defect_escape_rate": 0.01020408163265306,
+          "false_reject_rate": 0.0
+        }
+      },
+      "coco": {
+        "map50": 0.8317860198648915,
+        "map50_95": 0.36946098019028534,
+        "per_class": {
+          "crack": {
+            "ap50": 1.0,
+            "ap50_95": 0.46414435771992746
+          },
+          "scratch": {
+            "ap50": 0.6635720397297832,
+            "ap50_95": 0.2747776026606432
+          }
+        }
+      },
+      "pr_at_threshold": {
+        "threshold": 0.6,
+        "iou": 0.5,
+        "overall": {
+          "tp": 70,
+          "fp": 2,
+          "fn": 53,
+          "precision": 0.9722222222222222,
+          "recall": 0.5691056910569106,
+          "f1": 0.7179487179487181
+        },
+        "per_class": {
+          "crack": {
+            "tp": 45,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "scratch": {
+            "tp": 25,
+            "fp": 2,
+            "fn": 53,
+            "precision": 0.9259259259259259,
+            "recall": 0.32051282051282054,
+            "f1": 0.4761904761904762
+          }
+        }
+      },
+      "image_level": {
+        "matrix": {
+          "defective": {
+            "PASS": 1,
+            "REVIEW": 25,
+            "REJECT": 72
+          },
+          "no_defect_annotated": {
+            "PASS": 33,
+            "REVIEW": 0,
+            "REJECT": 0
+          }
+        },
+        "defective_images": 98,
+        "no_defect_images": 33,
+        "defect_catch_rate": 0.9897959183673469,
+        "defect_escape_rate": 0.01020408163265306,
+        "false_reject_rate": 0.0,
+        "review_rate": 0.19083969465648856
+      },
+      "operating_points": {
+        "review": {
+          "threshold": 0.3,
+          "iou": 0.5,
+          "overall": {
+            "tp": 93,
+            "fp": 21,
+            "fn": 30,
+            "precision": 0.8157894736842105,
+            "recall": 0.7560975609756098,
+            "f1": 0.7848101265822786
+          },
+          "per_class": {
+            "crack": {
+              "tp": 45,
+              "fp": 0,
+              "fn": 0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "scratch": {
+              "tp": 48,
+              "fp": 21,
+              "fn": 30,
+              "precision": 0.6956521739130435,
+              "recall": 0.6153846153846154,
+              "f1": 0.6530612244897959
+            }
+          }
+        },
+        "reject": {
+          "threshold": 0.6,
+          "iou": 0.5,
+          "overall": {
+            "tp": 70,
+            "fp": 2,
+            "fn": 53,
+            "precision": 0.9722222222222222,
+            "recall": 0.5691056910569106,
+            "f1": 0.7179487179487181
+          },
+          "per_class": {
+            "crack": {
+              "tp": 45,
+              "fp": 0,
+              "fn": 0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "scratch": {
+              "tp": 25,
+              "fp": 2,
+              "fn": 53,
+              "precision": 0.9259259259259259,
+              "recall": 0.32051282051282054,
+              "f1": 0.4761904761904762
+            }
+          }
+        }
+      },
+      "confusion": {
+        "review": {
+          "threshold": 0.3,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              45,
+              0,
+              0
+            ],
+            [
+              0,
+              48,
+              30
+            ],
+            [
+              0,
+              21,
+              0
+            ]
+          ],
+          "note": "rows = annotated, columns = predicted; background = missed (column) / false box (row)"
+        },
+        "reject": {
+          "threshold": 0.6,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              45,
+              0,
+              0
+            ],
+            [
+              0,
+              25,
+              53
+            ],
+            [
+              0,
+              2,
+              0
+            ]
+          ],
+          "note": "rows = annotated, columns = predicted; background = missed (column) / false box (row)"
+        }
+      },
+      "cell_binary": {
+        "flagged": {
+          "tp": 97,
+          "fn": 1,
+          "fp": 0,
+          "tn": 33,
+          "accuracy": 0.9923664122137404,
+          "precision": 1.0,
+          "recall": 0.9897959183673469,
+          "specificity": 1.0,
+          "f1": 0.9948717948717948
+        },
+        "rejected": {
+          "tp": 72,
+          "fn": 26,
+          "fp": 0,
+          "tn": 33,
+          "accuracy": 0.8015267175572519,
+          "precision": 1.0,
+          "recall": 0.7346938775510204,
+          "specificity": 1.0,
+          "f1": 0.8470588235294119
+        }
+      },
+      "by_background": {
+        "green mat": {
+          "n_images": 39,
+          "n_defective": 39,
+          "n_clean": 0,
+          "defect_catch_rate": 0.9743589743589743,
+          "false_reject_rate": null,
+          "box_recall": 0.7435897435897436,
+          "box_precision": 0.9666666666666667
+        },
+        "grey / neutral": {
+          "n_images": 54,
+          "n_defective": 33,
+          "n_clean": 21,
+          "defect_catch_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_recall": 0.75,
+          "box_precision": 1.0
+        },
+        "wood / brown": {
+          "n_images": 38,
+          "n_defective": 26,
+          "n_clean": 12,
+          "defect_catch_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_recall": 0.2916666666666667,
+          "box_precision": 0.9333333333333333
+        }
+      },
+      "latency": {
+        "n": 130,
+        "mean_ms": 27.883692307692307,
+        "median_ms": 26.104999999999997,
+        "p95_ms": 32.87,
+        "note": "First call excluded (warm-up)."
+      },
+      "threshold_sweep": [
+        {
+          "threshold": 0.05,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.06060606060606061,
+          "box_precision": 0.4794520547945205,
+          "box_recall": 0.8536585365853658
+        },
+        {
+          "threshold": 0.1,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.6121212121212121,
+          "box_recall": 0.8211382113821138
+        },
+        {
+          "threshold": 0.15,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.6577181208053692,
+          "box_recall": 0.7967479674796748
+        },
+        {
+          "threshold": 0.2,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.7368421052631579,
+          "box_recall": 0.7967479674796748
+        },
+        {
+          "threshold": 0.25,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8067226890756303,
+          "box_recall": 0.7804878048780488
+        },
+        {
+          "threshold": 0.3,
+          "defect_recall": 0.9897959183673469,
+          "escape_rate": 0.010204081632653073,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8157894736842105,
+          "box_recall": 0.7560975609756098
+        },
+        {
+          "threshold": 0.35,
+          "defect_recall": 0.9489795918367347,
+          "escape_rate": 0.05102040816326525,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8640776699029126,
+          "box_recall": 0.7235772357723578
+        },
+        {
+          "threshold": 0.4,
+          "defect_recall": 0.9387755102040817,
+          "escape_rate": 0.061224489795918324,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8811881188118812,
+          "box_recall": 0.7235772357723578
+        },
+        {
+          "threshold": 0.45,
+          "defect_recall": 0.9183673469387755,
+          "escape_rate": 0.08163265306122447,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8854166666666666,
+          "box_recall": 0.6910569105691057
+        },
+        {
+          "threshold": 0.5,
+          "defect_recall": 0.8571428571428571,
+          "escape_rate": 0.1428571428571429,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.9080459770114943,
+          "box_recall": 0.6422764227642277
+        },
+        {
+          "threshold": 0.55,
+          "defect_recall": 0.8061224489795918,
+          "escape_rate": 0.19387755102040816,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.9625,
+          "box_recall": 0.6260162601626016
+        },
+        {
+          "threshold": 0.6,
+          "defect_recall": 0.7346938775510204,
+          "escape_rate": 0.26530612244897955,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.9722222222222222,
+          "box_recall": 0.5691056910569106
+        },
+        {
+          "threshold": 0.65,
+          "defect_recall": 0.7040816326530612,
+          "escape_rate": 0.29591836734693877,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.9855072463768116,
+          "box_recall": 0.5528455284552846
+        },
+        {
+          "threshold": 0.7,
+          "defect_recall": 0.6020408163265306,
+          "escape_rate": 0.3979591836734694,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.4796747967479675
+        },
+        {
+          "threshold": 0.75,
+          "defect_recall": 0.4489795918367347,
+          "escape_rate": 0.5510204081632653,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.35772357723577236
+        },
+        {
+          "threshold": 0.8,
+          "defect_recall": 0.12244897959183673,
+          "escape_rate": 0.8775510204081632,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.0975609756097561
+        },
+        {
+          "threshold": 0.85,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        },
+        {
+          "threshold": 0.9,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        },
+        {
+          "threshold": 0.95,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        }
+      ],
+      "failures": [
+        {
+          "file": "20250518_174446_jpg.rf.534fde57caca3000cf0e55fce5d486d7.jpg",
+          "ground_truth": "defective",
+          "decision": "PASS",
+          "top": [
+            "scratch",
+            0.276
+          ]
+        }
+      ],
+      "unmatched_model_labels": [],
+      "devices": {
+        "CPU": {
+          "latency": {
+            "n": 131,
+            "mean_ms": 27.09030534351145,
+            "median_ms": 25.03,
+            "p95_ms": 33.155,
+            "note": "10 warm-up calls excluded; one call per test image."
+          },
+          "map50": 0.8317860198648915,
+          "map50_95": 0.36946098019028534
+        },
+        "GPU.0": {
+          "latency": {
+            "n": 131,
+            "mean_ms": 16.45091603053435,
+            "median_ms": 16.0,
+            "p95_ms": 19.09,
+            "note": "10 warm-up calls excluded; one call per test image."
+          },
+          "map50": 0.8339893780557852,
+          "map50_95": 0.36837860402771905
+        }
+      }
+    },
+    {
+      "name": "yolox_tiny_int8",
+      "path": "C:\\Users\\user\\_se4nchoi\\batteryvision\\models\\yolox_tiny_int8\\model.xml",
+      "sha256_12": "fae94cc7ed75",
+      "size_mb": 5.82,
+      "labels": [
+        "scratch",
+        "crack"
+      ],
+      "wrapper": "SSD",
+      "meta": {
+        "architecture": "YOLOX-Tiny",
+        "precision": "INT8",
+        "notes": "Geti 'OpenVINO INT8 (post-training optimization)', version 1, 21 Oct 2026. Geti validation score not recorded yet."
+      },
+      "eval_seconds": 85.7,
+      "robustness": {
+        "clean": {
+          "map50": 0.8292357773319777,
+          "map50_95": 0.3427871640141075,
+          "precision": 0.9859154929577465,
+          "recall": 0.5691056910569106,
+          "defect_escape_rate": 0.0,
+          "false_reject_rate": 0.0
+        },
+        "blur": {
+          "map50": 0.7305330221948507,
+          "map50_95": 0.25223060856559065,
+          "precision": 0.9180327868852459,
+          "recall": 0.45528455284552843,
+          "defect_escape_rate": 0.07142857142857142,
+          "false_reject_rate": 0.0
+        },
+        "dark": {
+          "map50": 0.73758635762555,
+          "map50_95": 0.28111797022157436,
+          "precision": 0.9803921568627451,
+          "recall": 0.4065040650406504,
+          "defect_escape_rate": 0.11224489795918367,
+          "false_reject_rate": 0.0
+        },
+        "bright": {
+          "map50": 0.7980916687967272,
+          "map50_95": 0.31201398581208534,
+          "precision": 0.9846153846153847,
+          "recall": 0.5203252032520326,
+          "defect_escape_rate": 0.061224489795918366,
+          "false_reject_rate": 0.0
+        },
+        "low_contrast": {
+          "map50": 0.7592113225454147,
+          "map50_95": 0.28035307395481607,
+          "precision": 0.9818181818181818,
+          "recall": 0.43902439024390244,
+          "defect_escape_rate": 0.10204081632653061,
+          "false_reject_rate": 0.0
+        },
+        "noise": {
+          "map50": 0.8366265176558894,
+          "map50_95": 0.34394207625912654,
+          "precision": 0.9859154929577465,
+          "recall": 0.5691056910569106,
+          "defect_escape_rate": 0.04081632653061224,
+          "false_reject_rate": 0.0
+        },
+        "jpeg_q20": {
+          "map50": 0.8373395252208365,
+          "map50_95": 0.34215529409695505,
+          "precision": 0.9859154929577465,
+          "recall": 0.5691056910569106,
+          "defect_escape_rate": 0.0,
+          "false_reject_rate": 0.0
+        }
+      },
+      "coco": {
+        "map50": 0.8292357773319777,
+        "map50_95": 0.3427871640141075,
+        "per_class": {
+          "crack": {
+            "ap50": 1.0,
+            "ap50_95": 0.4323609149808775
+          },
+          "scratch": {
+            "ap50": 0.6584715546639555,
+            "ap50_95": 0.2532134130473375
+          }
+        }
+      },
+      "pr_at_threshold": {
+        "threshold": 0.6,
+        "iou": 0.5,
+        "overall": {
+          "tp": 70,
+          "fp": 1,
+          "fn": 53,
+          "precision": 0.9859154929577465,
+          "recall": 0.5691056910569106,
+          "f1": 0.7216494845360826
+        },
+        "per_class": {
+          "crack": {
+            "tp": 45,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "scratch": {
+            "tp": 25,
+            "fp": 1,
+            "fn": 53,
+            "precision": 0.9615384615384616,
+            "recall": 0.32051282051282054,
+            "f1": 0.4807692307692308
+          }
+        }
+      },
+      "image_level": {
+        "matrix": {
+          "defective": {
+            "PASS": 0,
+            "REVIEW": 27,
+            "REJECT": 71
+          },
+          "no_defect_annotated": {
+            "PASS": 33,
+            "REVIEW": 0,
+            "REJECT": 0
+          }
+        },
+        "defective_images": 98,
+        "no_defect_images": 33,
+        "defect_catch_rate": 1.0,
+        "defect_escape_rate": 0.0,
+        "false_reject_rate": 0.0,
+        "review_rate": 0.20610687022900764
+      },
+      "operating_points": {
+        "review": {
+          "threshold": 0.3,
+          "iou": 0.5,
+          "overall": {
+            "tp": 94,
+            "fp": 19,
+            "fn": 29,
+            "precision": 0.831858407079646,
+            "recall": 0.7642276422764228,
+            "f1": 0.7966101694915255
+          },
+          "per_class": {
+            "crack": {
+              "tp": 45,
+              "fp": 0,
+              "fn": 0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "scratch": {
+              "tp": 49,
+              "fp": 19,
+              "fn": 29,
+              "precision": 0.7205882352941176,
+              "recall": 0.6282051282051282,
+              "f1": 0.6712328767123287
+            }
+          }
+        },
+        "reject": {
+          "threshold": 0.6,
+          "iou": 0.5,
+          "overall": {
+            "tp": 70,
+            "fp": 1,
+            "fn": 53,
+            "precision": 0.9859154929577465,
+            "recall": 0.5691056910569106,
+            "f1": 0.7216494845360826
+          },
+          "per_class": {
+            "crack": {
+              "tp": 45,
+              "fp": 0,
+              "fn": 0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "scratch": {
+              "tp": 25,
+              "fp": 1,
+              "fn": 53,
+              "precision": 0.9615384615384616,
+              "recall": 0.32051282051282054,
+              "f1": 0.4807692307692308
+            }
+          }
+        }
+      },
+      "confusion": {
+        "review": {
+          "threshold": 0.3,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              45,
+              0,
+              0
+            ],
+            [
+              0,
+              49,
+              29
+            ],
+            [
+              0,
+              19,
+              0
+            ]
+          ],
+          "note": "rows = annotated, columns = predicted; background = missed (column) / false box (row)"
+        },
+        "reject": {
+          "threshold": 0.6,
+          "iou": 0.5,
+          "labels": [
+            "crack",
+            "scratch",
+            "background"
+          ],
+          "matrix": [
+            [
+              45,
+              0,
+              0
+            ],
+            [
+              0,
+              25,
+              53
+            ],
+            [
+              0,
+              1,
+              0
+            ]
+          ],
+          "note": "rows = annotated, columns = predicted; background = missed (column) / false box (row)"
+        }
+      },
+      "cell_binary": {
+        "flagged": {
+          "tp": 98,
+          "fn": 0,
+          "fp": 0,
+          "tn": 33,
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "specificity": 1.0,
+          "f1": 1.0
+        },
+        "rejected": {
+          "tp": 71,
+          "fn": 27,
+          "fp": 0,
+          "tn": 33,
+          "accuracy": 0.7938931297709924,
+          "precision": 1.0,
+          "recall": 0.7244897959183674,
+          "specificity": 1.0,
+          "f1": 0.8402366863905326
+        }
+      },
+      "by_background": {
+        "green mat": {
+          "n_images": 39,
+          "n_defective": 39,
+          "n_clean": 0,
+          "defect_catch_rate": 1.0,
+          "false_reject_rate": null,
+          "box_recall": 0.7435897435897436,
+          "box_precision": 0.9666666666666667
+        },
+        "grey / neutral": {
+          "n_images": 54,
+          "n_defective": 33,
+          "n_clean": 21,
+          "defect_catch_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_recall": 0.75,
+          "box_precision": 1.0
+        },
+        "wood / brown": {
+          "n_images": 38,
+          "n_defective": 26,
+          "n_clean": 12,
+          "defect_catch_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_recall": 0.2916666666666667,
+          "box_precision": 1.0
+        }
+      },
+      "latency": {
+        "n": 130,
+        "mean_ms": 9.58446153846154,
+        "median_ms": 9.02,
+        "p95_ms": 13.461,
+        "note": "First call excluded (warm-up)."
+      },
+      "threshold_sweep": [
+        {
+          "threshold": 0.05,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.06060606060606061,
+          "box_precision": 0.47706422018348627,
+          "box_recall": 0.8455284552845529
+        },
+        {
+          "threshold": 0.1,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.5964912280701754,
+          "box_recall": 0.8292682926829268
+        },
+        {
+          "threshold": 0.15,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.6577181208053692,
+          "box_recall": 0.7967479674796748
+        },
+        {
+          "threshold": 0.2,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.7205882352941176,
+          "box_recall": 0.7967479674796748
+        },
+        {
+          "threshold": 0.25,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8,
+          "box_recall": 0.7804878048780488
+        },
+        {
+          "threshold": 0.3,
+          "defect_recall": 1.0,
+          "escape_rate": 0.0,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.831858407079646,
+          "box_recall": 0.7642276422764228
+        },
+        {
+          "threshold": 0.35,
+          "defect_recall": 0.9693877551020408,
+          "escape_rate": 0.030612244897959218,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8666666666666667,
+          "box_recall": 0.7398373983739838
+        },
+        {
+          "threshold": 0.4,
+          "defect_recall": 0.9285714285714286,
+          "escape_rate": 0.0714285714285714,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8888888888888888,
+          "box_recall": 0.7154471544715447
+        },
+        {
+          "threshold": 0.45,
+          "defect_recall": 0.8877551020408163,
+          "escape_rate": 0.11224489795918369,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.8901098901098901,
+          "box_recall": 0.6585365853658537
+        },
+        {
+          "threshold": 0.5,
+          "defect_recall": 0.8571428571428571,
+          "escape_rate": 0.1428571428571429,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.9294117647058824,
+          "box_recall": 0.6422764227642277
+        },
+        {
+          "threshold": 0.55,
+          "defect_recall": 0.7959183673469388,
+          "escape_rate": 0.20408163265306123,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.9620253164556962,
+          "box_recall": 0.6178861788617886
+        },
+        {
+          "threshold": 0.6,
+          "defect_recall": 0.7244897959183674,
+          "escape_rate": 0.2755102040816326,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.9859154929577465,
+          "box_recall": 0.5691056910569106
+        },
+        {
+          "threshold": 0.65,
+          "defect_recall": 0.6938775510204082,
+          "escape_rate": 0.30612244897959184,
+          "false_reject_rate": 0.0,
+          "box_precision": 0.9852941176470589,
+          "box_recall": 0.5447154471544715
+        },
+        {
+          "threshold": 0.7,
+          "defect_recall": 0.5612244897959183,
+          "escape_rate": 0.4387755102040817,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.44715447154471544
+        },
+        {
+          "threshold": 0.75,
+          "defect_recall": 0.45918367346938777,
+          "escape_rate": 0.5408163265306123,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.36585365853658536
+        },
+        {
+          "threshold": 0.8,
+          "defect_recall": 0.11224489795918367,
+          "escape_rate": 0.8877551020408163,
+          "false_reject_rate": 0.0,
+          "box_precision": 1.0,
+          "box_recall": 0.08943089430894309
+        },
+        {
+          "threshold": 0.85,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        },
+        {
+          "threshold": 0.9,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        },
+        {
+          "threshold": 0.95,
+          "defect_recall": 0.0,
+          "escape_rate": 1.0,
+          "false_reject_rate": 0.0,
+          "box_precision": null,
+          "box_recall": 0.0
+        }
+      ],
+      "failures": [],
+      "unmatched_model_labels": [],
+      "devices": {
+        "CPU": {
+          "latency": {
+            "n": 131,
+            "mean_ms": 8.340763358778625,
+            "median_ms": 8.01,
+            "p95_ms": 10.120000000000001,
+            "note": "10 warm-up calls excluded; one call per test image."
+          },
+          "map50": 0.8292357773319777,
+          "map50_95": 0.3427871640141075
+        },
+        "GPU.0": {
+          "latency": {
+            "n": 131,
+            "mean_ms": 17.089541984732826,
+            "median_ms": 11.73,
+            "p95_ms": 15.39,
+            "note": "10 warm-up calls excluded; one call per test image."
+          },
+          "map50": 0.8316246631687645,
+          "map50_95": 0.32977443309093313
         }
       }
     }

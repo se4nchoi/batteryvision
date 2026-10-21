@@ -1,0 +1,12 @@
+{
+ "near_duplicate_pair": {
+  "test": "KakaoTalk_Photo_2025-04-26-16-26-04-007_jpeg.rf.47b808450a8e6e3571d7d56725ee8127.jpg",
+  "train": "KakaoTalk_Photo_2025-04-26-16-26-05-018_jpeg.rf.b2b756209c1b547d2192bda8c000bc64.jpg",
+  "distance": 4
+ },
+ "heatmap_image": "IMG_6541_jpg.rf.2b004ae78c8495a5f1fb68eb50d0c0e5.jpg",
+ "holdout_miss": {
+  "file": "IMG_7197_jpg.rf.c2e89ff7bff5a31e7d85e521567aeee2.jpg",
+  "atss_top_score": 0.213
+ }
+}
