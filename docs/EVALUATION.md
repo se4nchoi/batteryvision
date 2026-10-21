@@ -368,6 +368,33 @@ Reasonable, checkable causes (not proven; each model was trained once, so run-to
 How to confirm: retrain YOLOX-S at a larger input size (e.g. 992×800 or tiling) and compare scratch AP;
 pick per-model thresholds on the validation split; repeat each training 2–3 times to see the variance.
 
+## Feedback and next steps (2026-10-21)
+
+Feedback received on the presentation, and what it means for this project:
+
+- **Collect data in a controlled environment.** Factory-grade precision (e.g. 99.9%) normally starts
+  from images taken at a fixed inspection station: same camera position, lighting, background and
+  distance. This project's tabletop photos vary in background (green mat, grey, wood) and session,
+  which is exactly where it failed: wood backgrounds (box recall 33%) and the later photo session
+  (47% of defective cells caught).
+- **With limited data, split the job into two steps (Geti task chain).** First pass: detect the
+  battery cell with a bounding box. Second pass: look for crack / scratch only inside that box.
+  Expected effects:
+  - the background is cropped away, which removes most false scratches (13 of 16 false detections
+    on the 1st test were "scratch" on background);
+  - the saliency heatmap stays on the cell instead of spreading over the mat or belt;
+  - the cropped cell is enlarged before the second pass, so small defects get more pixels (the same
+    effect that likely helps ATSS at 992×800).
+- **Data already available for the first pass:** every photo in the later-session export
+  (Battery-Defect-Detection v2) has a whole-cell `battery` box, which was dropped for evaluation here.
+- **To check in Geti:** which second task the chain offers (detection → classification or
+  detection → segmentation). Segmentation needs polygon labels instead of the current boxes;
+  classification gives a defect / no-defect answer per cell without the defect's location.
+
+Other next steps from the results: separate the test split before uploading and retrain; set
+thresholds per model (FP16 and INT8 separately) on a validation split; add photos from the new
+session or the real station and measure how much they recover.
+
 ## Limitations (keep in the report)
 
 - **No detection ≠ defect-free.** PASS means nothing was found above threshold.

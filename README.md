@@ -1,8 +1,9 @@
 # BatteryVision
 
 AI-assisted **battery cell surface defect inspection**: object-detection models trained in
-**Intel Geti** (ATSS-MobileNetV2, YOLOX-S), served with **OpenVINO** on CPU, driving a simulated
-inspection line that routes each cell to **PASS / REVIEW / REJECT**.
+**Intel Geti** (ATSS-MobileNetV2, YOLOX-S, YOLOX-Tiny, each exported as FP16, FP16+XAI and INT8),
+served with **OpenVINO** on CPU, driving a simulated inspection line that routes each cell to
+**PASS / REVIEW / REJECT**.
 
 ![Overview: 3D inspection line, camera card with 360° views and saliency heatmap, session metrics](docs/screenshots/dashboard.png)
 
@@ -15,6 +16,29 @@ synchronized digital twin, and it controls no physical equipment.
 ```
 Battery enters line → inspection station → model inference → decision policy → routing → logged to SQLite
 ```
+
+## Results at a glance
+
+Intel Geti practicum project (2026-10-21). Presentation (Korean): [docs/submission/BatteryVision_최예현.pptx](docs/submission/BatteryVision_최예현.pptx) ·
+two-page summary: [docs/submission/BatteryVision_요약.pdf](docs/submission/BatteryVision_요약.pdf) · full numbers: [docs/EVALUATION.md](docs/EVALUATION.md).
+
+- **ATSS-MobileNetV2 is the most accurate** (mAP@50 0.929 vs YOLOX-S 0.892, YOLOX-Tiny 0.832), despite having the fewest parameters.
+- **INT8 is 2–4× faster on CPU** at the same mAP@50, but scores drop slightly, so a few more defects fall under the 0.30 review threshold.
+- **The test score is optimistic.** The whole Roboflow export, test split included, was uploaded to Geti, and 22 test photos were copies of training photos.
+- **On a never-seen photo session, ATSS catches 47% of defective cells.** Smaller cracks (30×26 px vs 44×38 px) are the main cause; lowering the threshold does not fix it (more defects caught means more good cells flagged), so the fix is retraining on the new conditions.
+
+| | |
+|---|---|
+| ![Experiment design](docs/screenshots/slides/03_design.jpg) | ![Model comparison](docs/screenshots/slides/04_models.jpg) |
+| ![Test split uploaded to Geti](docs/screenshots/slides/05_trap.jpg) | ![Error analysis](docs/screenshots/slides/06_errors.jpg) |
+| ![XAI heatmap examples](docs/screenshots/slides/07_xai.jpg) | ![INT8 speed and accuracy](docs/screenshots/slides/09_int8.jpg) |
+| ![Second photo session](docs/screenshots/slides/11_second_set.jpg) | ![Causes](docs/screenshots/slides/12_causes.jpg) |
+
+**Feedback received and next steps.** For factory-grade precision, data should come from a controlled
+inspection station (fixed camera, lighting and background). With limited data, a two-step
+Geti task chain should help: first detect the battery cell, then look for defects only inside that box.
+That removes the background that caused most false scratches (wood grain) and keeps the heatmap on the
+cell. Details: [docs/EVALUATION.md](docs/EVALUATION.md#feedback-and-next-steps-2026-10-21).
 
 ## Two modes
 
@@ -45,6 +69,9 @@ Requirements: Python 3.11+ and Node.js 20+ (tested with Python 3.13, Node 24).
 .\setup.ps1      # once: venv + pip install + npm install + frontend build
 .\start.ps1      # http://localhost:8000
 ```
+
+If another program already uses port 8000, `localhost:8000` opens that program instead. Pick another
+port: `.\start.ps1 -Port 8080`, then open `http://localhost:8080`.
 
 `start.ps1 -Mode demo` forces demo mode. The default (`auto`) uses LIVE mode when
 `models\model.xml` loads, and otherwise falls back to DEMO.
@@ -150,14 +177,14 @@ The dashboard's **Models** page then shows (pick a model in the list on the left
   outcome table, and the specific failure images to show in the report
 - warnings: possible train/test **near-duplicates (leakage)**, no defect-free test images, small test set
 
-![Models page: model list, traits, test-set results, per-class metrics and confusion matrices](docs/screenshots/model_comparison_01.png)
+![Models page: model list, traits, test-set results, per-class metrics and confusion matrices](docs/screenshots/models_detail.png)
 
-![Models page: line projection, results by background, robustness, threshold trade-off, all models side by side](docs/screenshots/model_comparison_02.png)
+![Models page: all nine models side by side](docs/screenshots/models_all.png)
 
-*Models page comparing ATSS-MobileNetV2 and YOLOX-S, from the earlier 153-image benchmark. The 22 test
-images it flagged as copies of training images have since been moved out with
-`scripts\dedup_test_set.py`, and mAP@50 changed by under 1 point (see
-[docs/EVALUATION.md](docs/EVALUATION.md#deduplicated-test-set-131-images-measured-2026-10-20)). For
+![Models page: speed by precision and device](docs/screenshots/models_speed.png)
+
+*Models page with all nine models on the deduplicated 131-image test set. This test set was part of
+the Geti upload (see [docs/EVALUATION.md](docs/EVALUATION.md)), so use it to compare models; for
 unseen conditions, use the later-session holdout in the same document.*
 
 **Example data:** before you have results, switch the Models page to **Example data** to preview
