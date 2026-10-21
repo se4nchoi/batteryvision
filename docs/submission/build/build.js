@@ -119,6 +119,32 @@ const chip = (s, x, y, w, text, col, name, h = 0.38) => {
 };
 const T0 = 1.45; // content top on slides without a subtitle
 
+// ---------- 2. crack vs scratch ----------
+{
+  // Blurred, vignetted meme (prep_images.py -> meme_bg.png), right of the title so the text doesn't cover the face.
+  const s = content("도입", "crack은 쉽고, scratch는 어려워", null,
+    (sl) => img(sl, "meme_bg.png", 6.55, 0.0, 1.75, 1.75, "meme-backdrop"));
+  txt(s, "배경 이미지: Mnet 방송 화면", { x: 3.6, y: 7.02, w: 4, h: 0.3, fontSize: 9, color: MUTED, valign: "middle", objectName: "meme-credit" });
+  [["zoom_crack.jpg", "crack", "뚜렷함", RED], ["zoom_scratch.jpg", "scratch", "흐릿함", AMBER]].forEach(([f, label, desc, col], i) => {
+    const x = M + i * 3.55;
+    img(s, f, x, T0 + 0.25, 3.4, 3.4, `zoom-${label}`);
+    chip(s, x, T0 + 3.8, 1.1, label, col, `zoom-chip-${label}`);
+    txt(s, desc, { x: x + 1.25, y: T0 + 3.8, w: 2.0, h: 0.38, fontSize: 14, color: MUTED, valign: "middle", objectName: `zoom-cap-${label}` });
+  });
+  card(s, M, 6.0, 6.95, 0.8, "size-card");
+  txt(s, [{ text: "박스 크기  ", options: { color: MUTED } }, { text: "crack 44×38px · scratch 43×38px", options: { bold: true } }],
+    { x: M + 0.3, y: 6.0, w: 6.5, h: 0.8, fontSize: 16, valign: "middle", objectName: "size-line" });
+  s.addChart(pres.charts.BAR, [
+    { name: "crack", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [1.0, 1.0, 1.0] },
+    { name: "scratch", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [0.858, 0.784, 0.664] },
+  ], {
+    ...chartBase(), x: 7.9, y: T0 + 0.2, w: 4.83, h: 5.15, barDir: "col", barGapWidthPct: 50,
+    chartColors: [HEX.accent2, HEX.accent3], valAxisMinVal: 0, valAxisMaxVal: 1, valAxisLabelFormatCode: "0.0", dataLabelFormatCode: "0.00",
+    showTitle: true, title: "AP@50 (1차 테스트)", titleColor: HEX.dk1, titleFontSize: 14, objectName: "ap-chart",
+  });
+  s.addNotes("crack은 세 모델 모두 AP 1.0이지만, scratch는 0.66에서 0.86입니다. 박스 크기는 640픽셀 사진에서 둘 다 약 44×38픽셀로 같습니다. 차이는 대비입니다. crack은 어둡고 뚜렷하고, scratch는 반사나 나무결과 비슷한 흐릿한 선입니다. 이후 나오는 오류도 대부분 scratch입니다. 실제로 배경을 결함으로 잘못 본 16건 중 13건이 scratch였습니다. 모델이 배경의 결이나 반사를 scratch로 착각한다는 뜻입니다.");
+}
+
 // ---------- 3. experiment design ----------
 pres.addSection({ title: "실험" });
 {
@@ -154,51 +180,6 @@ pres.addSection({ title: "실험" });
   s.addNotes("라벨이 이미 달린 Roboflow 공개 데이터셋을 그대로 Geti에 가져왔습니다. 목적은 모델별 성능 차이와 INT8 경량화의 효과를 보는 것입니다. 모델은 ATSS, YOLOX-S, YOLOX-Tiny 세 가지를 각각 기본 FP16, heatmap을 출력하는 FP16 XAI, 그리고 INT8로 내보내 총 9개를 비교했습니다. 한계는 분명합니다. 사진이 전부 초록 매트, 회색, 나무 탁상 위에서 찍은 탁상 사진이고, 셀당 사진은 한 장, 촬영 세션도 반복됩니다.");
 }
 
-// ---------- 2. crack vs scratch ----------
-{
-  // Blurred, vignetted meme (prep_images.py -> meme_bg.png), right of the title so the text doesn't cover the face.
-  const s = content("실험", "crack은 쉽고, scratch는 어려워", null,
-    (sl) => img(sl, "meme_bg.png", 6.55, 0.0, 1.75, 1.75, "meme-backdrop"));
-  txt(s, "배경 이미지: Mnet 방송 화면", { x: 3.6, y: 7.02, w: 4, h: 0.3, fontSize: 9, color: MUTED, valign: "middle", objectName: "meme-credit" });
-  [["zoom_crack.jpg", "crack", "뚜렷함", RED], ["zoom_scratch.jpg", "scratch", "흐릿함", AMBER]].forEach(([f, label, desc, col], i) => {
-    const x = M + i * 3.55;
-    img(s, f, x, T0 + 0.25, 3.4, 3.4, `zoom-${label}`);
-    chip(s, x, T0 + 3.8, 1.1, label, col, `zoom-chip-${label}`);
-    txt(s, desc, { x: x + 1.25, y: T0 + 3.8, w: 2.0, h: 0.38, fontSize: 14, color: MUTED, valign: "middle", objectName: `zoom-cap-${label}` });
-  });
-  card(s, M, 6.0, 6.95, 0.8, "size-card");
-  txt(s, [{ text: "박스 크기  ", options: { color: MUTED } }, { text: "crack 44×38px · scratch 43×38px", options: { bold: true } }],
-    { x: M + 0.3, y: 6.0, w: 6.5, h: 0.8, fontSize: 16, valign: "middle", objectName: "size-line" });
-  s.addChart(pres.charts.BAR, [
-    { name: "crack", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [1.0, 1.0, 1.0] },
-    { name: "scratch", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [0.858, 0.784, 0.664] },
-  ], {
-    ...chartBase(), x: 7.9, y: T0 + 0.2, w: 4.83, h: 5.15, barDir: "col", barGapWidthPct: 50,
-    chartColors: [HEX.accent2, HEX.accent3], valAxisMinVal: 0, valAxisMaxVal: 1, valAxisLabelFormatCode: "0.0", dataLabelFormatCode: "0.00",
-    showTitle: true, title: "AP@50 (1차 테스트)", titleColor: HEX.dk1, titleFontSize: 14, objectName: "ap-chart",
-  });
-  s.addNotes("crack은 세 모델 모두 AP 1.0이지만, scratch는 0.66에서 0.86입니다. 박스 크기는 640픽셀 사진에서 둘 다 약 44×38픽셀로 같습니다. 차이는 대비입니다. crack은 어둡고 뚜렷하고, scratch는 반사나 나무결과 비슷한 흐릿한 선입니다. 이후 나오는 오류도 대부분 scratch입니다. 실제로 배경을 결함으로 잘못 본 16건 중 13건이 scratch였습니다. 모델이 배경의 결이나 반사를 scratch로 착각한다는 뜻입니다.");
-}
-
-// ---------- 4. hidden trap ----------
-{
-  const s = content("실험", "높은 수치, 숨은 함정", "1차 테스트 93%, but 과적합 학습 데이터");
-  const stats = [["3,673장", "테스트 153장 포함 업로드", AMBER], ["22장", "학습 사진의 복사본", AMBER], ["93.3 → 92.9%", "복사본 제거 후 mAP@50", ACC]];
-  stats.forEach(([n, l, col], i) => {
-    const y = 1.75 + i * 1.65;
-    card(s, M, y, 4.2, 1.5, `stat-${i}`);
-    txt(s, n, { x: M + 0.3, y: y + 0.15, w: 3.7, h: 0.75, fontSize: 32, bold: true, color: col, objectName: `stat-n-${i}` });
-    txt(s, l, { x: M + 0.3, y: y + 0.9, w: 3.7, h: 0.4, fontSize: 14, color: MUTED, objectName: `stat-l-${i}` });
-  });
-  [["dup_test.jpg", "테스트"], ["dup_train.jpg", "학습"]].forEach(([f, l], i) => {
-    const x = 5.05 + i * 3.9;
-    img(s, f, x, 1.75, 3.75, 3.75, `dup-${i}`);
-    chip(s, x, 5.65, 1.0, l, i ? ACC : AMBER, `dup-l-${i}`);
-  });
-  txt(s, "dHash 거리 4 / 256", { x: 10.0, y: 5.65, w: 2.7, h: 0.38, fontSize: 12, color: MUTED, align: "right", valign: "middle", objectName: "dup-cap" });
-  s.addNotes("처음 결과는 mAP 93%로 좋아 보였습니다. 하지만 데이터를 다시 보니 문제가 있었습니다. Roboflow 데이터셋을 통째로 Geti에 올리면서 테스트 153장도 함께 들어갔고, Geti가 이를 다시 나눠 학습했습니다. 그래서 1차 테스트 사진 중 일부는 모델이 학습 때 본 사진일 수 있습니다. 게다가 22장은 학습 사진과 사실상 같은 사진이었습니다. 직접 만든 데이터셋이 아니라서 놓친 부분입니다. 그래서 1차 점수는 모델끼리 비교하는 데만 쓰고, 처음 보는 사진에서의 성능은 2차 세트로 확인했습니다.");
-}
-
 // ---------- 5. small model ----------
 {
   const s = content("실험", "작은 모델이 더 맵다 ?", null);
@@ -227,6 +208,25 @@ pres.addSection({ title: "실험" });
   });
   chip(s, X, T0 + 5.05, RW, "32px 미만 박스 AP: ATSS 0.86 · YOLOX-S 0.80", ACC, "own-note", 0.42);
   s.addNotes("왼쪽은 Geti 화면입니다. 세 모델 모두 같은 2,800장으로 학습했고, Geti 점수는 ATSS 86%, 나머지 81%입니다. 다만 Roboflow가 원본마다 증강 사본 3장을 만들어 두었고 Geti가 이를 무작위로 나눴기 때문에, 같은 원본의 사본이 Geti 학습과 테스트에 함께 들어갔을 가능성이 높아 Geti 점수도 낙관적입니다. 오른쪽은 직접 만든 벤치마크로 잰 값인데 순서가 같습니다. 파라미터가 가장 적은 ATSS가 가장 정확했고, 학습에 안 쓴 2차 세트에서도 ATSS가 YOLOX-S보다 훨씬 많이 잡았습니다. 다만 '작다'는 파라미터 기준이고, 연산량은 Tiny가 가장 적습니다. 왜 ATSS가 이겼는지는 가설 단계입니다. ATSS는 992×800으로 학습해 결함을 1.5배 크게 보고, 데이터가 2,800장으로 적어 작은 모델이 덜 과적합했을 수 있습니다. 모델마다 한 번씩만 학습해서 확정할 수는 없습니다.");
+}
+
+// ---------- 4. hidden trap ----------
+{
+  const s = content("실험", "높은 수치, 숨은 함정", "1차 테스트 93%, but 과적합 학습 데이터");
+  const stats = [["3,673장", "테스트 153장 포함 업로드", AMBER], ["22장", "학습 사진의 복사본", AMBER], ["93.3 → 92.9%", "복사본 제거 후 mAP@50", ACC]];
+  stats.forEach(([n, l, col], i) => {
+    const y = 1.75 + i * 1.65;
+    card(s, M, y, 4.2, 1.5, `stat-${i}`);
+    txt(s, n, { x: M + 0.3, y: y + 0.15, w: 3.7, h: 0.75, fontSize: 32, bold: true, color: col, objectName: `stat-n-${i}` });
+    txt(s, l, { x: M + 0.3, y: y + 0.9, w: 3.7, h: 0.4, fontSize: 14, color: MUTED, objectName: `stat-l-${i}` });
+  });
+  [["dup_test.jpg", "테스트"], ["dup_train.jpg", "학습"]].forEach(([f, l], i) => {
+    const x = 5.05 + i * 3.9;
+    img(s, f, x, 1.75, 3.75, 3.75, `dup-${i}`);
+    chip(s, x, 5.65, 1.0, l, i ? ACC : AMBER, `dup-l-${i}`);
+  });
+  txt(s, "dHash 거리 4 / 256", { x: 10.0, y: 5.65, w: 2.7, h: 0.38, fontSize: 12, color: MUTED, align: "right", valign: "middle", objectName: "dup-cap" });
+  s.addNotes("처음 결과는 mAP 93%로 좋아 보였습니다. 하지만 데이터를 다시 보니 문제가 있었습니다. Roboflow 데이터셋을 통째로 Geti에 올리면서 테스트 153장도 함께 들어갔고, Geti가 이를 다시 나눠 학습했습니다. 그래서 1차 테스트 사진 중 일부는 모델이 학습 때 본 사진일 수 있습니다. 게다가 22장은 학습 사진과 사실상 같은 사진이었습니다. 직접 만든 데이터셋이 아니라서 놓친 부분입니다. 그래서 1차 점수는 모델끼리 비교하는 데만 쓰고, 처음 보는 사진에서의 성능은 2차 세트로 확인했습니다.");
 }
 
 // ---------- 6. error analysis ----------
@@ -406,10 +406,10 @@ pres.addSection({ title: "정리" });
   ];
   s.addTable([
     [{ text: "장", options: { ...H, align: "center" } }, { text: "결과", options: H }, { text: "원인", options: H }, { text: "근거", options: { ...H, align: "center" } }],
-    row("3", "Scratch 식별 어려움", "반사·나무결 같은 가는 선", "확인"),
-    row("4", "과대평가 수치 (93%)", "테스트 사진 학습 포함 · 복사본 22장", "확인"),
-    row("5", "낙관적인 Geti score", "증강본이 학습·테스트에 섞임", "추정"),
-    row("5", "ATSS 최고평가", "입력 해상도 992×800 vs 640×640", "추정"),
+    row("2", "Scratch 식별 어려움", "반사·나무결 같은 가는 선", "확인"),
+    row("4", "낙관적인 Geti score", "증강본이 학습·테스트에 섞임", "추정"),
+    row("4", "ATSS 최고평가", "입력 해상도 992×800 vs 640×640", "추정"),
+    row("5", "과대평가 수치 (93%)", "테스트 사진 학습 포함 · 복사본 22장", "확인"),
     row("6", "나무 배경 취약 (33%)", "나무결 = 가는 선", "추정"),
     row("9", "INT8 놓침 증가", "양자화로 점수 소폭 하락", "추정"),
     row("11", "2차 세트 검출 47%", "작아진 crack (30×26px) · 새 환경", "확인"),
