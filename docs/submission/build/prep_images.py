@@ -107,6 +107,15 @@ for im in hc["images"]:
 path, iid, _, top = best
 save(boxed(path, [(hcat[a["category_id"]], a["bbox"]) for a in hanns[iid]]), "holdout_miss.jpg")
 
+# slide 2: meme as a blurred, faded backdrop behind the title (author-supplied img/meme.png)
+from PIL import ImageFilter  # noqa: E402
+meme = Image.open(OUT / "meme.png").convert("RGB").filter(ImageFilter.GaussianBlur(3))
+yy, xx = np.mgrid[0:meme.height, 0:meme.width]
+r = np.hypot((xx - meme.width / 2) / (meme.width / 2), (yy - meme.height / 2) / (meme.height / 2))
+alpha = (np.clip(1.15 - r, 0, 1) ** 1.4 * 0.58 * 255).astype(np.uint8)  # soft vignette, max ~58% opacity
+meme.putalpha(Image.fromarray(alpha))
+meme.save(OUT / "meme_bg.png")
+
 # slide 10: dashboard screenshot
 Image.open(ROOT / "docs/screenshots/dashboard.png").convert("RGB").save(OUT / "dashboard.jpg", quality=88)
 

@@ -7,7 +7,7 @@ const SKILL = process.env.PPTX_SKILL_DIR;
 const { applyTheme } = require(path.join(SKILL, "scripts", "apply_theme.js"));
 
 const IMG = (f) => path.join(__dirname, "img", f);
-const OUT = path.join(__dirname, "..", "BatteryVision_발표.pptx");
+const OUT = process.env.DECK_OUT || path.join(__dirname, "..", "BatteryVision_발표.pptx");
 
 // Dark deck: the theme's "dark 1" slot holds the light text colour and "light 1" the dark background,
 // so tx1/bg1 resolve to light-on-dark everywhere.
@@ -60,8 +60,9 @@ const card = (s, x, y, w, h, name, fill = CARD) =>
 const txt = (s, text, o) => s.addText(text, { isTextBox: true, margin: 0, color: TEXT, fontSize: 14, valign: "top", ...o });
 const dot = (s, x, y, color, name) => s.addShape(pres.shapes.OVAL, { x, y, w: 0.16, h: 0.16, fill: { color }, line: { type: "none" }, objectName: name });
 const img = (s, file, x, y, w, h, name) => s.addImage({ path: IMG(file), x, y, w, h, objectName: name, rounding: false });
-const content = (sectionTitle, title, sub) => {
+const content = (sectionTitle, title, sub, behind) => {
   const s = pres.addSlide({ masterName: "CONTENT", sectionTitle });
+  if (behind) behind(s); // drawn first, so it sits behind the title
   s.addText(title, { placeholder: "title" });
   if (sub) s.addText(sub, { placeholder: "sub" });
   return s;
@@ -95,30 +96,28 @@ pres.addSection({ title: "도입" });
 
 // ---------- 2. crack vs scratch ----------
 {
-  const s = content("도입", "crack은 쉽고, scratch는 어려워", "크기는 비슷한데, 대비가 다르다");
+  // Blurred, vignetted meme (prep_images.py → meme_bg.png) faded in behind the end of the title.
+  const s = content("도입", "crack은 쉽고, scratch는 어려워", "크기는 비슷한데, 대비가 다르다",
+    (sl) => img(sl, "meme_bg.png", 5.25, 0.0, 2.05, 2.05, "meme-backdrop"));
+  txt(s, "배경 이미지: Mnet 방송 화면", { x: 3.6, y: 7.02, w: 4, h: 0.3, fontSize: 9, color: MUTED, valign: "middle", objectName: "meme-credit" });
   [["zoom_crack.jpg", "crack", "어둡고 뚜렷한 깨짐", RED], ["zoom_scratch.jpg", "scratch", "가늘고 흐릿한 선", AMBER]].forEach(([f, label, desc, col], i) => {
-    const x = M + i * 2.85;
-    img(s, f, x, 1.85, 2.6, 2.6, `zoom-${label}`);
-    dot(s, x, 4.62, col, `zoom-dot-${label}`);
-    txt(s, [{ text: label + "  ", options: { bold: true } }, { text: desc, options: { color: MUTED } }], { x: x + 0.26, y: 4.54, w: 2.4, h: 0.32, fontSize: 14, objectName: `zoom-cap-${label}` });
+    const x = M + i * 3.05;
+    img(s, f, x, 1.85, 2.85, 2.85, `zoom-${label}`);
+    dot(s, x, 4.9, col, `zoom-dot-${label}`);
+    txt(s, [{ text: label + "  ", options: { bold: true } }, { text: desc, options: { color: MUTED } }], { x: x + 0.26, y: 4.82, w: 2.6, h: 0.32, fontSize: 14, objectName: `zoom-cap-${label}` });
   });
-  card(s, M, 5.15, 5.45, 1.65, "meme-card");
-  img(s, "meme.png", M + 0.2, 5.3, 1.35, 1.35, "meme");
-  txt(s, "만남은 쉽고 이별은 어려워", { x: M + 1.75, y: 5.4, w: 3.6, h: 0.35, fontSize: 14, bold: true, objectName: "meme-line" });
-  txt(s, "crack은 쉽고 scratch는 어려워", { x: M + 1.75, y: 5.8, w: 3.6, h: 0.35, fontSize: 14, color: AMBER, objectName: "meme-line2" });
-  txt(s, "이미지: Mnet 방송 화면", { x: M + 1.75, y: 6.3, w: 3.6, h: 0.25, fontSize: 10, color: MUTED, objectName: "meme-credit" });
+  card(s, M, 5.5, 5.9, 1.3, "stat-card");
+  txt(s, [{ text: "0.39% · 0.44%", options: { fontSize: 26, bold: true, color: AMBER, breakLine: true } }, { text: "crack · scratch 박스 크기 중앙값 (이미지 면적 대비)", options: { color: MUTED } }],
+    { x: M + 0.3, y: 5.65, w: 5.4, h: 1.0, valign: "middle", objectName: "stat-size" });
 
   s.addChart(pres.charts.BAR, [
     { name: "crack", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [1.0, 1.0, 1.0] },
     { name: "scratch", labels: ["ATSS", "YOLOX-S", "YOLOX-Tiny"], values: [0.858, 0.784, 0.664] },
   ], {
-    ...chartBase(), x: 6.55, y: 1.75, w: 6.2, h: 3.9, barDir: "col", barGapWidthPct: 60,
+    ...chartBase(), x: 6.85, y: 1.75, w: 5.88, h: 5.05, barDir: "col", barGapWidthPct: 60,
     chartColors: [HEX.accent2, HEX.accent3], valAxisMinVal: 0, valAxisMaxVal: 1, valAxisLabelFormatCode: "0.0", dataLabelFormatCode: "0.00",
     showTitle: true, title: "클래스별 AP@50 (테스트 131장)", titleColor: HEX.dk1, titleFontSize: 14, objectName: "ap-chart",
   });
-  card(s, 6.55, 5.85, 6.2, 0.95, "stat-card");
-  txt(s, [{ text: "0.39% · 0.44%  ", options: { fontSize: 22, bold: true, color: AMBER } }, { text: "crack · scratch 박스 크기 중앙값", options: { color: MUTED } }],
-    { x: 6.8, y: 6.05, w: 5.8, h: 0.55, valign: "middle", objectName: "stat-scratch" });
   s.addNotes("crack은 세 모델 모두 AP 1.0으로 거의 완벽하지만, scratch는 0.66에서 0.86 사이입니다. 박스 크기는 둘 다 이미지의 0.4% 안팎으로 비슷합니다. 차이는 대비입니다. crack은 어둡고 뚜렷한 깨짐이고, scratch는 반사나 나무결과 비슷한 가늘고 흐릿한 선입니다. 이 프로젝트의 오류는 대부분 scratch에서 나옵니다.");
 }
 
