@@ -1,9 +1,6 @@
 # BatteryVision
 
-AI-assisted **battery cell surface defect inspection**: object-detection models trained in
-**Intel Geti** (ATSS-MobileNetV2, YOLOX-S, YOLOX-Tiny, each exported as FP16, FP16+XAI and INT8),
-served with **OpenVINO** on CPU, driving a simulated inspection line that routes each cell to
-**PASS / REVIEW / REJECT**.
+AI-assisted **battery cell surface defect inspection** developed as an **Intel Geti computer-vision practicum**. Battery defect detectors (ATSS-MobileNetV2, YOLOX-S, YOLOX-Tiny) were trained and evaluated in Geti. A companion Python/web application can load Geti-exported models for CPU inference and visualize **PASS / REVIEW / REJECT** decisions on a **simulated** inspection line.
 
 ![Overview: 3D inspection line, camera card with 360° views and saliency heatmap, session metrics](docs/screenshots/dashboard.png)
 
@@ -12,6 +9,13 @@ current cell, the side with the finding (zoomed), and the model's saliency heatm
 
 The dashboard is a companion demo to the Geti model. It is a *simulated* line, not a
 synchronized digital twin, and it controls no physical equipment.
+
+### Geti vs. OpenVINO in this project
+
+- **Primary training workflow — Intel Geti:** dataset import and annotation review, training ATSS/YOLOX detection models, and examining their evaluation results. This is the core educational work.
+- **Model export — OpenVINO IR:** the Geti interface exports trained variants as `model.xml` / `model.bin` (FP16, INT8, and optional XAI output). Using these export options does **not** by itself imply experience designing OpenVINO optimizations.
+- **Optional inference layer — OpenVINO via Intel ModelAPI:** BatteryVision's Python backend loads exported models through `openvino-model-api` (see [openvino_provider.py](backend/app/inference/openvino_provider.py)); this is how LIVE mode produces CPU predictions. [Recorded benchmark results](docs/results/benchmark.json) come from this software path; the default DEMO mode instead uses scripted detections.
+- **Scope:** this is a Geti-led learning project and software demonstration, **not** a deployed physical inspection system. The project's use of OpenVINO under the hood should not be read as a claim of separately developing OpenVINO internals or hardware-optimized inference kernels.
 
 ```
 Battery enters line → inspection station → model inference → decision policy → routing → logged to SQLite
